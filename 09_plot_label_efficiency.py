@@ -1,5 +1,5 @@
 r"""
-S2 figure (Dr. Loo's Group-3 spec): publication-quality label efficiency curve,
+S2 figure: publication-quality label efficiency curve,
 macro-F1 versus the percentage of labeled runs, with the supervised ceiling drawn.
 Reads results/label_efficiency_curve.csv (produced by 08_label_efficiency.py).
 
@@ -23,8 +23,9 @@ assert os.path.exists(CSV), "run 08_label_efficiency.py first"
 
 TRIVIAL_F1 = 0.004   # macro-F1 of the trivial majority-class baseline (from 04; 0.0043)
 STYLE = {
-    "rf":  dict(color="#c1531a", marker="s", label="Random forest (depth 20)"),
-    "hgb": dict(color="#1f5fa8", marker="o", label="Gradient boosting (lr 0.05)"),
+    "logistic": dict(color="#2e7d32", marker="^", label="Logistic regression (C 10)"),
+    "rf":       dict(color="#c1531a", marker="s", label="Random forest (depth 20)"),
+    "hgb":      dict(color="#1f5fa8", marker="o", label="Gradient boosting (lr 0.05)"),
 }
 
 plt.rcParams.update({

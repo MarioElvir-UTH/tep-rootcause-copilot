@@ -26,6 +26,11 @@
     41
   ],
   "summary": {
+    "logistic": {
+      "full_supervision_Recall@1": 0.6546349206349206,
+      "labels_for_90pct": 2100,
+      "labels_for_95pct": 4200
+    },
     "rf": {
       "full_supervision_Recall@1": 0.6288888888888889,
       "labels_for_90pct": 210,

@@ -36,7 +36,7 @@ a number:
 | Script that **loads and describes** the data | `01_explore_data.py` | step 1 of `run_all.py` | schema, 21 classes, quality checks |
 | **Frozen partition**, committed to the repo | `splits/partition_manifest.csv`, `splits/partition_meta.json` | `02_make_partition.py` (seed 42) | sha256 `f55e7729a298e23c` |
 | **Trivial** baseline, with its number | `results/classics_cv_comparison.csv` | `03_baselines.py`, `04_classics_cv.py` | F1-macro **0.004 ± 0.000** |
-| **Simple model**, with its number | `results/classics_cv_comparison.csv` | `04_classics_cv.py` | Random forest **0.638 ± 0.005**; Gradient boosting **0.640 ± 0.005** (F1-macro) |
+| **Simple model**, with its number | `results/classics_cv_comparison.csv` | `04_classics_cv.py` | Logistic regression **0.652 ± 0.005**; Random forest **0.638 ± 0.005**; Gradient boosting **0.640 ± 0.005** (F1-macro) |
 
 Baseline only, skipping the auxiliary domain-feature analyses (~18-20 min): run
 `02_make_partition.py`, `03_baselines.py`, `04_classics_cv.py`, `10_inference_time.py`
@@ -46,7 +46,7 @@ in that order (see the [Fast path](#3-reproduce) below).
 
 ## What this reproduces
 
-- **Table II**: Trivial / Random Forest / Gradient Boosting baselines
+- **Table II**: Trivial / Logistic Regression / Random Forest / Gradient Boosting baselines
   (F1-macro primary; Recall@1/Recall@3/MRR secondary; per-episode inference latency as cost).
 - **Label-efficiency curve**: F1-macro / Recall@k vs. fraction of labels used
   (`results/label_efficiency_curve.{csv,pdf,png}`).
@@ -55,7 +55,7 @@ in that order (see the [Fast path](#3-reproduce) below).
 **Task definition (deliberately harder than typical TEP benchmarks):** one label
 per simulation run, an early **causal window `[21, 41)`** (decision made with data
 available at the moment, never the future), and **21 root-cause classes**
-(1 normal + 20 faults). This is why F1-macro ≈ 0.64 is expected and is *not*
+(1 normal + 20 faults). This is why F1-macro ≈ 0.65 is expected and is *not*
 comparable to the 90%+ figures reported by full-trajectory TEP studies: it buys
 operational validity (latency measurable, real-time faithful).
 
@@ -72,8 +72,7 @@ python -m pip install -r requirements.txt
 
 Core dependencies: `numpy`, `pandas`, `scikit-learn`, `pyreadr` (reads the `.RData`
 files), `pyarrow` (parquet caches), `matplotlib` (figure). See `requirements.txt`
-for exact pinned versions. (PyTorch is only needed for the Week-3 deep model and
-is **not** imported by scripts 01-10.)
+for exact pinned versions.
 
 ## 2. Get the data (not stored in this repo)
 
@@ -119,7 +118,7 @@ frozen partition on disk). The **test set stays sealed throughout**: no
 ```bash
 python 02_make_partition.py   # freeze the by-run split (seed 42)
 python 03_baselines.py        # trivial + RF on the frozen split
-python 04_classics_cv.py      # RF + Gradient Boosting, StratifiedGroupKFold CV  -> Table II
+python 04_classics_cv.py      # logistic + RF + Gradient Boosting, grouped CV -> Table II
 python 10_inference_time.py   # training time + inference latency (Table II cost)
 ```
 
@@ -132,9 +131,10 @@ figure (both need the feature cache built by step 04).
 
 | Model | F1-macro | Recall@3 | Inference |
 |---|---|---|---|
-| Trivial (majority) | 0.004 ± 0.000 | 0.143 ± 0.000 | < 0.01 ms |
-| Random forest | 0.638 ± 0.005 | **0.703 ± 0.006** | 0.05 ms |
-| **Gradient boosting** | **0.640 ± 0.005** | 0.654 ± 0.007 | 0.03 ms |
+| Trivial (majority) | 0.004 ± 0.000 | 0.143 ± 0.000 | < 0.001 ms |
+| **Logistic regression** | **0.652 ± 0.005** | **0.733 ± 0.003** | 0.003 ms |
+| Random forest | 0.638 ± 0.005 | 0.703 ± 0.006 | 0.081 ms |
+| Gradient boosting | 0.640 ± 0.005 | 0.654 ± 0.007 | 0.073 ms |
 
 Mean ± std over **15 folds** (StratifiedGroupKFold-by-run, k=5, seeds {5,17,42};
 selection seed 0). Determinism is further guaranteed by the committed partition
@@ -147,7 +147,7 @@ which `02_make_partition.py` reproduces exactly.
 01_explore_data.py              schema, class counts, data-quality checks
 02_make_partition.py            freeze the by-run partition (seed 42) -> splits/
 03_baselines.py                 trivial + Random Forest on the frozen split
-04_classics_cv.py               RF + Gradient Boosting w/ CV -> Table II + feature cache
+04_classics_cv.py               logistic + RF + Gradient Boosting w/ CV -> Table II + cache
 05_domain_features.py           domain-knowledge features + permutation importance
 06_domain_features_nonlinear.py do domain features help nonlinear models?
 07_cv_audit.py                  cross-validation leakage audit (4 checks)

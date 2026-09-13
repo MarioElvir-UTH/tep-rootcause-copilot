@@ -7,8 +7,8 @@ Both are REPRODUCIBLE measures (rule 2):
     (median batch-predict time / batch size). Amortizing removes the single-call
     Python overhead that made a one-episode timing jump run-to-run, so this number
     reproduces; it is the model's per-episode inference compute.
-Models (Dr. Loo's Group-3 recommendation): random forest and gradient boosting;
-plus the trivial floor. Fit on the mean+std features from 04's cache; test untouched.
+Models: logistic regression, random forest, and gradient boosting; plus the trivial
+floor. Fit on the mean+std features from 04's cache; test untouched.
 """
 import os, json, time, platform
 import numpy as np
@@ -16,6 +16,7 @@ import pandas as pd
 import sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 
 BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
@@ -32,6 +33,9 @@ CLASSES = np.arange(0, 21)
 print(f"dev pool: {len(y)} runs | features: {len(featcols)}")
 
 
+def make_logistic():
+    return Pipeline([("sc", StandardScaler()),
+                     ("clf", LogisticRegression(max_iter=2000, class_weight="balanced", C=10.0))])
 def make_rf():
     return Pipeline([("sc", StandardScaler()),
                      ("clf", RandomForestClassifier(n_estimators=300, max_depth=20, class_weight="balanced",
@@ -66,20 +70,24 @@ def amortized_ms_per_episode(predict_batch, reps=INFER_REPS):
 
 # --- training time (median seconds to fit one model on the dev pool) ---
 tr_trivial = float(np.median([trivial_fit_seconds() for _ in range(5)]))
+tr_log = train_seconds(make_logistic)
 tr_rf = train_seconds(make_rf)
 tr_hgb = train_seconds(make_hgb)
 
 # --- inference: fit once, then amortized per-episode latency (RF single-threaded) ---
+pipe_log = make_logistic().fit(X, y)
 pipe_rf = make_rf().fit(X, y); pipe_rf.named_steps["clf"].n_jobs = 1
 pipe_hgb = make_hgb().fit(X, y)
 freq = np.array([(y == c).sum() for c in CLASSES], float); freq = freq / freq.sum()
 
 inf_trivial = amortized_ms_per_episode(lambda Xb: np.tile(freq, (len(Xb), 1)))
+inf_log = amortized_ms_per_episode(lambda Xb: pipe_log.predict_proba(Xb))
 inf_rf = amortized_ms_per_episode(lambda Xb: pipe_rf.predict_proba(Xb))
 inf_hgb = amortized_ms_per_episode(lambda Xb: pipe_hgb.predict_proba(Xb))
 
 rows = [
     {"model": "Trivial (majority class)", "train_s": round(tr_trivial, 4), "inference_ms": round(inf_trivial, 4)},
+    {"model": "Logistic regression",      "train_s": round(tr_log, 3),     "inference_ms": round(inf_log, 4)},
     {"model": "Random forest",            "train_s": round(tr_rf, 3),      "inference_ms": round(inf_rf, 4)},
     {"model": "Gradient boosting",        "train_s": round(tr_hgb, 3),     "inference_ms": round(inf_hgb, 4)},
 ]

@@ -17,9 +17,10 @@ Protocol (same audited contract as 04/07):
   - Preprocessing (StandardScaler) is fit inside each fold on the labeled subset only.
   - Budgets B per class: 1..400; B=400 is full supervision and anchors the right end.
 
-Models: random forest (max_depth=20) and gradient boosting (lr=0.05) - the two
-configurations selected in 04. Reporting both answers a real question: does the
-model ranking hold in the low-label regime, or does it flip?
+Models: logistic regression (C=10), random forest (max_depth=20) and gradient
+boosting (lr=0.05) - the three configurations selected in 04. Reporting all three
+answers a real question: does the model ranking hold in the low-label regime, or
+does it flip?
 
 Outputs: results/label_efficiency_curve.csv, .svg (dependency-free figure),
 label_efficiency_env.json. Console: table, ASCII curve, and the headline
@@ -31,6 +32,7 @@ import numpy as np
 import pandas as pd
 import sklearn
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import f1_score
@@ -62,6 +64,8 @@ print(f"dev pool: {len(y)} runs | features: {len(featcols)} | classes: {len(CLAS
 
 
 def make(kind, seed):
+    if kind == "logistic":
+        return LogisticRegression(max_iter=2000, class_weight="balanced", C=10.0)
     if kind == "rf":
         return RandomForestClassifier(n_estimators=300, max_depth=20, class_weight="balanced",
                                       n_jobs=N_JOBS, random_state=seed)
@@ -91,7 +95,7 @@ max_per_class = min(int((y[tri] == c).sum()) for tri, _ in ref_splits for c in C
 print(f"training runs available per class in each fold: {max_per_class}")
 
 rows = []
-for kind in ["rf", "hgb"]:
+for kind in ["logistic", "rf", "hgb"]:
     for B in BUDGETS:
         acc = {m: [] for m in MET}
         for s in SEEDS:
@@ -123,7 +127,7 @@ print("\n" + "=" * 94)
 print("LABEL EFFICIENCY CURVE  (StratifiedGroupKFold-by-run k=5, 3 seeds (5,17,42); mean +/- std; TEST SEALED)")
 print("=" * 94)
 summary = {}
-for kind in ["rf", "hgb"]:
+for kind in ["logistic", "rf", "hgb"]:
     d = df[df.model == kind].sort_values("budget_per_class")
     full = float(d[d.budget_per_class == max_per_class]["Recall@1_mean"].iloc[0])
     summary[kind] = {"full_supervision_Recall@1": full}
@@ -142,7 +146,7 @@ for kind in ["rf", "hgb"]:
 
 # ---------------- ASCII curve (immediate visual) ----------------
 print("\nASCII curve - Recall@1 vs labeled runs per class (scale 0 to 0.70)")
-for kind in ["rf", "hgb"]:
+for kind in ["logistic", "rf", "hgb"]:
     d = df[df.model == kind].sort_values("budget_per_class")
     print(f"  [{kind}]")
     for _, r in d.iterrows():
@@ -155,8 +159,9 @@ W, H = 760, 460
 ML, MR, MT, MB = 78, 150, 34, 62
 PW, PH = W - ML - MR, H - MT - MB
 YMAX = 0.75
-COLORS = {"rf": "#c1531a", "hgb": "#1f5fa8"}
-LBL = {"rf": "Random forest (depth 20)", "hgb": "Gradient boosting (lr 0.05)"}
+COLORS = {"logistic": "#2e7d32", "rf": "#c1531a", "hgb": "#1f5fa8"}
+LBL = {"logistic": "Logistic regression (C 10)", "rf": "Random forest (depth 20)",
+       "hgb": "Gradient boosting (lr 0.05)"}
 
 
 def sx(b):
@@ -194,7 +199,7 @@ svg.append(f'<line x1="{ML}" y1="{yf:.1f}" x2="{ML+PW}" y2="{yf:.1f}" stroke="#9
            f'stroke-dasharray="5,4"/>')
 svg.append(f'<text x="{ML+PW+8}" y="{yf+4:.1f}" fill="#777">trivial floor {TRIVIAL:.3f}</text>')
 # series
-for kind in ["rf", "hgb"]:
+for kind in ["logistic", "rf", "hgb"]:
     d = df[df.model == kind].sort_values("budget_per_class")
     xs = [sx(b) for b in d.budget_per_class]
     ms = list(d["Recall@1_mean"]); ss = list(d["Recall@1_std"])
@@ -210,7 +215,7 @@ for kind in ["rf", "hgb"]:
                f'stroke="{COLORS[kind]}" stroke-width="1" stroke-dasharray="3,4" stroke-opacity="0.6"/>')
 # legend
 ly = MT + 12
-for kind in ["rf", "hgb"]:
+for kind in ["logistic", "rf", "hgb"]:
     svg.append(f'<line x1="{ML+PW+10}" y1="{ly}" x2="{ML+PW+34}" y2="{ly}" stroke="{COLORS[kind]}" stroke-width="2.2"/>')
     svg.append(f'<text x="{ML+PW+38}" y="{ly+4}" fill="#222" font-size="11">{LBL[kind]}</text>')
     ly += 20
