@@ -1,0 +1,15 @@
+model,family,n_cols,perm_importance_mean,perm_importance_std
+Random Forest (max_depth=20),fluctuation (std),52,0.07816507936507935,0.006465861666861281
+Random Forest (max_depth=20),range (max-min),52,0.0636063492063492,0.004882395192610938
+Random Forest (max_depth=20),deviation vs normal,52,0.028336507936507917,0.0039778474512197
+Random Forest (max_depth=20),level (mean),52,0.027422222222222212,0.005268135122549363
+Random Forest (max_depth=20),trend (slope),52,0.01836825396825396,0.003964295168172791
+Random Forest (max_depth=20),control effort (XMV),11,0.009936507936507927,0.0016767194932388895
+Random Forest (max_depth=20),feed/flow ratios,2,0.000152380952380935,0.0007457007033164618
+HistGB (lr=0.05),level (mean),52,0.2730793650793651,0.013251799081119878
+HistGB (lr=0.05),fluctuation (std),52,0.14408253968253967,0.012377722004295495
+HistGB (lr=0.05),range (max-min),52,0.06413968253968255,0.005875489826425388
+HistGB (lr=0.05),trend (slope),52,0.054431746031746046,0.01813969031784755
+HistGB (lr=0.05),control effort (XMV),11,0.049453968253968264,0.004502317087731401
+HistGB (lr=0.05),feed/flow ratios,2,0.00017142857142857793,0.0005299210568854556
+HistGB (lr=0.05),deviation vs normal,52,0.0,0.0

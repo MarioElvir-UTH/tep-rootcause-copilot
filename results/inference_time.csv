@@ -1,0 +1,4 @@
+model,train_s,inference_ms
+Trivial (majority class),0.0004,0.0001
+Random forest,6.647,0.0531
+Gradient boosting,8.985,0.032
