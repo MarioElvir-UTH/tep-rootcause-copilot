@@ -70,7 +70,8 @@ mean and standard deviation over the 15 resulting folds; the primary metric is
 the macro-averaged F1 score, with Recall@1, Recall@3, and mean reciprocal rank
 as secondary metrics, and per-episode inference latency (in milliseconds) as a
 cost measure. (7) All
-experiments run on a single machine on CPU with Python 3.14.2 and fixed seeds
+experiments run on a single machine on CPU (Intel Core i5-13420H, 12 threads)
+with Python 3.14.2 and fixed seeds
 throughout; the code, the frozen partition, and the pinned environment
 (requirements.txt) are available in the project repository
 https://github.com/MarioElvir-UTH/tep-rootcause-copilot; per-model training time
