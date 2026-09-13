@@ -74,6 +74,11 @@ Core dependencies: `numpy`, `pandas`, `scikit-learn`, `pyreadr` (reads the `.RDa
 files), `pyarrow` (parquet caches), `matplotlib` (figure). See `requirements.txt`
 for exact pinned versions.
 
+**Reference machine** for every runtime quoted in this README: Intel Core
+i5-13420H (8 cores / 12 threads), 32 GB RAM, Windows 11, **CPU only, no GPU
+required**. The scripts use all available cores (`N_JOBS = -1`), so wall-clock
+times scale with core count. Results do not: the seeds fix every number.
+
 ## 2. Get the data (not stored in this repo)
 
 The raw TEP simulation data is **not redistributed here**: it is large (~1.34 GB)
@@ -102,7 +107,7 @@ dataverse_files/
 
 ## 3. Reproduce
 
-**Everything (one command, ~80 min on a laptop CPU):**
+**Everything (one command, ~80 min on 12 CPU threads, no GPU):**
 
 ```bash
 python run_all.py
