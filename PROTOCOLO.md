@@ -1,4 +1,4 @@
-# PROTOCOLO / Experimental configuration — Group 3
+# PROTOCOLO / Experimental configuration
 
 > Canonical protocol for the paper (the ONLY protocol document; replaces the
 > earlier `protocolo_validacion.md`). The paragraph below is the *Experimental
@@ -10,7 +10,7 @@
 > The `.tex` (Evaluation, Abstract, objective 4) and the figure were reconciled
 > to this choice.
 
-## Table II (LaTeX, IEEEtran) — empty except the trivial floor
+## Table II (LaTeX, IEEEtran): empty except the trivial floor
 
 ```latex
 \begin{table}[!t]

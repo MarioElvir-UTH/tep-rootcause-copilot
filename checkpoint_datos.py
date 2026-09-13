@@ -6,7 +6,7 @@ Passes the checkpoint by SHOWING, live, the four required items:
   (3) five example rows (with their ground truth = faultNumber);
   (4) the frozen partition EXISTS in the repository (file on disk + integrity hash).
 
-Note for our group (G3): we do NOT run the simulator ourselves. We use the
+Note: we do NOT run the simulator ourselves. We use the
 pre-generated Tennessee Eastman runs of Rieth et al. (2017), which already ship WITH
 their ground truth (faultNumber = root-cause label). Data is confirmed and on disk;
 the alternate plan is the same dataset (best-positioned route).
@@ -22,7 +22,7 @@ FILES = ["TEP_FaultFree_Training.RData", "TEP_FaultFree_Testing.RData",
          "TEP_Faulty_Training.RData", "TEP_Faulty_Testing.RData"]
 
 print("=" * 90)
-print("DATA CHECKPOINT  -  Grupo 3  -  Tennessee Eastman Process (Rieth et al., 2017)")
+print("DATA CHECKPOINT  -  Tennessee Eastman Process (Rieth et al., 2017)")
 print("=" * 90)
 
 # ---------- (1) data loads + (2) samples and classes ----------

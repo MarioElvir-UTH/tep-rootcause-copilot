@@ -1,4 +1,4 @@
-# Reproducibility - Group 3, Thesis Seminar II (TEP root-cause pipeline).
+# Reproducibility - TEP root-cause pipeline (Thesis Seminar II).
 # A result that only runs on one machine is not a result: this pins the exact
 # environment used to produce every number and figure in results/.
 #

@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+title: "Agentic AI Copilot for Operator Decision Support: Reproducible Pipeline"
+abstract: "Reproducible pipeline for root-cause identification on the Tennessee Eastman Process (TEP) under a label-scarce, causally-windowed protocol."
+type: software
+authors:
+  - given-names: Mario
+    family-names: Elvir
+    affiliation: "UTH Honduras"
+  - given-names: Josué
+    family-names: Rivera
+    affiliation: "UTH Honduras"
+  - given-names: Christian
+    family-names: Barahona
+    affiliation: "UTH Honduras"
+  - given-names: Luis
+    family-names: Loo
+    affiliation: "UTH Honduras"
+repository-code: "https://github.com/MarioElvir-UTH/tep-rootcause-copilot"
+url: "https://github.com/MarioElvir-UTH/tep-rootcause-copilot"
+keywords:
+  - "Tennessee Eastman Process"
+  - "fault diagnosis"
+  - "root-cause identification"
+  - "label efficiency"
+  - "operator decision support"
+  - "reproducibility"
+version: "1.0.0"
+date-released: "2026-09-13"

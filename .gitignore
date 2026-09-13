@@ -1,5 +1,5 @@
 # ============================================================================
-#  Raw TEP data — NOT redistributed. Download from the canonical public source
+#  Raw TEP data: NOT redistributed. Download from the canonical public source
 #  (Harvard Dataverse, see README) and place the four .RData files in
 #  dataverse_files/. Two of them exceed GitHub's 100 MB per-file hard limit.
 # ============================================================================
@@ -8,14 +8,14 @@ dataverse_files/
 # Regenerable feature caches (rebuilt deterministically by scripts 04 and 05)
 results/*.parquet
 
-# Internal team documents — not part of the reproducible artifact
+# Internal team documents: not part of the reproducible artifact
 *.docx
 bitacora_agente.md
 implementation_plan.md
-Anteproyecto_G3_memoria.md
+Anteproyecto_*.md
 
 # Paper source (mid-draft; add later if you choose to host it here)
-Anteproyecto_G3_Seminario_Tesis_I.tex
+Anteproyecto_*.tex
 
 # Python / OS noise
 __pycache__/

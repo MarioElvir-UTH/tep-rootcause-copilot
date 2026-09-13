@@ -53,7 +53,7 @@ RESULT_FILES = [
 
 def main():
     print("=" * 80)
-    print("REPRODUCIBLE PIPELINE  -  Group 3  -  TEP root-cause identification")
+    print("REPRODUCIBLE PIPELINE  -  TEP root-cause identification")
     print(f"python {sys.version.split()[0]}   |   base: {BASE}")
     print("=" * 80)
 
