@@ -83,8 +83,6 @@ and publicly hosted at its canonical source. Download the four `.RData` files fr
 > Rieth, C. A., Amsel, B. D., Tran, R., & Cook, M. B. (2017). *Additional
 > Tennessee Eastman Process Simulation Data for Anomaly Detection Evaluation.*
 > **Harvard Dataverse, V1.** DOI: [10.7910/DVN/6C3JR1](https://doi.org/10.7910/DVN/6C3JR1)
->
-> Underlying process: Downs, J. J., & Vogel, E. F. (1993). DOI: [10.1016/0098-1354(93)80018-I](https://doi.org/10.1016/0098-1354(93)80018-I)
 
 Place them exactly here (folder name `dataverse_files/`):
 
