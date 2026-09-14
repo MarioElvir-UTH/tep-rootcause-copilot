@@ -29,10 +29,14 @@ inference is the amortized per-episode latency.}
 Model & Macro $F_1$ & Recall@3 & Size & Train (s) & Inference (ms) \\
 \midrule
 Trivial (majority class) & $0.004 \pm 0.000$          & $0.143 \pm 0.000$          & 21     & $<0.01$ & $<0.001$ \\
-Logistic regression      & $\mathbf{0.652 \pm 0.005}$ & $\mathbf{0.733 \pm 0.003}$ & 2,205  & 3  & 0.003 \\
+Logistic regression      & $0.652 \pm 0.005$          & $0.733 \pm 0.003$          & 2,205  & 3  & 0.003 \\
 Random forest            & $0.638 \pm 0.005$          & $0.703 \pm 0.006$          & 98,740 & 6  & 0.081 \\
 Gradient boosting        & $0.640 \pm 0.005$          & $0.654 \pm 0.007$          & 67,499 & 20 & 0.073 \\
-Proposed method          & \multicolumn{5}{c}{\emph{por llenar} (Weeks 3-4)} \\
+\midrule
+Neural net v1a (MLP)     & $0.652 \pm 0.013$          & $0.754 \pm 0.017$          & 9,493  & 3  & $<0.001$ \\
+Neural net v1b (1D-CNN)  & $\mathbf{0.696 \pm 0.006}$ & $\mathbf{0.786 \pm 0.007}$ & 16,117 & 17 & 0.004 \\
+\midrule
+Proposed method          & \multicolumn{5}{c}{\emph{por llenar} (Week 4)} \\
 \bottomrule
 \end{tabular}
 \end{table*}

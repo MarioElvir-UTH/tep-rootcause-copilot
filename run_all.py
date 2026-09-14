@@ -21,6 +21,7 @@ Dependency order (why this order):
   07 cv_audit           (needs 04's cache + 02's partition)
   08 label_efficiency   (needs 04's cache)
   09 plot               (needs 08's CSV)
+  11 train_dl           (needs 04's cache; extracts + caches the raw windows)
   checkpoint_datos      (needs 02's partition; live data-checkpoint evidence)
 """
 import os
@@ -41,6 +42,7 @@ STEPS = [
     ("08_label_efficiency.py",         "Label-efficiency curve (the measurable contribution)"),
     ("09_plot_label_efficiency.py",    "Render the label-efficiency figure (PDF/PNG)"),
     ("10_inference_time.py",           "Training time + inference latency (Table II cost)"),
+    ("11_train_dl.py",                 "Deep learning v1: MLP + 1D-CNN under the Week-2 contract"),
     ("checkpoint_datos.py",            "Data checkpoint (live evidence)"),
 ]
 
@@ -48,6 +50,7 @@ RESULT_FILES = [
     "baseline_comparison.csv", "classics_cv_comparison.csv", "best_model_confusion_matrix.csv",
     "domain_feature_importance.csv", "domain_nonlinear_comparison.csv", "cv_audit_single_vs_cv.csv",
     "label_efficiency_curve.csv", "label_efficiency_curve.pdf", "inference_time.csv",
+    "dl_comparison.csv", "dl_confusion_matrix.csv",
 ]
 
 

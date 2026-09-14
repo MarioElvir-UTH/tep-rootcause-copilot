@@ -46,7 +46,7 @@ in that order (see the [Fast path](#3-reproduce) below).
 
 ## What this reproduces
 
-- **Table II**: Trivial / Logistic Regression / Random Forest / Gradient Boosting baselines
+- **Table II**: trivial floor, three classical baselines, and two networks (MLP, 1D-CNN)
   (F1-macro primary; Recall@1/Recall@3/MRR secondary; per-episode inference latency as cost).
 - **Label-efficiency curve**: F1-macro / Recall@k vs. fraction of labels used
   (`results/label_efficiency_curve.{csv,pdf,png}`).
@@ -137,9 +137,16 @@ figure (both need the feature cache built by step 04).
 | Model | F1-macro | Recall@3 | Inference |
 |---|---|---|---|
 | Trivial (majority) | 0.004 ± 0.000 | 0.143 ± 0.000 | < 0.001 ms |
-| **Logistic regression** | **0.652 ± 0.005** | **0.733 ± 0.003** | 0.003 ms |
+| Logistic regression | 0.652 ± 0.005 | 0.733 ± 0.003 | 0.003 ms |
 | Random forest | 0.638 ± 0.005 | 0.703 ± 0.006 | 0.081 ms |
 | Gradient boosting | 0.640 ± 0.005 | 0.654 ± 0.007 | 0.073 ms |
+| Neural net v1a (MLP) | 0.652 ± 0.013 | 0.754 ± 0.017 | < 0.001 ms |
+| **Neural net v1b (1D-CNN)** | **0.696 ± 0.006** | **0.786 ± 0.007** | 0.004 ms |
+
+The MLP sees the same 104 features as the classics and ties logistic regression;
+the 1D-CNN sees the raw `20 x 52` window and beats it by 0.044 macro-F1, about
+seven times the fold-to-fold standard deviation. The gain comes from the
+representation, not from the architecture.
 
 Mean ± std over **15 folds** (StratifiedGroupKFold-by-run, k=5, seeds {5,17,42};
 selection seed 0). Determinism is further guaranteed by the committed partition
@@ -159,6 +166,7 @@ which `02_make_partition.py` reproduces exactly.
 08_label_efficiency.py          label-efficiency curve (the measurable contribution)
 09_plot_label_efficiency.py     render the figure (PDF/PNG)
 10_inference_time.py            training time + inference latency (Table II cost)
+11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
