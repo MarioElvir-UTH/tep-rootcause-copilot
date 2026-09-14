@@ -160,6 +160,15 @@ shape, which the per-run mean and standard deviation discard by construction.
 - Cost reported for each network, measured on the same run and **on the machine
   named in the paper** (Intel Core i5-13420H, 12 threads, CPU only): parameter
   count, training seconds, and amortized inference milliseconds per episode.
+- **Training evidence:** one loss figure per run (training and validation loss per
+  epoch), saved in `results/curves/` with the model, the seed and the fold in the
+  file name. It does not go in the article; it is the evidence that training
+  followed the protocol, and it is the first thing reviewed when grading. The
+  "stop here" at the minimum of the validation loss is exactly what the early
+  stopping declared above implements. Reading the curve is for diagnosis and for
+  the discussion, never for re-tuning the number that gets reported: changing the
+  architecture, the epochs, the partition, the metric or the seed after seeing a
+  score is searching on the result, and the reported std makes it visible.
 
 ### The bar to beat
 
