@@ -195,6 +195,111 @@ needs roughly **0.662** or more. Per label budget the network has to beat the
 leader of that range, the random forest between 1% and 5% of the labels and
 logistic regression from 12% upward.
 
+## Proposed method pre-registration: the copilot (written BEFORE running anything)
+
+> Declared 2026-09-14, before a single line of the copilot was written. Same rule
+> as the Week 3 block: what is decided after seeing a score is not protocol, it is
+> tuning on the result. This is the row that carries the contribution promised in
+> the anteproyecto, and it is deliberately the minimum version that produces a
+> number, not the full system.
+
+The network is not the contribution. The contribution is what sits on top of it:
+a copilot that perceives an episode, scores the hypotheses, reasons over retrieved
+evidence, and hands the operator a recommendation it can trace.
+
+### The trap this design avoids
+
+If retrieval were keyed by the class the classifier predicted, the whole component
+would be a dictionary lookup wearing a costume: it would always find the document
+of the predicted class, the with-and-without ablation would be favourable by
+construction, and the rubric would secretly re-measure the classification accuracy
+already in Table II. **Retrieval therefore starts from the observed symptoms, not
+from the predicted label**, so it can agree or disagree with the classifier, and
+that disagreement is itself information for the operator.
+
+### Documents and index are separate on purpose
+
+| Piece | What it is | Where it comes from |
+|---|---|---|
+| **Document** (what gets cited to the operator) | Public description of the fault | Downs and Vogel 1993, citable. **No corrective procedures** |
+| **Retrieval index** | A symptom signature per fault | Estimated **inside each fold**, training portion only |
+
+This is how retrieval-augmented systems are built: documents carry the evidence a
+human reads, an index maps a query to them. Learning the index from data is
+standard and, fitted per fold, leaks nothing. What may never be invented is the
+text shown to the human.
+
+**Not claimed:** the knowledge base carries fault descriptions and symptom context
+only. TEP is a simulation, it has no maintenance history, so there are no
+corrective procedures to cite and none will be written. Plant documentation stays
+an additional corpus, never a dependency and never ground truth.
+
+### Knowledge base
+
+- 21 short Spanish documents, one per class (normal plus IDV 1 to 20), versioned in
+  the repository so a reviewer gets the same corpus.
+- Each holds the fault name, the public description of the disturbance, and the
+  variables it is documented to affect.
+
+### Query: the symptom profile of an episode
+
+- Baseline: the mean and standard deviation of each of the 52 process variables
+  over the normal-operation runs **of the training portion of the fold**.
+- The episode's profile is the signed standardized deviation of its window mean
+  from that baseline, one value per variable.
+
+### Index: the symptom signature of each fault
+
+- For each class, the centroid of the deviation profiles of its training runs.
+- 21 signatures of 52 values each, fitted per fold.
+
+### Retrieval and fusion
+
+- Retrieval ranks the 21 documents by cosine similarity between the episode
+  profile and each signature, turned into a distribution by a softmax at
+  temperature 1.
+- The copilot's ranking fuses the two opinions:
+  `score = (1 - w) * classifier probability + w * retrieval distribution`.
+- **Pre-declared grid of 3 configurations**, the same count every other model
+  received: `w` in {0.25, 0.50, 0.75}, selected by macro-F1 on seed 0.
+- Classifier: the v1b 1D-CNN, the best model of the Week 3 row, unchanged.
+
+### Ablation: does the agent contribute
+
+- **Without retrieval**: `w = 0`, the classifier alone.
+- **With retrieval**: the selected `w`.
+- The gap between the two, on macro-F1 over the same 15 folds, is the agent's
+  contribution. If it is smaller than the standard deviation it is not a
+  contribution, and that is what gets reported.
+
+### Rubric: quality of the root cause, automatic and deterministic
+
+Scored per episode, 0 to 3 points. It is automatic on purpose: a human rubric
+cannot be reproduced by a reviewer running one command.
+
+- +1 if the recommended root cause is the true one.
+- +1 if the cited document is the one of the true root cause.
+- +1 if the true root cause appears among the 3 retrieved documents shown.
+
+Reported as the mean over episodes, with mean +- standard deviation over the 15
+folds, and with the same breakdown for the ablation arm.
+
+### Confidence signal
+
+Episodes are split by whether the classifier and the retrieval agree on the top
+hypothesis. Accuracy is reported on each subset, together with the share of
+episodes in each. A recommendation the operator should distrust is one where the
+two disagree, which is operationally useful and costs nothing to compute.
+
+### Rules, unchanged
+
+Same frozen partition and the same 15 folds (StratifiedGroupKFold by run, k = 5,
+seeds 5, 17, 42), macro-F1 primary and Recall@3 secondary, mean +- standard
+deviation, every statistic fitted inside the fold, test sealed. Cost reported on
+the same run and the same machine: index size, retrieval milliseconds per episode,
+and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
+`run_all.py`, so one command still reproduces everything.
+
 ## Consistency check (paragraph vs. code vs. table)
 
 - Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
