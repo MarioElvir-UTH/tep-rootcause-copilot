@@ -95,11 +95,18 @@ and 20 s (gradient boosting), and negligible for the trivial baseline.
 - **Primary metric = macro-F1** -> reconciled 2026-09-12 across the `.tex`
   (Evaluation, Abstract, objective 4) and the figure; `protocolo_validacion.md`
   removed so this file is the only protocol. OK
+- Selection criterion -> hyperparameters AND the best model are chosen by
+  macro-F1, the primary metric (`04_classics_cv.py`, fixed 2026-09-13; it used to
+  select by Recall@1, which contradicted the paper). Verified that Recall@1 would
+  select the identical configuration for all three models, so no number changed. OK
 - Inference time (ms) -> amortized per-episode latency (`10_inference_time.py`,
-  reproducible; rounded to 2 sig figs in the table): trivial <0.01, random forest
-  0.05, gradient boosting 0.03. OK
+  reproducible): trivial <0.001, logistic regression 0.003, random forest 0.081,
+  gradient boosting 0.073. OK
 - Per-model training time (s) -> median fit on the dev pool
-  (`10_inference_time.py`): trivial <0.01, random forest ~6, gradient boosting ~8. OK
-- Repository (GitHub, university e-mail) -> not created yet. [PENDIENTE]
-- PR-AUC (used in Dr. Loo's example) -> NOT computed; Recall@1 used as the
-  secondary instead. If PR-AUC is required, [PENDIENTE].
+  (`10_inference_time.py`): trivial <0.01, logistic regression ~3, random forest
+  ~6, gradient boosting ~20. Wall-clock, so it moves with machine load. OK
+- Repository -> public at https://github.com/MarioElvir-UTH/tep-rootcause-copilot
+  (code, frozen partition, results, README with the one-command reproduction). OK
+- PR-AUC (used in Dr. Loo's example) -> NOT computed; the secondary metrics are
+  Recall@1, Recall@3 and MRR, and Table II shows Recall@3. If PR-AUC is
+  required, [PENDIENTE].
