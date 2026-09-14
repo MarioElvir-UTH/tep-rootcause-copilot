@@ -223,8 +223,8 @@ def decide(p_cls, p_ret, n_alarm, moved, arm, w):
         top_ret = int(np.argmax(p_ret))
         agree = (top_cls == top_ret)
         ready = agree and conf >= TAU
-    else:                                   # ablation: the same loop without [P3]
-        score = p_cls
+    else:                    # ablation and lookup: the classifier ranks alone, so the
+        score = p_cls        # only thing that changes between them is the citation
         top_ret, agree = None, None
         ready = conf >= TAU
     if top_cls == 0 and n_alarm >= FLOOD_N:
@@ -260,6 +260,8 @@ def run_fold(seed, fold, tri, vai, arm, w, fh=None):
             n_alarm = int(alarming[i].sum())
             if arm == "proposed":
                 pr, used_al = retrieve(dev[i], alarming[i], sig)
+            elif arm == "lookup":
+                pr, used_al = pc, False     # grounding keyed by the predicted class
             else:
                 pr, used_al = None, None
             action, score, agree, conf = decide(pc, pr, n_alarm, moved, arm, w)
@@ -324,16 +326,26 @@ def score_rows(rows):
     out["AlarmsRaw"] = float(raw.mean())
     out["AlarmsShown"] = float(shown.mean())
     out["AlarmReduction"] = float(1 - shown.sum() / max(raw.sum(), 1e-9))
-    # rubric 0..3, automatic
-    r1 = top1 == yt
-    r2 = np.array([r["ret3"] is not None and r["ret3"][0] == r["y"] for r in rows])
-    r3 = np.array([r["ret3"] is not None and r["y"] in list(r["ret3"]) for r in rows])
-    out["Rubric"] = float((r1.astype(int) + r2.astype(int) + r3.astype(int)).mean())
-    # confidence signal
+    # Rubric, decomposed. An arm that cites nothing reports R2, R3 and the total as
+    # NOT APPLICABLE, never as zero: an absence is not a failure, and scoring it as
+    # zero would turn a structural gap into an inflated gain.
+    out["R1"] = float((top1 == yt).mean())
+    if rows[0]["ret3"] is not None:
+        out["R2"] = float(np.mean([r["ret3"][0] == r["y"] for r in rows]))
+        out["R3"] = float(np.mean([r["y"] in list(r["ret3"]) for r in rows]))
+        out["Grounding"] = out["R2"] + out["R3"]
+        out["Rubric"] = out["R1"] + out["R2"] + out["R3"]
+    else:
+        out["R2"] = out["R3"] = out["Grounding"] = out["Rubric"] = float("nan")
+    # Confidence signal: only meaningful where TWO opinions exist. Where they do not,
+    # it is n/a, not the overall accuracy wearing a different label.
+    two = any(r["agree"] is not None for r in rows)
     ag = np.array([r["agree"] is True for r in rows])
-    out["AgreeShare"] = float(ag.mean())
-    out["AccAgree"] = float(np.mean(top1[ag] == yt[ag])) if ag.any() else float("nan")
-    out["AccDisagree"] = float(np.mean(top1[~ag] == yt[~ag])) if (~ag).any() else float("nan")
+    out["AgreeShare"] = float(ag.mean()) if two else float("nan")
+    out["AccAgree"] = (float(np.mean(top1[ag] == yt[ag]))
+                       if (two and ag.any()) else float("nan"))
+    out["AccDisagree"] = (float(np.mean(top1[~ag] == yt[~ag]))
+                          if (two and (~ag).any()) else float("nan"))
     for a in ACTIONS:
         out["act_" + a] = float(np.mean([r["action"] == a for r in rows]))
     out["iters"] = float(np.mean([r["iters"] for r in rows]))
@@ -350,8 +362,10 @@ def cv(arm, w, seed, fh=None):
     return per_fold, secs
 
 
-MET = ["F1macro", "Recall@3", "RootAlarmChrono", "RootAlarmKB", "AlarmReduction",
-       "Rubric", "AccAgree", "AccDisagree"]
+MET_A = ["F1macro", "Recall@1", "Recall@3", "AccAgree", "AccDisagree"]
+MET_B = ["RootAlarmChrono", "RootAlarmKB", "AlarmReduction", "R1", "R2", "R3", "Rubric"]
+ARMS = (("ablation", "Sin agente (ablacion)"), ("lookup", "Anclaje por etiqueta"),
+        ("proposed", "Metodo propuesto"))
 
 # ---------------- select the fusion weight: 3 configurations, seed 0, by macro-F1 ----------------
 print("\nfusion weight selection (seed %d, 3 configurations, by macro-F1):" % SEL_SEED)
@@ -367,7 +381,7 @@ print(f"  selected w = {BEST_W}", flush=True)
 print("\nestimation (15 folds per arm; the decision log is written as it runs):")
 rows_out = []
 with open(os.path.join(LOGS, "decisiones.jsonl"), "w", encoding="utf-8") as fh:
-    for arm, w in (("ablation", 0.0), ("proposed", BEST_W)):
+    for arm, w in (("ablation", 0.0), ("lookup", 0.0), ("proposed", BEST_W)):
         allf, allsec = [], []
         for s in EST_SEEDS:
             pf, sec = cv(arm, w, s, fh)
@@ -386,35 +400,57 @@ df = pd.DataFrame(rows_out)
 df.to_csv(os.path.join(RES, "agente_comparison.csv"), index=False)
 
 # ---------------- report and the sentence ----------------
-ab = next(r for r in rows_out if r["arm"] == "ablation")
-pr = next(r for r in rows_out if r["arm"] == "proposed")
-print("\n" + "=" * 100)
-print("COPILOT v1 vs ITS ABLATION  (same partition, same metric, 3 seeds; mean +/- std)")
-print("=" * 100)
-hdr = f"{'arm':<26}" + "".join(f"{m:>20}" for m in MET)
-print(hdr)
-print("-" * len(hdr))
-for r in (ab, pr):
-    name = "Sin agente (ablacion)" if r["arm"] == "ablation" else f"Metodo propuesto (w={r['w']})"
-    print(f"{name:<26}" + "".join(
-        f"{r[m + '_mean']:>12.4f}+/-{r[m + '_std']:<6.3f}" for m in MET))
+by = {r["arm"]: r for r in rows_out}
+ab, lk, pr = by["ablation"], by["lookup"], by["proposed"]
+
+
+def cell(r, m):
+    """An arm that cites nothing prints n/a, never a zero."""
+    v = r[m + "_mean"]
+    return f"{'n/a':>19} " if np.isnan(v) else f"{v:>12.4f}+/-{r[m + '_std']:<6.3f}"
+
+
+def table(title, mets):
+    hdr = f"{'arm':<26}" + "".join(f"{m:>20}" for m in mets)
+    print("\n" + "=" * len(hdr))
+    print(title)
+    print("=" * len(hdr))
+    print(hdr)
+    print("-" * len(hdr))
+    for key, name in ARMS:
+        print(f"{name:<26}" + "".join(cell(by[key], m) for m in mets))
+
+
+table("DECISION QUALITY  (same partition, same metric, 3 seeds; mean +/- std)", MET_A)
+table("ALARMS AND GROUNDING  (n/a means the arm produces no citation, so there is "
+      "nothing to score)", MET_B)
 
 d = pr["F1macro_mean"] - ab["F1macro_mean"]
 pooled = max(pr["F1macro_std"], ab["F1macro_std"])
-dr = pr["Rubric_mean"] - ab["Rubric_mean"]
-pooledr = max(pr["Rubric_std"], ab["Rubric_std"])
 print()
 if abs(d) <= pooled:
-    print(f"macro-F1: the agent does NOT change the number. Gap {d:+.4f} is inside the "
-          f"standard deviation ({pooled:.4f}), so it is not a difference.")
+    print(f"macro-F1 against the ablation: no difference. The gap {d:+.4f} sits inside "
+          f"the standard deviation ({pooled:.4f}).")
 elif d > 0:
-    print(f"macro-F1: the agent ADDS {d:+.4f} over the system without it.")
+    print(f"macro-F1 against the ablation: the agent ADDS {d:+.4f}.")
 else:
-    print(f"macro-F1: the agent SUBTRACTS {d:+.4f}. Reported, not hidden.")
-if abs(dr) <= pooledr:
-    print(f"rubric:   no difference either. Gap {dr:+.4f} inside {pooledr:.4f}.")
+    print(f"macro-F1 against the ablation: the agent SUBTRACTS {d:+.4f}. "
+          f"Reported, not hidden.")
+
+dg = pr["Grounding_mean"] - lk["Grounding_mean"]
+pg = max(pr["Grounding_std"], lk["Grounding_std"])
+print(f"grounding (R2+R3, out of 2) against the label lookup: symptom retrieval "
+      f"{pr['Grounding_mean']:.4f} vs {lk['Grounding_mean']:.4f} ({dg:+.4f}, sd {pg:.4f})")
+if dg < -pg:
+    print("  -> the lookup cites the right document more often, exactly as declared in "
+          "advance. Symptom retrieval is not a better document finder; it is an "
+          "INDEPENDENT one, and that independence is what the confidence signal and "
+          "the RQ1 answer rest on, neither of which a lookup keyed by the classifier "
+          "can give.")
+elif dg > pg:
+    print("  -> symptom retrieval cites the right document more often than the lookup.")
 else:
-    print(f"rubric:   retrieval moves the root-cause quality by {dr:+.4f} points out of 3.")
+    print("  -> no difference between the two groundings.")
 print(f"\nactions taken (proposed): " + ", ".join(
     f"{a} {pr['act_' + a + '_mean']:.1%}" for a in ACTIONS))
 print(f"mean iterations per decision: {pr['iters_mean']:.3f}  "

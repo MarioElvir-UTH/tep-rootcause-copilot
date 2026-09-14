@@ -471,6 +471,46 @@ ablation and the figure possible.
   is useful to a person, which no automatic score can settle. It is declared as
   not reproducible by the command, and reported apart.
 
+### Three arms, and a rubric that is not allowed to flatter us
+
+Comparing the rubric of a system that retrieves against one that does not is
+generous by construction: the arm without retrieval **cannot** score the two
+grounding points, so counting them as zero turns an absence into a defeat and
+inflates the gain. Two corrections are declared, both before running:
+
+**The rubric is decomposed and reported point by point.**
+
+| Point | What it measures | Comparable without retrieval |
+|---|---|---|
+| R1 | the recommended root cause is the true one | yes |
+| R2 | the cited document is the one of the true fault | no |
+| R3 | the true fault is among the 3 documents shown | no |
+
+For an arm that produces no citation, R2, R3 and the rubric total are reported as
+**not applicable**, never as zero. R1 is the comparable part.
+
+**A third arm gives grounding a fair baseline.**
+
+| Arm | Ranking | Citation |
+|---|---|---|
+| `Sin agente (ablacion)` | classifier alone | none |
+| `Anclaje por etiqueta` | classifier alone | the document of the **predicted class** |
+| `Metodo propuesto` | classifier fused with symptom retrieval | the document found by **symptom retrieval** |
+
+The middle arm is the dictionary lookup this design deliberately refused as the
+proposal. As a **baseline** it is exactly right: it is what anyone would do
+without symptom retrieval, and it makes R2 and R3 comparable. It shares the
+ranking and the actions of the ablation, so the only thing that changes between
+them is whether a citation exists.
+
+**Declared in advance, because it may not flatter the proposal:** the classifier
+is strong and symptom retrieval is a simple centroid, so label lookup may well
+cite the right document more often than symptom retrieval does. If it does, that
+is reported. The claim for symptom retrieval was never that it is a better
+document finder; it is that it is an **independent** opinion, and independence is
+what produces the confidence signal and the answer to RQ1, neither of which a
+lookup keyed by the classifier can give.
+
 ### The qualitative sample, drafted outside the pipeline
 
 The reasoning piece is rules, so nothing in the measured path writes prose. To
