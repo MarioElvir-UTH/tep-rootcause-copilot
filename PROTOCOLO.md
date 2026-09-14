@@ -78,6 +78,76 @@ https://github.com/MarioElvir-UTH/tep-rootcause-copilot; per-model training time
 on the development pool is about 3 s (logistic regression), 6 s (random forest),
 and 20 s (gradient boosting), and negligible for the trivial baseline.
 
+## Week 3 pre-registration: the neural network row (written BEFORE running anything)
+
+> Declared 2026-09-13, before any network was trained. Rule being honoured: what
+> is decided after seeing the number is not protocol, it is tuning on the result.
+> Architecture, parameter count, exact input, maximum epochs and the stopping
+> criterion are fixed here and are not to be changed once a score is known.
+
+### Why a recurrent network (LSTM/GRU) is discarded
+
+Discarded on purpose, and the reason is the window length, not preference. A
+recurrent model is the right choice "when what happened far away inside the
+window matters", and its honest size assumes a window of 30 to 120 steps. **Our
+causal window is 20 steps**, which is one hour of plant time: TEP samples every
+3 minutes, so fault onset at sample 21 for training runs is 1 h and at sample 161
+for test runs is 8 h. In 20 steps there is no "far away", so a recurrent would
+add parameters without adding reach, and at this window length it is precisely
+the kind of row a reviewer discards. Worth revisiting only if the window is ever
+lengthened past 30 steps.
+
+### V1a. MLP (control at equal input)
+
+Purpose: the minimum network that can be set against gradient boosting without
+cheating, because it receives exactly what the classics receive. Together with
+V1b it separates the effect of the **architecture** from the effect of the
+**representation**: V1a vs the classics isolates the first, V1b vs V1a the second.
+
+- Input: the same 104 features (mean and standard deviation of the 52 process
+  variables over the causal window), standardized inside each fold on the
+  training portion only.
+- Layers: 104 -> 64 -> 32 -> 21, ReLU, dropout 0.2.
+- Parameters: **9,493** (104*64+64 = 6,720; 64*32+32 = 2,080; 32*21+21 = 693).
+  Kept under 10,000: two hidden layers of 64 would give 12,245.
+
+### V1b. 1D-CNN (the main network)
+
+Purpose: local patterns inside the window, a peak, a slope, a shape. This is
+where the residual errors live: the 11 hard classes differ in the trajectory
+shape, which the per-run mean and standard deviation discard by construction.
+
+- Input: the raw causal window, **20 steps x 52 sensors**, standardized per
+  channel inside each fold on the training portion only.
+- Layers: Conv1d(52 -> 32, kernel 5, padding 2) + BatchNorm + ReLU ->
+  Conv1d(32 -> 64, kernel 3, padding 1) + BatchNorm + ReLU -> global average
+  pooling over time -> dropout 0.2 -> Linear(64 -> 21).
+- Parameters: **16,117** (8,352 + 64 + 6,208 + 128 + 1,365).
+
+### Training rules common to both networks
+
+- Maximum epochs: **60**.
+- Stopping criterion: **early stopping with patience 10**, monitored on an
+  **inner 20% validation split carved out of the training portion of each fold**.
+  The outer validation fold is used **only to score**, never to pick the epoch.
+  This keeps the search effort comparable to the classics, which had no epoch knob.
+- Optimizer: Adam, with a pre-declared grid of three learning rates
+  {1e-2, 3e-3, 1e-3}, the same three-configuration effort every classic received.
+- Selection: macro-F1 (the primary metric) on seed 0, separate from the
+  estimation seeds.
+- Estimation: the same 15 folds (StratifiedGroupKFold by run, k = 5, seeds 5, 17,
+  42), reported as mean +- std. Test stays sealed.
+- Cost reported for each network: parameter count, training seconds, and
+  amortized inference milliseconds per episode.
+
+### The bar to beat
+
+Logistic regression, macro-F1 **0.652 +- 0.005**. Because the standard deviation
+is about 0.005, a gap smaller than that is not a difference: a defensible win
+needs roughly **0.662** or more. Per label budget the network has to beat the
+leader of that range, the random forest between 1% and 5% of the labels and
+logistic regression from 12% upward.
+
 ## Consistency check (paragraph vs. code vs. table)
 
 - Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
