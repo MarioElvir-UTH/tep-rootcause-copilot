@@ -11,8 +11,10 @@ Protocol:
   - Small grid, declared beforehand, same effort (3 points) for all models.
     Hyperparameter SELECTION uses a separate seed (0); PERFORMANCE ESTIMATE uses
     3 seeds (5,17,42) -> mean +/- std. Test not touched.
-Main metric: Recall@1. Secondary: Recall@3, MRR, F1-macro. Plus per-class F1 /
-confusion matrix of the best model (out-of-fold, seed 42).
+Primary metric: macro-F1 (the frozen protocol metric; hyperparameter selection and
+the best-model choice both use it, so what is tuned is what is reported).
+Secondary: Recall@1, Recall@3, MRR. Plus per-class F1 / confusion matrix of the
+best model (out-of-fold, seed 42).
 """
 import os, json, platform
 N_JOBS = -1  # all cores; no thermal cap (laptop holds ~60-65 C under full load)
@@ -111,11 +113,20 @@ def trivial_fold_metrics(seed):
 
 # ---------- hyperparameter selection (seed 0) ----------
 best_cfg = {}
-print("\nhyperparameter selection (seed %d, best mean Recall@1):" % SEL_SEED)
+print("\nhyperparameter selection (seed %d, best mean macro-F1):" % SEL_SEED)
 for name in ["logistic", "rf", "hgb"]:
-    scored = [(np.mean([d["Recall@1"] for d in cv_fold_metrics(name, cfg, SEL_SEED)]), cfg) for cfg in GRIDS[name]]
-    best = max(scored, key=lambda t: t[0]); best_cfg[name] = best[1]
-    print(f"  {name}: {best[1]}  (Recall@1={best[0]:.4f})   grid={[c for _,c in scored]}")
+    scored = []
+    for cfg in GRIDS[name]:
+        folds = cv_fold_metrics(name, cfg, SEL_SEED)
+        scored.append((float(np.mean([d["F1macro"] for d in folds])),
+                       float(np.mean([d["Recall@1"] for d in folds])), cfg))
+    best = max(scored, key=lambda t: t[0]); best_cfg[name] = best[2]
+    alt = max(scored, key=lambda t: t[1])          # what the old Recall@1 rule would pick
+    print(f"  {name}: {best[2]}  (macro-F1={best[0]:.4f})")
+    for f1m, r1, cfg in scored:
+        print(f"      {str(cfg):<30} macro-F1={f1m:.4f}   Recall@1={r1:.4f}")
+    print("      criterion check: Recall@1 would pick %s -> %s"
+          % (alt[2], "SAME" if alt[2] == best[2] else "DIFFERENT"))
 
 # ---------- performance estimate (3 seeds -> mean +/- std) ----------
 METRICS = ["Recall@1", "Recall@3", "MRR", "F1macro"]
@@ -140,7 +151,7 @@ pd.DataFrame(tab).to_csv(os.path.join(RES, "classics_cv_comparison.csv"), index=
 
 # ---------- best model: out-of-fold per-class F1 + confusion matrix (seed 42) ----------
 best_model = max(["logistic", "rf", "hgb"],
-                 key=lambda n: np.mean([d["Recall@1"] for d in cv_fold_metrics(n, best_cfg[n], 42)]))
+                 key=lambda n: np.mean([d["F1macro"] for d in cv_fold_metrics(n, best_cfg[n], 42)]))
 sgkf = StratifiedGroupKFold(n_splits=K, shuffle=True, random_state=42)
 oof = np.full(len(y), -1)
 for tri, vai in sgkf.split(X, y, groups):
