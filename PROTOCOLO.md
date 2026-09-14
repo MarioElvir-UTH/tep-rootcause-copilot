@@ -13,45 +13,52 @@
 ## Table II (LaTeX, IEEEtran): classics filled, proposed method pending
 
 ```latex
-\begin{table*}[!t]
+\begin{table}[!t]
 \centering
-\caption{Root-cause identification on the Tennessee Eastman Process:
-macro-averaged $F_1$ on validation, mean $\pm$ standard deviation over
-five folds $\times$ three seeds, grouped by simulation run, under an
-identical hyperparameter search for every model. Cost is measured on the same
-run and the same machine (Intel Core i5-13420H, 12 threads, CPU only): size is
-the number of stored coefficients for the linear model and of decision nodes for
-the tree ensembles, training is the median fit on the development pool, and
-inference is the amortized per-episode latency.}
+\caption{Root-cause identification on the TEP: macro-averaged $F_1$ on
+validation, mean $\pm$ standard deviation over five folds $\times$ three seeds,
+grouped by simulation run, under an identical hyperparameter search for every
+model. Rows v1a and v1b are the networks. Cost is measured on the same run and
+machine (Intel Core i5-13420H, 12 threads, CPU only) and reads as size /
+training seconds / amortized inference milliseconds per episode, where size
+counts stored coefficients for the linear model and the networks and decision
+nodes for the tree ensembles.}
 \label{tab:results}
-\begin{tabular}{@{}lccrrr@{}}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccr@{}}
 \toprule
-Model & Macro $F_1$ & Recall@3 & Size & Train (s) & Inference (ms) \\
+Model & Macro $F_1$ & Recall@3 & \multicolumn{1}{c}{\shortstack{Cost \\ {\scriptsize (size / s / ms)}}} \\
 \midrule
-Trivial (majority class) & $0.004 \pm 0.000$          & $0.143 \pm 0.000$          & 21     & $<0.01$ & $<0.001$ \\
-Logistic regression      & $0.652 \pm 0.005$          & $0.733 \pm 0.003$          & 2,205  & 3  & 0.003 \\
-Random forest            & $0.638 \pm 0.005$          & $0.703 \pm 0.006$          & 98,740 & 6  & 0.081 \\
-Gradient boosting        & $0.640 \pm 0.005$          & $0.654 \pm 0.007$          & 67,499 & 20 & 0.073 \\
+Trivial         & $0.004 \pm 0.000$ & $0.143 \pm 0.000$ & 21 / $<$0.01 / $<$0.001 \\
+Logistic reg.   & $0.652 \pm 0.005$ & $0.733 \pm 0.003$ & 2,205 / 3 / 0.003 \\
+Random forest   & $0.638 \pm 0.005$ & $0.703 \pm 0.006$ & 98,740 / 6 / 0.081 \\
+Gradient boost. & $0.640 \pm 0.005$ & $0.654 \pm 0.007$ & 67,499 / 20 / 0.073 \\
 \midrule
-Neural net v1a (MLP)     & $0.652 \pm 0.013$          & $0.754 \pm 0.017$          & 9,493  & 3  & $<0.001$ \\
-Neural net v1b (1D-CNN)  & $\mathbf{0.696 \pm 0.006}$ & $\mathbf{0.786 \pm 0.007}$ & 16,117 & 17 & 0.004 \\
+v1a MLP         & $0.652 \pm 0.013$ & $0.754 \pm 0.017$ & 9,493 / 3 / $<$0.001 \\
+v1b 1D-CNN      & $\mathbf{0.696 \pm 0.006}$ & $\mathbf{0.786 \pm 0.007}$ & 16,117 / 17 / 0.004 \\
 \midrule
-Proposed method          & \multicolumn{5}{c}{\emph{por llenar} (Week 4)} \\
+Proposed method & \multicolumn{3}{c}{\emph{por llenar} (Week 4)} \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 ```
 
-Rows: trivial floor + three classics (one linear, two tree ensembles) + proposed
-method. The floor and the classics are filled from `classics_cv_comparison.csv`
-(run under this exact protocol); the empty proposed-method row is the Weeks 3-4
-commitment. Best macro-$F_1$ and best Recall@3 in bold (logistic regression).
-Three cost columns, all measured on the same run and the same machine: size
-(coefficients for the linear model, decision nodes for the ensembles), training
-seconds, and amortized per-episode inference latency, from `10_inference_time.py`.
-Promoted to `table*` (full width) because six columns do not fit in one IEEE
-column; if the float placement is a problem, the fallback is to keep four columns
-and move size and training time to the text.
+Rows: trivial floor + three classics (one linear, two tree ensembles) + the two
+networks + proposed method. The floor and the classics come from
+`classics_cv_comparison.csv`, the networks from `dl_comparison.csv`, and the cost
+figures from `10_inference_time.py` and `11_train_dl.py`, all run under this exact
+protocol. The empty proposed-method row is the Week 4 commitment. Best macro-$F_1$
+and best Recall@3 in bold (v1b 1D-CNN).
+
+One cost column, following the Week 3 table template: it reads size / training
+seconds / amortized per-episode inference latency, all measured on the same run
+and the same machine. Collapsing the three cost values into a single column is
+what lets the table fit one IEEE column again, at `\footnotesize` with
+`\tabcolsep` 3pt; it was compiled and confirmed to fit. The `Cost` header is
+centred with `\multicolumn` because the column itself is right-aligned for the
+numbers. The exact column layout is still open and may be revisited when the
+formatting pass happens at the end.
 
 ## Experimental configuration (seven sentences)
 
