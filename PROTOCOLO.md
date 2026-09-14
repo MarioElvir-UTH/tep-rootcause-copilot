@@ -431,6 +431,24 @@ ablation and the figure possible.
   is useful to a person, which no automatic score can settle. It is declared as
   not reproducible by the command, and reported apart.
 
+### The qualitative sample, drafted outside the pipeline
+
+The reasoning piece is rules, so nothing in the measured path writes prose. To
+still show what the copilot would say to an operator, a small qualitative sample
+is drafted **outside** the reproducible path:
+
+- **One episode per action** (generate, observe, defer, alert), picked by a
+  declared rule: the first episode in `decisiones.jsonl` order that ends in that
+  action, on seed 42. If an action never fires, that is recorded instead.
+- Its recommendation text is drafted with an AI assistant **from the line already
+  written in the decision log**, and committed as a static file under
+  `results/samples/`.
+- **Stated in the article**: these texts are illustrative, were written outside
+  the pipeline, are **not** reproduced by the command, and **produce no reported
+  number**. Every measured quantity comes from the rules path.
+- The fixed prompt stays in `prompts/razona.txt` so a language model can take over
+  the reasoning piece later without changing the architecture.
+
 ### Table II gets two rows
 
 `Sin agente (ablacion)` and `Metodo propuesto (copiloto v1)`, both with mean +-
