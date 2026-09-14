@@ -22,7 +22,9 @@ model. Rows v1a and v1b are the networks. Cost is measured on the same run and
 machine (Intel Core i5-13420H, 12 threads, CPU only) and reads as size /
 training seconds / amortized inference milliseconds per episode, where size
 counts stored coefficients for the linear model and the networks and decision
-nodes for the tree ensembles.}
+nodes for the tree ensembles. Size is exact and reproducible; the two timings are
+wall-clock on that machine and move with processor and load, so they indicate
+relative cost rather than fixed values.}
 \label{tab:results}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
@@ -299,6 +301,145 @@ deviation, every statistic fitted inside the fold, test sealed. Cost reported on
 the same run and the same machine: index size, retrieval milliseconds per episode,
 and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
 `run_all.py`, so one command still reproduces everything.
+
+## Figure 1 in text: the four pieces, the guard, the person, the measured point
+
+> This is the figure of the article written as text, so the drawing and the code
+> cannot drift apart. Declared 2026-09-14, before the agent exists.
+
+**1. Perceives.** The alarm flow and the process variables of the run: the causal
+window of 20 steps over 52 variables, plus the alarm events derived from it.
+
+**2. Scores.** The fault classifier, which is the saved v1b 1D-CNN of that fold
+loaded from disk and never retrained, plus the alarm rate of the window.
+
+**3. Reasons.** Proposes the root cause from the documents retrieved by symptom
+similarity and from the first alarms of the episode. **Implemented with rules,
+not with a language model, and declared as such.** The fixed prompt and the model
+and version constants live in `prompts/razona.txt` so a language model can be
+connected later without changing the architecture.
+
+**4. Decides.** One action from the declared list, each with its guard.
+
+**The loop.** The action `observe` moves the window forward, so what is perceived
+next is not what was perceived before. That is what makes this a loop and not a
+pipeline: the same episode can be seen twice, differently, because the agent
+chose to look again.
+
+**The guard, on every action.** The copilot only suggests. It never writes a
+setpoint, never trips equipment, never acts on the process. There is no code path
+from the agent to the plant.
+
+**Where the person is.** The operator reviews before any decision reaches the
+plant, the machine or production. The agent proposes, prioritizes and explains;
+the human approves, edits or rejects. The article states this.
+
+**Where the number is measured.** The Table II figure is computed from
+`results/logs/decisiones.jsonl` and the labels, at the output of `decide`, using
+the final ranking. **Never from generated text.** What the reasoning piece
+produces is judged apart, with the rubric.
+
+**The ablation row, with its name.** `Sin agente (ablacion)`: the same loop with
+the reasoning piece removed, so `decide` sees only the classifier and no
+retrieved evidence. Same partition, same metric, same seeds.
+
+## Extension: alarms, actions and the loop (written BEFORE running anything)
+
+> Extends the copilot declaration above on 2026-09-14, still before any copilot
+> code exists. Reason for the extension: an agent that always runs the same steps
+> in the same order is not an agent, and the alarm layer the title promises was
+> never implemented.
+
+### The alarm layer
+
+The paper has always said an alarm layer is derived from the process variables by
+configured limits. It is declared here and implemented now.
+
+- **Limits**, fitted **inside the fold** on the training portion: for each of the
+  52 variables, the mean and standard deviation over normal-operation runs only.
+- **An alarm fires** for variable `v` at sample `t` when the value leaves the band
+  `mean_v +- k * std_v`, with **k = 3** pre-declared, the usual three-sigma
+  convention. No limit is taken from any labelled fault run.
+- **Alarm flow**: the ordered list of (variable, first crossing sample) inside the
+  window.
+- **Alarm rate**: alarming variables divided by 52, used by `puntua`.
+- **First alarms**: the 3 earliest alarming variables, used by `razona`.
+- **Priority**: alarms ordered by earliest crossing, ties broken by how far the
+  value exceeds the band.
+- **Grouping**: alarms whose variables correlate above **0.8** on normal
+  operation, correlation computed **inside the fold**, are reported as one group.
+
+### What is claimed about alarms, and what is not
+
+- **Root alarm, evaluated on 15 of the 20 faults.** A root alarm counts as correct
+  when the top-priority alarm sits on a variable that the public description
+  associates with the true fault. **IDV 16 to 20 are documented as unknown in the
+  source, so no mapping can be written for them honestly and they are excluded
+  from this metric, which is declared in the article.** Class 0 has no root alarm.
+- **Alarm reduction, on all 21 classes.** How many alarms the operator would see
+  before prioritizing and grouping, and how many after. This needs no per-fault
+  ground truth, so it covers the whole set.
+- Not claimed: that the root alarm is known for IDV 16 to 20.
+
+### The action space, each with its guard
+
+| Condition | Action | Guard |
+|---|---|---|
+| Classifier and retrieval agree on the top hypothesis and the top probability is at least `tau` | **generate** the recommendation with its cited document | suggests only |
+| They disagree, or the top probability is below `tau`, and the window has not been moved yet | **observe**: advance the window by 10 samples and run the loop once more | suggests only |
+| They still disagree after one move | **defer**: hand the operator the 3 hypotheses flagged as uncertain | suggests only |
+| The top hypothesis is normal but the alarm rate is above the flood threshold | **alert**: report that alarms are firing without a diagnosis | suggests only |
+
+- `tau` is pre-declared at **0.50**.
+- `observe` advances to the window starting 10 samples later and scores **the same
+  20 steps** the model was trained on, so nothing is fed a shape it never saw.
+  It stays causal: it only uses data available at the later decision moment.
+- **At most one move**, so the loop terminates and latency is bounded.
+- The cost of `observe` is 10 samples of plant time, which is 30 minutes at the
+  TEP sampling rate. That is the accuracy against latency trade-off the agent
+  makes, and it is reported.
+
+### Retrieval, now informed by the alarms
+
+The query is the deviation profile **restricted to the variables that alarmed**,
+so the alarms actually drive the retrieval. If no variable alarms, the full
+profile is used and the line records it. Everything else stays as declared above:
+per-fold signatures, cosine similarity, softmax at temperature 1.
+
+### The decision log
+
+`results/logs/decisiones.jsonl`, one JSON line per decision, with the four pieces
+in every line so the group can check them before looking at any number:
+
+- identity: fault number, simulation run, fold, seed, arm (proposed or ablation)
+- perceives: alarm count, alarm rate, the first alarms
+- scores: the 3 top classes with their probabilities
+- reasons: the 3 retrieved documents with their scores, and the one cited
+- decides: the action, the final 3 hypotheses, the guard
+- cost: seconds, iterations, tokens (zero, the reasoning piece is rules)
+- label: the true class, written last and never read by the agent
+
+**The metric is computed from this file and the labels**, which is what makes the
+ablation and the figure possible.
+
+### The rubric, twice
+
+- **Automatic**, inside the pipeline, 0 to 3 per episode as already declared. It
+  is what a reviewer reproduces with one command.
+- **Human**, on a sample of **30 episodes** drawn with a declared seed, scored by
+  **2 people** with their agreement reported. It measures whether the explanation
+  is useful to a person, which no automatic score can settle. It is declared as
+  not reproducible by the command, and reported apart.
+
+### Table II gets two rows
+
+`Sin agente (ablacion)` and `Metodo propuesto (copiloto v1)`, both with mean +-
+standard deviation over the same 15 folds and their cost, followed by the
+sentence: the proposed method beats the system without the agent by so much, or it
+does not and the most likely cause is such. Not beating the ablation and
+explaining it is a valid outcome; not having the ablation is not.
+
+Script: `12_agente_v1.py`, added to `run_all.py`.
 
 ## Consistency check (paragraph vs. code vs. table)
 
