@@ -63,8 +63,8 @@ pre-declared grid of three configurations per model (logistic regression inverse
 regularization strength C in {0.1, 1, 10}; random forest maximum depth in {none,
 10, 20} with 300 trees; gradient boosting learning rate in {0.05, 0.1, 0.2}),
 giving every model
-the same search effort, with model selection on a seed (0) separate from the
-estimation seeds. (6) Performance is estimated by repeated stratified group
+the same search effort, with model selection on the primary metric and on a
+seed (0) separate from the estimation seeds. (6) Performance is estimated by repeated stratified group
 k-fold cross-validation by run (k = 5; three seeds: 5, 17, 42), reporting the
 mean and standard deviation over the 15 resulting folds; the primary metric is
 the macro-averaged F1 score, with Recall@1, Recall@3, and mean reciprocal rank
