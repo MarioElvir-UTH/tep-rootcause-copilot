@@ -13,33 +13,41 @@
 ## Table II (LaTeX, IEEEtran): classics filled, proposed method pending
 
 ```latex
-\begin{table}[!t]
+\begin{table*}[!t]
 \centering
 \caption{Root-cause identification on the Tennessee Eastman Process:
 macro-averaged $F_1$ on validation, mean $\pm$ standard deviation over
 five folds $\times$ three seeds, grouped by simulation run, under an
-identical hyperparameter search for every model.}
+identical hyperparameter search for every model. Cost is measured on the same
+run and the same machine (Intel Core i5-13420H, 12 threads, CPU only): size is
+the number of stored coefficients for the linear model and of decision nodes for
+the tree ensembles, training is the median fit on the development pool, and
+inference is the amortized per-episode latency.}
 \label{tab:results}
-\begin{tabular}{@{}lccc@{}}
+\begin{tabular}{@{}lccrrr@{}}
 \toprule
-Model & Macro $F_1$ & Recall@3 & Inference (ms) \\
+Model & Macro $F_1$ & Recall@3 & Size & Train (s) & Inference (ms) \\
 \midrule
-Trivial (majority class)     & $0.004 \pm 0.000$          & $0.143 \pm 0.000$          & $<0.001$ \\
-Logistic regression          & $\mathbf{0.652 \pm 0.005}$ & $\mathbf{0.733 \pm 0.003}$ & $0.003$ \\
-Random forest                & $0.638 \pm 0.005$          & $0.703 \pm 0.006$          & $0.081$ \\
-Gradient boosting            & $0.640 \pm 0.005$          & $0.654 \pm 0.007$          & $0.073$ \\
-Proposed method (Weeks 3--4) & \emph{por llenar}          & \emph{por llenar}          & \emph{por llenar} \\
+Trivial (majority class) & $0.004 \pm 0.000$          & $0.143 \pm 0.000$          & 21     & $<0.01$ & $<0.001$ \\
+Logistic regression      & $\mathbf{0.652 \pm 0.005}$ & $\mathbf{0.733 \pm 0.003}$ & 2,205  & 3  & 0.003 \\
+Random forest            & $0.638 \pm 0.005$          & $0.703 \pm 0.006$          & 98,740 & 6  & 0.081 \\
+Gradient boosting        & $0.640 \pm 0.005$          & $0.654 \pm 0.007$          & 67,499 & 20 & 0.073 \\
+Proposed method          & \multicolumn{5}{c}{\emph{por llenar} (Weeks 3-4)} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 ```
 
 Rows: trivial floor + three classics (one linear, two tree ensembles) + proposed
 method. The floor and the classics are filled from `classics_cv_comparison.csv`
-(run under this exact protocol); the empty proposed-method row is the Weeks 3--4
-commitment. Best macro-$F_1$ and best Recall@3 in bold (logistic regression). The
-cost column is the amortized per-episode inference latency (ms, reproducible),
-from `10_inference_time.py`.
+(run under this exact protocol); the empty proposed-method row is the Weeks 3-4
+commitment. Best macro-$F_1$ and best Recall@3 in bold (logistic regression).
+Three cost columns, all measured on the same run and the same machine: size
+(coefficients for the linear model, decision nodes for the ensembles), training
+seconds, and amortized per-episode inference latency, from `10_inference_time.py`.
+Promoted to `table*` (full width) because six columns do not fit in one IEEE
+column; if the float placement is a problem, the fallback is to keep four columns
+and move size and training time to the text.
 
 ## Experimental configuration (seven sentences)
 
@@ -131,14 +139,27 @@ shape, which the per-run mean and standard deviation discard by construction.
   **inner 20% validation split carved out of the training portion of each fold**.
   The outer validation fold is used **only to score**, never to pick the epoch.
   This keeps the search effort comparable to the classics, which had no epoch knob.
-- Optimizer: Adam, with a pre-declared grid of three learning rates
-  {1e-2, 3e-3, 1e-3}, the same three-configuration effort every classic received.
+- Optimizer: Adam, with a pre-declared grid of **3 configurations**, the same
+  count every classic received (each classic tried 3). The learning rate is the
+  hyperparameter that varies: {1e-2, 3e-3, 1e-3}. Everything else is fixed above.
 - Selection: macro-F1 (the primary metric) on seed 0, separate from the
   estimation seeds.
 - Estimation: the same 15 folds (StratifiedGroupKFold by run, k = 5, seeds 5, 17,
   42), reported as mean +- std. Test stays sealed.
-- Cost reported for each network: parameter count, training seconds, and
-  amortized inference milliseconds per episode.
+- **The seed also fixes the weight initialization**, not only the fold split.
+  Each of the seeds 5, 17 and 42 seeds the network's initial weights and the
+  training shuffling, so the reported std carries the initialization variance the
+  same way the classics carried their estimator randomness.
+- **No data augmentation.** None is declared, so none may be added after a score
+  is seen. If any were ever added, it would be applied inside the training
+  portion of the fold only, never before splitting.
+- **One window per run**, exactly as in Week 2. This is what makes the group
+  split exact: if sliding windows were ever used to enlarge the training set,
+  several windows of the same run could land in different folds, which is the
+  augmentation leak translated from images to signal.
+- Cost reported for each network, measured on the same run and **on the machine
+  named in the paper** (Intel Core i5-13420H, 12 threads, CPU only): parameter
+  count, training seconds, and amortized inference milliseconds per episode.
 
 ### The bar to beat
 
