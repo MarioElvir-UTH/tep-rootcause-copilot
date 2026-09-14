@@ -8,6 +8,7 @@ dataverse_files/
 # Regenerable feature caches (rebuilt deterministically by scripts 04 and 05)
 results/*.parquet
 results/*.npy
+results/models/
 
 # Internal team documents: not part of the reproducible artifact
 *.docx

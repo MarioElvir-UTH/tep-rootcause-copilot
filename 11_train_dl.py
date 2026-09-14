@@ -35,6 +35,12 @@ DATA = os.path.join(BASE, "dataverse_files")
 RES = os.path.join(BASE, "results")
 CURVES = os.path.join(RES, "curves")
 os.makedirs(CURVES, exist_ok=True)
+# One trained model per fold and seed, so the agent scores WITHOUT retraining and
+# without leakage: each fold is scored by the model fitted on its own training
+# portion. Saving a single model fitted on the whole pool would leak every
+# validation run into its own training set.
+MODELS = os.path.join(RES, "models")
+os.makedirs(MODELS, exist_ok=True)
 
 # ---------------- pre-registered constants (PROTOCOLO.md, do not change) ----------------
 VARS = [f"xmeas_{i}" for i in range(1, 42)] + [f"xmv_{i}" for i in range(1, 12)]
@@ -119,7 +125,7 @@ def standardize(kind, tr, ap):
         m = tr.mean(axis=(0, 2), keepdims=True)
         s = tr.std(axis=(0, 2), keepdims=True)
     s = np.where(s < 1e-8, 1.0, s)
-    return [(a - m) / s for a in ap]
+    return [(a - m) / s for a in ap], m, s
 
 
 def rank_metrics(yt, proba):
@@ -132,7 +138,7 @@ def rank_metrics(yt, proba):
 
 
 # ---------------- one fold ----------------
-def run_fold(kind, lr, seed, tri, vai, tag=None, verbose=False):
+def run_fold(kind, lr, seed, tri, vai, tag=None, verbose=False, save_path=None):
     X = Xtab if kind == "mlp" else Xwin
     torch.manual_seed(seed)                               # [R4] the seed fixes weight init
     np.random.seed(seed)
@@ -140,7 +146,8 @@ def run_fold(kind, lr, seed, tri, vai, tag=None, verbose=False):
     # One window per run means a row-level split cannot break the group rule [R1].
     itr, iva = train_test_split(np.arange(len(tri)), test_size=INNER_VAL,
                                 stratify=y[tri], random_state=seed)
-    Xtr, Xiv, Xva = standardize(kind, X[tri][itr], [X[tri][itr], X[tri][iva], X[vai]])
+    (Xtr, Xiv, Xva), mu, sd = standardize(kind, X[tri][itr],
+                                          [X[tri][itr], X[tri][iva], X[vai]])
     t_tr = torch.from_numpy(np.ascontiguousarray(Xtr))
     l_tr = torch.from_numpy(y[tri][itr]).long()
     t_iv = torch.from_numpy(np.ascontiguousarray(Xiv))
@@ -185,6 +192,12 @@ def run_fold(kind, lr, seed, tri, vai, tag=None, verbose=False):
     train_s = time.perf_counter() - t0
     net.load_state_dict(best_state)
     net.eval()
+    if save_path:
+        # the standardization statistics travel with the weights, so the agent can
+        # reproduce this fold's preprocessing exactly without refitting anything
+        torch.save({"state_dict": net.state_dict(), "mean": mu, "std": sd,
+                    "kind": kind, "lr": lr, "seed": seed, "epochs": len(hist_tr)},
+                   save_path)
     with torch.no_grad():
         proba = torch.softmax(net(t_va), dim=1).numpy()    # outer fold: SCORE ONLY
     if tag:
@@ -207,9 +220,11 @@ def cv_metrics(kind, lr, seed, verbose=False, tag_prefix=None, oof=None):
     out, secs, eps = [], [], []
     for f, (tri, vai) in enumerate(sgkf.split(Xtab, y, groups)):
         tag = f"{tag_prefix}_seed{seed}_fold{f}" if tag_prefix else None
+        sp = os.path.join(MODELS, f"{kind}_seed{seed}_fold{f}.pt") if tag_prefix else None
         if verbose:
             print(f"    [{kind}] seed {seed} fold {f}", flush=True)
-        m, proba, s, e = run_fold(kind, lr, seed, tri, vai, tag=tag, verbose=verbose)
+        m, proba, s, e = run_fold(kind, lr, seed, tri, vai, tag=tag, verbose=verbose,
+                                  save_path=sp)
         out.append(m)
         secs.append(s)
         eps.append(e)
@@ -259,7 +274,7 @@ for r in rows:
     X = Xtab if kind == "mlp" else Xwin
     itr, iva = train_test_split(np.arange(len(y)), test_size=INNER_VAL, stratify=y,
                                 random_state=42)
-    Xtr, Xiv = standardize(kind, X[itr], [X[itr], X[iva]])
+    (Xtr, Xiv), _, _ = standardize(kind, X[itr], [X[itr], X[iva]])
     t_tr = torch.from_numpy(np.ascontiguousarray(Xtr))
     l_tr = torch.from_numpy(y[itr]).long()
     t_iv = torch.from_numpy(np.ascontiguousarray(Xiv))
@@ -290,7 +305,7 @@ for r in rows:
             if wait >= PATIENCE:
                 break
     r["train_s"] = round(time.perf_counter() - t0, 3)
-    Xf = standardize(kind, X, [X])[0]
+    Xf = standardize(kind, X, [X])[0][0]
     t_all = torch.from_numpy(np.ascontiguousarray(Xf))
     with torch.no_grad():
         for _ in range(2):
