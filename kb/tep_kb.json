@@ -1,0 +1,203 @@
+{
+  "_meta": {
+    "titulo": "Base de conocimiento del Tennessee Eastman Process",
+    "idioma": "es",
+    "n_documentos": 21,
+    "fuente": "Downs, J. J. y Vogel, E. F. (1993). A plant-wide industrial process control problem. Computers & Chemical Engineering 17(3), 245-255. DOI 10.1016/0098-1354(93)80018-I",
+    "proposito": "Corpus reproducible que el copiloto recupera y cita. Cada documento describe una clase de causa raiz del TEP.",
+    "regla_de_mapeo": "El campo variables_documentadas lista SOLO las variables medidas o manipuladas que corresponden DIRECTAMENTE a la corriente o al equipo que la fuente nombra en la perturbacion. No se incluyen efectos aguas abajo, porque eso seria inferencia nuestra y no documentacion.",
+    "limitacion_declarada": "Las perturbaciones IDV(16) a IDV(20) estan documentadas en la fuente original como desconocidas. No se les escribe causa ni variables afectadas, y quedan excluidas de la metrica de alarma raiz. Inventarlas seria presentar contenido fabricado como evidencia.",
+    "sin_procedimientos": "El TEP es una simulacion: no existe historial de mantenimiento ni procedimientos correctivos documentados. Este corpus contiene descripciones y sintomas, nunca procedimientos. Los procedimientos quedan atados al corpus de planta real, que es aporte adicional y no dependencia."
+  },
+  "documentos": [
+    {
+      "clase": 0,
+      "nombre": "Operacion normal",
+      "tipo": "sin falla",
+      "causa_documentada": true,
+      "descripcion": "El proceso opera en su modo base sin perturbacion inyectada. Las variables se mantienen dentro de sus bandas normales y las desviaciones observadas corresponden al ruido propio de la simulacion.",
+      "sintomas": "Ninguna variable sale de forma sostenida de la banda de operacion normal.",
+      "variables_documentadas": []
+    },
+    {
+      "clase": 1,
+      "nombre": "IDV(1)",
+      "tipo": "escalon",
+      "causa_documentada": true,
+      "descripcion": "Escalon en la relacion de alimentacion A/C de la corriente 4, manteniendo constante la composicion de B.",
+      "sintomas": "Cambio sostenido en la alimentacion combinada de A y C. Al alterarse la proporcion entre reactivos, el lazo de control reacciona sobre el flujo de esa corriente.",
+      "variables_documentadas": ["xmeas_4", "xmv_4"]
+    },
+    {
+      "clase": 2,
+      "nombre": "IDV(2)",
+      "tipo": "escalon",
+      "causa_documentada": true,
+      "descripcion": "Escalon en la composicion de B de la corriente 4, manteniendo constante la relacion A/C.",
+      "sintomas": "Cambio sostenido en la composicion de la corriente de alimentacion combinada. El inerte B altera el balance del reciclo.",
+      "variables_documentadas": ["xmeas_4", "xmv_4"]
+    },
+    {
+      "clase": 3,
+      "nombre": "IDV(3)",
+      "tipo": "escalon",
+      "causa_documentada": true,
+      "descripcion": "Escalon en la temperatura de alimentacion de D, corriente 2.",
+      "sintomas": "Cambio sostenido en las condiciones de la alimentacion de D. Es una perturbacion de baja magnitud, historicamente dificil de distinguir de la operacion normal.",
+      "variables_documentadas": ["xmeas_2", "xmv_1"]
+    },
+    {
+      "clase": 4,
+      "nombre": "IDV(4)",
+      "tipo": "escalon",
+      "causa_documentada": true,
+      "descripcion": "Escalon en la temperatura de entrada del agua de enfriamiento del reactor.",
+      "sintomas": "Cambio brusco en el circuito de enfriamiento del reactor. El control compensa actuando sobre el flujo de agua de enfriamiento.",
+      "variables_documentadas": ["xmeas_21", "xmv_10"]
+    },
+    {
+      "clase": 5,
+      "nombre": "IDV(5)",
+      "tipo": "escalon",
+      "causa_documentada": true,
+      "descripcion": "Escalon en la temperatura de entrada del agua de enfriamiento del condensador.",
+      "sintomas": "Cambio brusco en el circuito de enfriamiento del condensador, que se refleja en el separador.",
+      "variables_documentadas": ["xmeas_22", "xmv_11"]
+    },
+    {
+      "clase": 6,
+      "nombre": "IDV(6)",
+      "tipo": "escalon",
+      "causa_documentada": true,
+      "descripcion": "Perdida de alimentacion de A, corriente 1.",
+      "sintomas": "Caida marcada y sostenida de la alimentacion de A. Es una de las perturbaciones de efecto mas visible en el proceso.",
+      "variables_documentadas": ["xmeas_1", "xmv_3"]
+    },
+    {
+      "clase": 7,
+      "nombre": "IDV(7)",
+      "tipo": "escalon",
+      "causa_documentada": true,
+      "descripcion": "Perdida de presion en el cabezal de C, con disponibilidad reducida en la corriente 4.",
+      "sintomas": "Caida de presion que limita la disponibilidad de la alimentacion combinada A y C.",
+      "variables_documentadas": ["xmeas_4", "xmv_4"]
+    },
+    {
+      "clase": 8,
+      "nombre": "IDV(8)",
+      "tipo": "variacion aleatoria",
+      "causa_documentada": true,
+      "descripcion": "Variacion aleatoria en la composicion de A, B y C de la corriente 4.",
+      "sintomas": "Fluctuacion irregular y sostenida en la composicion de la alimentacion combinada, sin un escalon claro.",
+      "variables_documentadas": ["xmeas_4", "xmv_4"]
+    },
+    {
+      "clase": 9,
+      "nombre": "IDV(9)",
+      "tipo": "variacion aleatoria",
+      "causa_documentada": true,
+      "descripcion": "Variacion aleatoria en la temperatura de alimentacion de D, corriente 2.",
+      "sintomas": "Fluctuacion irregular de baja magnitud en la alimentacion de D. Historicamente una de las perturbaciones mas dificiles de detectar.",
+      "variables_documentadas": ["xmeas_2", "xmv_1"]
+    },
+    {
+      "clase": 10,
+      "nombre": "IDV(10)",
+      "tipo": "variacion aleatoria",
+      "causa_documentada": true,
+      "descripcion": "Variacion aleatoria en la temperatura de alimentacion de C, corriente 4.",
+      "sintomas": "Fluctuacion irregular en las condiciones de la alimentacion combinada A y C.",
+      "variables_documentadas": ["xmeas_4", "xmv_4"]
+    },
+    {
+      "clase": 11,
+      "nombre": "IDV(11)",
+      "tipo": "variacion aleatoria",
+      "causa_documentada": true,
+      "descripcion": "Variacion aleatoria en la temperatura de entrada del agua de enfriamiento del reactor.",
+      "sintomas": "Fluctuacion irregular en el circuito de enfriamiento del reactor, con respuesta continua del control de enfriamiento.",
+      "variables_documentadas": ["xmeas_21", "xmv_10"]
+    },
+    {
+      "clase": 12,
+      "nombre": "IDV(12)",
+      "tipo": "variacion aleatoria",
+      "causa_documentada": true,
+      "descripcion": "Variacion aleatoria en la temperatura de entrada del agua de enfriamiento del condensador.",
+      "sintomas": "Fluctuacion irregular en el circuito de enfriamiento del condensador, reflejada en el separador.",
+      "variables_documentadas": ["xmeas_22", "xmv_11"]
+    },
+    {
+      "clase": 13,
+      "nombre": "IDV(13)",
+      "tipo": "deriva lenta",
+      "causa_documentada": true,
+      "descripcion": "Deriva lenta en la cinetica de reaccion.",
+      "sintomas": "Cambio gradual y progresivo en el comportamiento del reactor. Al ser lenta, en una ventana temprana apenas se separa de la operacion normal.",
+      "variables_documentadas": ["xmeas_7", "xmeas_9"]
+    },
+    {
+      "clase": 14,
+      "nombre": "IDV(14)",
+      "tipo": "valvula pegada",
+      "causa_documentada": true,
+      "descripcion": "Valvula de agua de enfriamiento del reactor pegada.",
+      "sintomas": "La accion de control sobre el enfriamiento del reactor deja de traducirse en cambio de flujo. Se observa demanda de control sin respuesta proporcional.",
+      "variables_documentadas": ["xmv_10", "xmeas_21"]
+    },
+    {
+      "clase": 15,
+      "nombre": "IDV(15)",
+      "tipo": "valvula pegada",
+      "causa_documentada": true,
+      "descripcion": "Valvula de agua de enfriamiento del condensador pegada.",
+      "sintomas": "La accion de control sobre el enfriamiento del condensador deja de traducirse en cambio de flujo. Historicamente una de las perturbaciones mas dificiles de aislar.",
+      "variables_documentadas": ["xmv_11", "xmeas_22"]
+    },
+    {
+      "clase": 16,
+      "nombre": "IDV(16)",
+      "tipo": "desconocida",
+      "causa_documentada": false,
+      "descripcion": "La fuente original documenta esta perturbacion como desconocida. No se le atribuye causa ni variables afectadas.",
+      "sintomas": "No documentados en la fuente.",
+      "variables_documentadas": []
+    },
+    {
+      "clase": 17,
+      "nombre": "IDV(17)",
+      "tipo": "desconocida",
+      "causa_documentada": false,
+      "descripcion": "La fuente original documenta esta perturbacion como desconocida. No se le atribuye causa ni variables afectadas.",
+      "sintomas": "No documentados en la fuente.",
+      "variables_documentadas": []
+    },
+    {
+      "clase": 18,
+      "nombre": "IDV(18)",
+      "tipo": "desconocida",
+      "causa_documentada": false,
+      "descripcion": "La fuente original documenta esta perturbacion como desconocida. No se le atribuye causa ni variables afectadas.",
+      "sintomas": "No documentados en la fuente.",
+      "variables_documentadas": []
+    },
+    {
+      "clase": 19,
+      "nombre": "IDV(19)",
+      "tipo": "desconocida",
+      "causa_documentada": false,
+      "descripcion": "La fuente original documenta esta perturbacion como desconocida. No se le atribuye causa ni variables afectadas.",
+      "sintomas": "No documentados en la fuente.",
+      "variables_documentadas": []
+    },
+    {
+      "clase": 20,
+      "nombre": "IDV(20)",
+      "tipo": "desconocida",
+      "causa_documentada": false,
+      "descripcion": "La fuente original documenta esta perturbacion como desconocida. No se le atribuye causa ni variables afectadas.",
+      "sintomas": "No documentados en la fuente.",
+      "variables_documentadas": []
+    }
+  ]
+}

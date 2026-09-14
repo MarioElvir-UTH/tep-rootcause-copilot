@@ -379,6 +379,19 @@ configured limits. It is declared here and implemented now.
 - **Alarm reduction, on all 21 classes.** How many alarms the operator would see
   before prioritizing and grouping, and how many after. This needs no per-fault
   ground truth, so it covers the whole set.
+- **The mapping is permissive, and that is declared.** Several faults share the
+  same documented variables because they disturb the same stream or the same
+  cooling circuit: IDV 1, 2, 7, 8 and 10 all point at stream 4, IDV 3 and 9 at
+  the D feed, IDV 4, 11 and 14 at the reactor cooling circuit, IDV 5, 12 and 15
+  at the condenser circuit. So the metric asks whether the top alarm sits on a
+  variable documented for the true fault, **not** whether it identifies the fault
+  uniquely, which is a different question and is already answered by Table II.
+  With about 2 documented variables out of 52, hitting one by chance is near 4
+  per cent, so the metric still has room to discriminate.
+- The mapping rule itself is declared in `kb/tep_kb.json`: only the measured or
+  manipulated variables that correspond directly to the stream or equipment the
+  source names, never downstream effects, because those would be our inference
+  rather than documentation.
 - Not claimed: that the root alarm is known for IDV 16 to 20.
 
 ### The action space, each with its guard
