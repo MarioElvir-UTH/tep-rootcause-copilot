@@ -388,6 +388,21 @@ configured limits. It is declared here and implemented now.
   uniquely, which is a different question and is already answered by Table II.
   With about 2 documented variables out of 52, hitting one by chance is near 4
   per cent, so the metric still has room to discriminate.
+- **Two prioritizations, so RQ1 has an answer.** The research question asks
+  whether data-driven alarm rationalization finds the root alarm better than a
+  simple baseline. Ordering alarms by time **is** that baseline, so it cannot
+  also be the proposal. Both are computed on the same episodes and reported side
+  by side:
+  - **Chronological, the baseline**: earliest crossing first, ties broken by how
+    far the value leaves the band. It uses no knowledge at all.
+  - **Knowledge-driven, the proposal**: each alarming variable is weighted by the
+    retrieval mass of the documents that name it, so an alarm on a variable the
+    retrieved evidence associates with the fault rises to the top. Ties broken by
+    earliest crossing. It exists only in the proposed arm, because the ablation
+    has no retrieval, and that is part of what the ablation demonstrates.
+  - Reported as `RootAlarmChrono` and `RootAlarmKB`. The alarm reduction metric
+    keeps using the chronological order, because grouping is about which alarms
+    collapse together and not about which one leads.
 - The mapping rule itself is declared in `kb/tep_kb.json`: only the measured or
   manipulated variables that correspond directly to the stream or equipment the
   source names, never downstream effects, because those would be our inference
@@ -404,6 +419,18 @@ configured limits. It is declared here and implemented now.
 | The top hypothesis is normal but the alarm rate is above the flood threshold | **alert**: report that alarms are firing without a diagnosis | suggests only |
 
 - `tau` is pre-declared at **0.50**.
+- **The flood threshold is pre-declared at 10 variables in alarm** inside the
+  window. ANSI/ISA-18.2 calls a flood more than 10 alarms in a 10-minute window
+  per operator; we count distinct variables in alarm inside the 60-minute causal
+  window and keep the same count of 10, which is lenient relative to the
+  standard and is declared as such rather than tuned.
+- **The window can move, so the data read is wider than the scored window.** The
+  agent reads samples 21 to 51 of the run and scores 20 of them: 21 to 41 before
+  moving, 31 to 51 after. This stays causal, since sample 51 is simply the later
+  decision moment, and it never touches the sealed test pool.
+- **When the window moves, the standardization of the saved model is reused**, not
+  refitted. Refitting on the moved window would be fitting a statistic on the data
+  being scored.
 - `observe` advances to the window starting 10 samples later and scores **the same
   20 steps** the model was trained on, so nothing is fed a shape it never saw.
   It stays causal: it only uses data available at the later decision moment.

@@ -1,0 +1,31 @@
+{
+  "python": "3.14.2",
+  "torch": "2.14.0+cpu",
+  "alarm_k": 3.0,
+  "corr_group": 0.8,
+  "tau": 0.5,
+  "flood_n": 10,
+  "w_grid": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "selected_w": 0.25,
+  "max_moves": 1,
+  "read_samples": [
+    21,
+    51
+  ],
+  "scored_steps": 20,
+  "move": 10,
+  "razona": "rules (symptom retrieval); prompts/razona.txt is NOT executed",
+  "kb_documents": 21,
+  "root_alarm_excluded": [
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "machine": "Intel Core i5-13420H, 12 threads, CPU only"
+}

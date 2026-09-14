@@ -9,6 +9,7 @@ dataverse_files/
 results/*.parquet
 results/*.npy
 results/models/
+results/logs/decisiones.jsonl
 
 # Internal team documents: not part of the reproducible artifact
 *.docx

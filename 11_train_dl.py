@@ -215,12 +215,13 @@ def run_fold(kind, lr, seed, tri, vai, tag=None, verbose=False, save_path=None):
     return rank_metrics(y[vai], proba), proba, train_s, len(hist_tr)
 
 
-def cv_metrics(kind, lr, seed, verbose=False, tag_prefix=None, oof=None):
+def cv_metrics(kind, lr, seed, verbose=False, tag_prefix=None, oof=None, save_models=False):
     sgkf = StratifiedGroupKFold(n_splits=K, shuffle=True, random_state=seed)   # [R1]
     out, secs, eps = [], [], []
     for f, (tri, vai) in enumerate(sgkf.split(Xtab, y, groups)):
         tag = f"{tag_prefix}_seed{seed}_fold{f}" if tag_prefix else None
-        sp = os.path.join(MODELS, f"{kind}_seed{seed}_fold{f}.pt") if tag_prefix else None
+        sp = (os.path.join(MODELS, f"{kind}_seed{seed}_fold{f}.pt")
+              if (tag_prefix or save_models) else None)
         if verbose:
             print(f"    [{kind}] seed {seed} fold {f}", flush=True)
         m, proba, s, e = run_fold(kind, lr, seed, tri, vai, tag=tag, verbose=verbose,
@@ -246,6 +247,16 @@ for kind in ["mlp", "cnn"]:
     top = max(scored, key=lambda t: t[0])
     best_lr[kind] = top[1]
     print(f"  {kind}: lr={top[1]}  (macro-F1={top[0]:.4f})", flush=True)
+
+# The agent selects its own fusion weight on the SAME selection seed, and it must
+# score with models it did not train, so the seed-0 folds are trained once with the
+# selected learning rate and saved. Without this the agent would have no models on
+# seed 0 and would be forced to select on an estimation seed, which would
+# contaminate the estimate.
+print("\nsaving selection-seed models (seed %d) so the agent can select on it:" % SEL_SEED)
+for kind in ["mlp", "cnn"]:
+    cv_metrics(kind, best_lr[kind], SEL_SEED, save_models=True)
+    print(f"  {kind}: 5 folds saved", flush=True)
 
 # ---------------- [R4] estimation: 3 seeds x 5 folds = 15, mean +- std ----------------
 print("\nestimation (15 folds; loss printed per epoch so the curve can be watched live):")
