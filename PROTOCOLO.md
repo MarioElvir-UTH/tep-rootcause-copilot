@@ -142,6 +142,12 @@ shape, which the per-run mean and standard deviation discard by construction.
 - Optimizer: Adam, with a pre-declared grid of **3 configurations**, the same
   count every classic received (each classic tried 3). The learning rate is the
   hyperparameter that varies: {1e-2, 3e-3, 1e-3}. Everything else is fixed above.
+- Loss: multiclass cross-entropy, unweighted. On this balanced design (500 runs
+  per class) that is equivalent to the `class_weight="balanced"` the classics
+  used, so the comparison stays level. The binary loss of the workshop example
+  does not apply here: the task has 21 classes, not 2.
+- Batch size: **256**, fixed for both networks and not tuned. With 6,720 training
+  samples per fold after the inner split, that is about 26 steps per epoch.
 - Selection: macro-F1 (the primary metric) on seed 0, separate from the
   estimation seeds.
 - Estimation: the same 15 folds (StratifiedGroupKFold by run, k = 5, seeds 5, 17,
