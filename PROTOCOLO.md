@@ -48,13 +48,22 @@ text of Section V.
 
 One cost column: it reads size / training seconds / amortized per-episode
 inference latency, all measured on the same run and the same machine. The key to
-those three units lives in the column header, `Cost (size / s / ms)`, and not in
-the caption: a table caption in IEEEtran is set in small caps, where one line
-holds about 53 characters, and the caption has to spend those on the four things
-a reader needs to judge the protocol, which are the dataset, the primary metric,
-what the mean is taken over, and the grouping. Measured, the Cost column is
-already wider than that header because its data cells set the width, so moving
-the key there costs nothing. Collapsing
+those three units lives in the column header, `Cost (size / s / ms)`, not in the
+caption. Measured, that costs nothing: the Cost column is already wider than the
+header because its data cells set the width, and the table is 248.4pt against
+the 252pt of an IEEE column with or without it.
+
+The caption follows a fixed shape, so that a reader can judge the protocol
+without leaving the table:
+
+> [primary metric] on validation, mean +- standard deviation over [k] folds x
+> [s] seeds, [scheme and grouping], [dataset] dataset.
+
+which currently reads: *Macro F1 on validation, mean +- standard deviation over
+five folds x three seeds, stratified group k-fold grouped by simulation run,
+Tennessee Eastman Process dataset.* It renders in three lines of a single IEEE
+column, which is accepted: the shape matters more than the length. Recall@3 is
+not named in the caption because it is named in its own column header. Collapsing
 the three values into one column is what lets the table fit a single IEEE column
 at `\footnotesize` with `\tabcolsep` 3pt. The `Cost` header is centred with
 `\multicolumn` because the column itself is right-aligned for the numbers.
