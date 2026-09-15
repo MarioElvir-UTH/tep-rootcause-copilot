@@ -586,11 +586,11 @@ Script: `12_agente_v1.py`, added to `run_all.py`.
   macro-F1, the primary metric (`04_classics_cv.py`, fixed 2026-09-13; it used to
   select by Recall@1, which contradicted the paper). Verified that Recall@1 would
   select the identical configuration for all three models, so no number changed. OK
-- Inference time (ms) -> amortized per-episode latency, now measured for every
-  row in one run by `17_cost_table.py` (`results/cost_table.csv`), not by
-  `10_inference_time.py`: trivial <0.001, logistic regression 0.001, random forest
-  0.054, gradient boosting 0.031. The older figures in this file (0.003 / 0.081 /
-  0.073) came from separate runs and had drifted. OK
+- Inference time (ms) -> amortized per-episode latency, measured for every row in
+  one run by `17_cost_table.py` (`results/cost_table.csv`). Wall-clock, so it moves
+  between runs: a full re-run on 2026-09-15 gave 0.052 for the random forest against
+  the 0.054 of the run before it, and 0.032 for gradient boosting against 0.031. The
+  file is the value; this line is not, and no exact latency is pinned here. OK
 - Per-model training time (s) -> same run, same machine: trivial <0.01, logistic
   regression ~3, random forest ~6, gradient boosting ~8. Wall-clock, so it
   moves with machine load. The ~20 s once recorded here for gradient boosting was
