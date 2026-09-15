@@ -77,7 +77,7 @@ if ag is None:
     print("note: results/label_efficiency_agent.csv not found, drawing panel A only")
 
 COL_CM = 8.89 / 2.54                       # one IEEE column, in inches
-fig, axes = plt.subplots(2 if ag is not None else 1, 1, figsize=(COL_CM, 4.35 if ag is not None else 2.65),
+fig, axes = plt.subplots(2 if ag is not None else 1, 1, figsize=(COL_CM, 9.0 / 2.54 if ag is not None else 2.65),
                          sharex=True, constrained_layout=True)
 axes = np.atleast_1d(axes)
 axA = axes[0]
@@ -101,7 +101,9 @@ ceiling = float(df[df.pct_of_dev_labels == 100]["F1macro_mean"].max())
 axA.axhline(ceiling, color="#3a3a3a", linestyle=(0, (5, 3)), linewidth=0.8)
 axA.text(0.22, ceiling + 0.02, "classical ceiling (%.2f)" % ceiling, fontsize=6.5, color="#444444")
 axA.axhline(TRIVIAL_F1, color="#999999", linestyle=(0, (2, 3)), linewidth=0.8)
-axA.text(0.22, TRIVIAL_F1 + 0.02, "trivial baseline (%.3f)" % TRIVIAL_F1, fontsize=6.5, color="#777777")
+# a la derecha del primer presupuesto: con la figura mas baja, ahi abajo a la
+# izquierda ya pasa la curva de gradient boosting
+axA.text(1.5, TRIVIAL_F1 + 0.02, "trivial baseline (%.3f)" % TRIVIAL_F1, fontsize=6.5, color="#777777")
 axA.set_ylabel(r"Macro $F_1$ (0 to 1)")
 axA.set_ylim(0.0, 0.85)
 axA.legend(loc="lower right", frameon=False, ncol=1, handlelength=2.6)
