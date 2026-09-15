@@ -50,6 +50,8 @@ STEPS = [
     ("16_label_efficiency_agent.py",   "Label efficiency of the copilot and of the root-alarm rubric"),
     ("17_cost_table.py",               "Every cost cell of Table II, measured in one run"),
     ("18_worst_errors.py",             "The error that costs most: per class, and root-alarm recall at N"),
+    ("19_tabla2_json.py",              "Consolidate every number of Table II into results/tabla2.json"),
+    ("resultados.py",                  "Generate Table II from that JSON and splice it into the paper"),
     # 09 draws both panels of the main figure, so it runs once 16 has produced the second one.
     ("09_plot_label_efficiency.py",    "Render the main figure, both panels (PDF/PNG)"),
     ("checkpoint_datos.py",            "Data checkpoint (live evidence)"),

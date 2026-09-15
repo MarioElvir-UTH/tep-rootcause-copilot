@@ -52,6 +52,11 @@ in that order (see the [Fast path](#3-reproduce) below).
 - **The agent measurements**: root-alarm identification with and without knowledge,
   the decomposed grounding rubric over three arms, and the action distribution
   (`results/agente_comparison.csv`, `results/logs/decisiones_muestra.jsonl`).
+- **Table II itself**: `results/tabla2.json` holds every number of the table, one row
+  per model, with the primary and secondary metric given per seed rather than already
+  averaged. `resultados.py` turns that file into the LaTeX table and splices it into
+  the manuscript, so no value in Table II is ever typed by hand; `python resultados.py
+  --check` compares the two and fails if they have drifted apart.
 - **The cost column of Table II**: size, training seconds and inference milliseconds
   for all eight rows, measured in one run so they are comparable
   (`results/cost_table.csv`). Size counts what each model stores to make a decision;
@@ -141,7 +146,7 @@ dataverse_files/
 python run_all.py
 ```
 
-Runs the 19 steps in dependency order, stops at the first failure, and lists the
+Runs the 21 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
@@ -230,6 +235,8 @@ which `02_make_partition.py` reproduces exactly.
 16_label_efficiency_agent.py    label efficiency of the copilot and the root-alarm rubric
 17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
 18_worst_errors.py              per-class errors and root-alarm recall at N -> worst_errors.csv
+19_tabla2_json.py               every number of Table II in one file -> results/tabla2.json
+resultados.py                   generate Table II from that JSON -> paper/tabla2.tex
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
@@ -256,7 +263,34 @@ the pipeline runs offline with no API key and reproduces exactly.
 **declared and not executed**, and no number in this repository depends on it.
 `results/agente_env.json` records this.
 
-## 6. AI assistance declaration
+## 6. Where each artefact of the paper comes from
+
+Every table, figure and number in the paper is produced by a script in this
+repository and never typed into the manuscript. Names here are descriptive rather
+than positional, so this is the map:
+
+| In the paper | File in this repository | Produced by |
+|---|---|---|
+| Table II, the numbers | `results/tabla2.json` | `19_tabla2_json.py` |
+| Table II, the LaTeX | `paper/tabla2.tex`, spliced into the manuscript | `resultados.py` |
+| Figure 1, the architecture | `results/architecture_loop.pdf` | `13_plot_architecture.py` |
+| Figure 2, the main figure | `results/label_efficiency_curve.pdf` | `09_plot_label_efficiency.py` |
+| Cost column | `results/cost_table.csv` | `17_cost_table.py` |
+| Paired differences and effect sizes | `results/effect_sizes.csv` | `14_effect_sizes.py` |
+| Confusion and the worst classes | `results/worst_errors.csv` | `18_worst_errors.py` |
+| Root-alarm recall at N | `results/root_alarm_recall.csv` | `18_worst_errors.py` |
+| Worst cases, with their episode id | `results/samples/05_costly_errors.md` | selected by `18_worst_errors.py` |
+
+`python resultados.py --check` compares the table in the manuscript against the one
+the data generates and exits non-zero if they differ. It exists because they did
+drift once: seven of the eight cost cells had stopped matching their sources, and
+the cause was that the table lived in the manuscript as text.
+
+Two figures are still declared and not executed: `prompts/razona.txt`, the prompt a
+language-model variant of the reasoning step would use, and the human rubric over
+30 episodes with two raters. Both are marked [PENDIENTE] where they are referenced.
+
+## 7. AI assistance declaration
 
 AI coding assistants (Claude / Claude Code) were used to help implement the
 pipeline scripts, this documentation, and the analysis in this repository. That
@@ -267,7 +301,7 @@ without verification: the pipeline was re-executed from the raw data, the
 frozen-partition integrity hash was re-checked (`f55e7729a298e23c`, matched), and
 every Table II value was confirmed to reproduce. What does not run is not reported.
 
-## 7. License / contact
+## 8. License / contact
 
 Data © Rieth et al. 2017 (Harvard Dataverse), used under its terms; not
 redistributed here. Code released for academic reproducibility. Contact: the

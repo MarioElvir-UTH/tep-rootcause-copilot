@@ -1,0 +1,264 @@
+{
+  "_meta": {
+    "source": "consolidated by 19_tabla2_json.py from the run records; nothing measured here",
+    "primary": "macro-F1 on validation",
+    "secondary": "Recall@3 on validation",
+    "seeds": [
+      5,
+      17,
+      42
+    ],
+    "folds_per_seed": 5,
+    "unit_of_repetition": "seed; each value is the mean over that seed's folds",
+    "dispersion_in_table": "std_over_folds, the convention Section IV declares",
+    "partition": "frozen by simulation run, test set sealed",
+    "reads": [
+      "per_fold_f1.csv",
+      "per_fold_recall3.csv",
+      "cost_table.csv",
+      "agente_comparison.csv"
+    ]
+  },
+  "models": [
+    {
+      "name": "Trivial",
+      "kind": "floor",
+      "primary_by_seed": {
+        "5": 0.004329,
+        "17": 0.004329,
+        "42": 0.004329
+      },
+      "secondary_by_seed": {
+        "5": 0.142857,
+        "17": 0.142857,
+        "42": 0.142857
+      },
+      "cost": {
+        "parameters": 21,
+        "parameters_are": "class priors",
+        "training_seconds": 0.0,
+        "training_minutes": 0.0,
+        "inference_ms_per_episode": 0.0001,
+        "seconds_per_decision": null,
+        "tokens": 0,
+        "source": "17_cost_table.py"
+      },
+      "primary_mean": 0.004329,
+      "primary_std_over_seeds": 0.0,
+      "primary_std_over_folds": 0.0,
+      "secondary_mean": 0.142857,
+      "secondary_std_over_seeds": 0.0,
+      "secondary_std_over_folds": 0.0
+    },
+    {
+      "name": "Logistic reg.",
+      "kind": "classic",
+      "primary_by_seed": {
+        "5": 0.652152,
+        "17": 0.650502,
+        "42": 0.653059
+      },
+      "secondary_by_seed": {
+        "5": 0.733048,
+        "17": 0.732952,
+        "42": 0.733524
+      },
+      "cost": {
+        "parameters": 2205,
+        "parameters_are": "coefficients and intercepts",
+        "training_seconds": 3.101,
+        "training_minutes": 0.0517,
+        "inference_ms_per_episode": 0.0012,
+        "seconds_per_decision": null,
+        "tokens": 0,
+        "source": "17_cost_table.py"
+      },
+      "primary_mean": 0.651904,
+      "primary_std_over_seeds": 0.001296,
+      "primary_std_over_folds": 0.004874,
+      "secondary_mean": 0.733175,
+      "secondary_std_over_seeds": 0.000306,
+      "secondary_std_over_folds": 0.003075
+    },
+    {
+      "name": "Random forest",
+      "kind": "classic",
+      "primary_by_seed": {
+        "5": 0.638526,
+        "17": 0.63892,
+        "42": 0.636854
+      },
+      "secondary_by_seed": {
+        "5": 0.702095,
+        "17": 0.703143,
+        "42": 0.705238
+      },
+      "cost": {
+        "parameters": 98684,
+        "parameters_are": "decision nodes over 300 trees",
+        "training_seconds": 6.152,
+        "training_minutes": 0.1025,
+        "inference_ms_per_episode": 0.0543,
+        "seconds_per_decision": null,
+        "tokens": 0,
+        "source": "17_cost_table.py"
+      },
+      "primary_mean": 0.6381,
+      "primary_std_over_seeds": 0.001097,
+      "primary_std_over_folds": 0.004854,
+      "secondary_mean": 0.703492,
+      "secondary_std_over_seeds": 0.0016,
+      "secondary_std_over_folds": 0.005816
+    },
+    {
+      "name": "Gradient boost.",
+      "kind": "classic",
+      "primary_by_seed": {
+        "5": 0.642033,
+        "17": 0.637804,
+        "42": 0.640481
+      },
+      "secondary_by_seed": {
+        "5": 0.657143,
+        "17": 0.653714,
+        "42": 0.652571
+      },
+      "cost": {
+        "parameters": 67499,
+        "parameters_are": "decision nodes over 1113 boosted predictors",
+        "training_seconds": 8.313,
+        "training_minutes": 0.1385,
+        "inference_ms_per_episode": 0.0314,
+        "seconds_per_decision": null,
+        "tokens": 0,
+        "source": "17_cost_table.py"
+      },
+      "primary_mean": 0.640106,
+      "primary_std_over_seeds": 0.002139,
+      "primary_std_over_folds": 0.0049,
+      "secondary_mean": 0.654476,
+      "secondary_std_over_seeds": 0.002379,
+      "secondary_std_over_folds": 0.006743
+    },
+    {
+      "name": "v1a MLP",
+      "kind": "network",
+      "primary_by_seed": {
+        "5": 0.651457,
+        "17": 0.647596,
+        "42": 0.657994
+      },
+      "secondary_by_seed": {
+        "5": 0.751714,
+        "17": 0.748,
+        "42": 0.761143
+      },
+      "cost": {
+        "parameters": 9493,
+        "parameters_are": "trainable parameters",
+        "training_seconds": 7.763,
+        "training_minutes": 0.1294,
+        "inference_ms_per_episode": 0.0004,
+        "seconds_per_decision": null,
+        "tokens": 0,
+        "source": "17_cost_table.py"
+      },
+      "primary_mean": 0.652349,
+      "primary_std_over_seeds": 0.005256,
+      "primary_std_over_folds": 0.013061,
+      "secondary_mean": 0.753619,
+      "secondary_std_over_seeds": 0.006775,
+      "secondary_std_over_folds": 0.016894
+    },
+    {
+      "name": "v1b 1D-CNN",
+      "kind": "network",
+      "primary_by_seed": {
+        "5": 0.695658,
+        "17": 0.691269,
+        "42": 0.701796
+      },
+      "secondary_by_seed": {
+        "5": 0.786476,
+        "17": 0.783905,
+        "42": 0.788
+      },
+      "cost": {
+        "parameters": 16117,
+        "parameters_are": "trainable parameters",
+        "training_seconds": 15.661,
+        "training_minutes": 0.261,
+        "inference_ms_per_episode": 0.0067,
+        "seconds_per_decision": null,
+        "tokens": 0,
+        "source": "17_cost_table.py"
+      },
+      "primary_mean": 0.696241,
+      "primary_std_over_seeds": 0.005288,
+      "primary_std_over_folds": 0.006482,
+      "secondary_mean": 0.786127,
+      "secondary_std_over_seeds": 0.00207,
+      "secondary_std_over_folds": 0.006894
+    },
+    {
+      "name": "No agent (abl.)",
+      "kind": "agent",
+      "primary_by_seed": {
+        "5": 0.750832,
+        "17": 0.74623,
+        "42": 0.75917
+      },
+      "secondary_by_seed": {
+        "5": 0.852,
+        "17": 0.847238,
+        "42": 0.857714
+      },
+      "cost": {
+        "parameters": 16221,
+        "parameters_are": "network and alarm limits, no retrieval",
+        "training_seconds": 0.0,
+        "training_minutes": 0.0,
+        "inference_ms_per_episode": 0.1026,
+        "seconds_per_decision": 0.000103,
+        "tokens": 0,
+        "source": "size here; latency from 12_agente_v1.py"
+      },
+      "primary_mean": 0.752077,
+      "primary_std_over_seeds": 0.006559,
+      "primary_std_over_folds": 0.008758,
+      "secondary_mean": 0.852317,
+      "secondary_std_over_seeds": 0.005245,
+      "secondary_std_over_folds": 0.010068
+    },
+    {
+      "name": "Copilot v1",
+      "kind": "agent",
+      "primary_by_seed": {
+        "5": 0.74193,
+        "17": 0.73451,
+        "42": 0.745597
+      },
+      "secondary_by_seed": {
+        "5": 0.846381,
+        "17": 0.84,
+        "42": 0.848286
+      },
+      "cost": {
+        "parameters": 18405,
+        "parameters_are": "network, alarm limits, document-variable matrix and class signatures",
+        "training_seconds": 0.0,
+        "training_minutes": 0.0,
+        "inference_ms_per_episode": 0.2028,
+        "seconds_per_decision": 0.000203,
+        "tokens": 0,
+        "source": "size here; latency from 12_agente_v1.py"
+      },
+      "primary_mean": 0.740679,
+      "primary_std_over_seeds": 0.005648,
+      "primary_std_over_folds": 0.007923,
+      "secondary_mean": 0.844889,
+      "secondary_std_over_seeds": 0.00434,
+      "secondary_std_over_folds": 0.009331
+    }
+  ]
+}

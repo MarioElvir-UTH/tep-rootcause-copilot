@@ -17,7 +17,8 @@ shuffle, random_state=seed), so fold f of seed s is the same set of runs everywh
   - agent arms-> read straight out of results/logs/decisiones.jsonl
 
 Outputs:
-  results/per_fold_f1.csv    <- macro-F1 of every model on every one of the 15 folds
+  results/per_fold_f1.csv       <- macro-F1 of every model on every one of the 15 folds
+  results/per_fold_recall3.csv  <- the same for Recall@3, the secondary metric
   results/effect_sizes.csv   <- one row per declared comparison
 """
 import os
@@ -84,8 +85,9 @@ def make_net(kind):
                          nn.Linear(64, 21))
 
 
-def net_f1(kind, seed, fold, vai):
-    """Score the checkpoint saved for this fold. Its standardization is reused, never refitted."""
+def net_scores(kind, seed, fold, vai):
+    """Score the checkpoint saved for this fold, returning macro-F1 and Recall@3.
+    Its standardization is reused, never refitted."""
     ck = torch.load(os.path.join(MODELS, "%s_seed%d_fold%d.pt" % (kind, seed, fold)),
                     weights_only=False)
     net = make_net(kind)
@@ -95,7 +97,14 @@ def net_f1(kind, seed, fold, vai):
     t = torch.from_numpy(np.ascontiguousarray((A - ck["mean"]) / ck["std"])).float()
     with torch.no_grad():
         proba = torch.softmax(net(t), dim=1).numpy()
-    return float(f1_score(y[vai], CLASSES[np.argmax(proba, axis=1)], average="macro"))
+    return (float(f1_score(y[vai], CLASSES[np.argmax(proba, axis=1)], average="macro")),
+            recall3(y[vai], proba))
+
+
+def recall3(yt, proba):
+    """Is the true class among the three the operator is shown."""
+    order = np.argsort(-proba, axis=1)[:, :3]
+    return float(np.mean([yt[i] in CLASSES[order[i]] for i in range(len(yt))]))
 
 
 # ---------------- agent arms, straight from the decision log ----------------
@@ -104,36 +113,46 @@ agent = {}
 with open(LOG, encoding="utf-8") as fh:
     for line in fh:
         r = json.loads(line)
-        agent.setdefault((r["arm"], r["seed"], r["fold"]), [[], []])
+        agent.setdefault((r["arm"], r["seed"], r["fold"]), [[], [], []])
         agent[(r["arm"], r["seed"], r["fold"])][0].append(r["label"])
         agent[(r["arm"], r["seed"], r["fold"])][1].append(r["decide"]["top3"][0])
+        agent[(r["arm"], r["seed"], r["fold"])][2].append(r["label"] in r["decide"]["top3"])
 ARMS = sorted({k[0] for k in agent})
 print("arms in the log: %s" % ", ".join(ARMS))
 
 # ---------------- per-fold macro-F1 for every model ----------------
 PF = os.path.join(RES, "per_fold_f1.csv")
-CACHED = (os.path.exists(PF) and set(pd.read_csv(PF).columns) >=
-          {"seed", "fold", "trivial", "logistic", "rf", "hgb", "mlp", "cnn"} | set(ARMS))
+PR3 = os.path.join(RES, "per_fold_recall3.csv")
+NEED = {"seed", "fold", "trivial", "logistic", "rf", "hgb", "mlp", "cnn"} | set(ARMS)
+CACHED = (os.path.exists(PF) and os.path.exists(PR3)
+          and set(pd.read_csv(PF).columns) >= NEED
+          and set(pd.read_csv(PR3).columns) >= NEED)
 
-rows = []
+rows, rows3 = [], []
 for seed in ([] if CACHED else EST_SEEDS):
     sgkf = StratifiedGroupKFold(n_splits=K, shuffle=True, random_state=seed)
     for fold, (tri, vai) in enumerate(sgkf.split(X, y, groups)):
         rec = {"seed": seed, "fold": fold}
-        # trivial: the most frequent training class, ranked by frequency
-        top = np.bincount(y[tri], minlength=21).argmax()
-        rec["trivial"] = float(f1_score(y[vai], np.full(len(vai), top), average="macro"))
+        r3 = {"seed": seed, "fold": fold}
+        # trivial: ranked by training frequency, so its top three are the three
+        # most frequent classes and Recall@3 follows from that ranking
+        freq = np.bincount(y[tri], minlength=21).astype(float)
+        rec["trivial"] = float(f1_score(y[vai], np.full(len(vai), freq.argmax()), average="macro"))
+        r3["trivial"] = recall3(y[vai], np.tile(freq / freq.sum(), (len(vai), 1)))
         for name in ("logistic", "rf", "hgb"):
             est = make_est(name, seed).fit(X[tri], y[tri])
             cls = est.named_steps["clf"].classes_
-            pred = cls[np.argmax(est.predict_proba(X[vai]), axis=1)]
-            rec[name] = float(f1_score(y[vai], pred, average="macro"))
+            proba = est.predict_proba(X[vai])
+            rec[name] = float(f1_score(y[vai], cls[np.argmax(proba, axis=1)], average="macro"))
+            r3[name] = recall3(y[vai], proba)
         for kind in ("mlp", "cnn"):
-            rec[kind] = net_f1(kind, seed, fold, vai)
+            rec[kind], r3[kind] = net_scores(kind, seed, fold, vai)
         for arm in ARMS:
-            yt, yp = agent[(arm, seed, fold)]
+            yt, yp, hit3 = agent[(arm, seed, fold)]
             rec[arm] = float(f1_score(np.array(yt), np.array(yp), average="macro"))
+            r3[arm] = float(np.mean(hit3))
         rows.append(rec)
+        rows3.append(r3)
         print("  seed %2d fold %d  " % (seed, fold)
               + "  ".join("%s %.4f" % (k, rec[k]) for k in ("logistic", "cnn", "ablation", "proposed")))
 
@@ -143,7 +162,8 @@ if CACHED:
 else:
     per_fold = pd.DataFrame(rows)
     per_fold.to_csv(PF, index=False)
-    print("\nwrote results/per_fold_f1.csv  (%d folds x %d models)"
+    pd.DataFrame(rows3).to_csv(PR3, index=False)
+    print("\nwrote results/per_fold_f1.csv and results/per_fold_recall3.csv  (%d folds x %d models)"
           % (len(per_fold), len(per_fold.columns) - 2))
 
 
