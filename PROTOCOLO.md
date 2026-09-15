@@ -582,12 +582,6 @@ all three ended in `defer` and all three read as a healthy plant. IDV(20) and
 IDV(13) defer in 75% and 94% of their episodes and would repeat the finding
 without adding one.
 
-If five are ever required, the rule has to change to one that does not depend on
-the fourth decimal, for instance every fault the copilot called normal operation
-in more than 250 episodes, which selects IDV(15), IDV(18), IDV(20) and IDV(17)
-with no tie. That is a criterion chosen after seeing the data and would have to
-be declared as such in the text.
-
 ## Consistency check (paragraph vs. code vs. table)
 
 - Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
