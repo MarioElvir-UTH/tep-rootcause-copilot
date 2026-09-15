@@ -47,7 +47,14 @@ reported where it differs, on grounding and root-alarm identification, in the
 text of Section V.
 
 One cost column: it reads size / training seconds / amortized per-episode
-inference latency, all measured on the same run and the same machine. Collapsing
+inference latency, all measured on the same run and the same machine. The key to
+those three units lives in the column header, `Cost (size / s / ms)`, and not in
+the caption: a table caption in IEEEtran is set in small caps, where one line
+holds about 53 characters, and the caption has to spend those on the four things
+a reader needs to judge the protocol, which are the dataset, the primary metric,
+what the mean is taken over, and the grouping. Measured, the Cost column is
+already wider than that header because its data cells set the width, so moving
+the key there costs nothing. Collapsing
 the three values into one column is what lets the table fit a single IEEE column
 at `\footnotesize` with `\tabcolsep` 3pt. The `Cost` header is centred with
 `\multicolumn` because the column itself is right-aligned for the numbers.

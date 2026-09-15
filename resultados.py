@@ -71,8 +71,10 @@ def cost(c, kind):
 best_p = max(models, key=lambda m: m["primary_mean"])["name"]
 best_s = max(models, key=lambda m: m["secondary_mean"])["name"]
 
+# la clave de las unidades vive en el encabezado, no en el pie: el pie tiene
+# que caber en una linea y esto no cabia
 lines = [r"\begin{tabular}{@{}lccr@{}}", r"\toprule",
-         r"Model & Macro $F_1$ & Recall@3 & \multicolumn{1}{c}{Cost} \\", r"\midrule"]
+         r"Model & Macro $F_1$ & Recall@3 & \multicolumn{1}{c}{Cost (size / s / ms)} \\", r"\midrule"]
 # the floor sits with the classics: the rules separate the three families the paper
 # discusses, which are the classical models, the networks and the agent arms
 BLOCK = {"floor": 0, "classic": 0, "network": 1, "agent": 2}
