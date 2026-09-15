@@ -565,6 +565,29 @@ explaining it is a valid outcome; not having the ablation is not.
 
 Script: `12_agente_v1.py`, added to `run_all.py`.
 
+## Why three costly cases and not five
+
+The Week-4 validation list asks for the five worst cases. It stays at three, and
+the reason is in the numbers rather than in taste. Ten faults qualify, meaning
+the copilot ranked normal operation first on at least one episode of each. By
+per-class F1 the first three are separated by real gaps, 0.149, 0.315 and 0.372,
+but the fourth and the fifth are IDV(20) at 0.43184 and IDV(13) at 0.43245: six
+ten-thousandths apart, with IDV(17) not far behind. Cutting at five forces a
+tiebreaker that was never declared, and choosing one after seeing the scores is
+the thing this file exists to prevent. The sentence "the rule leaves no room to
+pick a flattering example" would stop being true.
+
+The three also share a mechanism, which is what makes them worth a discussion:
+all three ended in `defer` and all three read as a healthy plant. IDV(20) and
+IDV(13) defer in 75% and 94% of their episodes and would repeat the finding
+without adding one.
+
+If five are ever required, the rule has to change to one that does not depend on
+the fourth decimal, for instance every fault the copilot called normal operation
+in more than 250 episodes, which selects IDV(15), IDV(18), IDV(20) and IDV(17)
+with no tie. That is a criterion chosen after seeing the data and would have to
+be declared as such in the text.
+
 ## Consistency check (paragraph vs. code vs. table)
 
 - Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
