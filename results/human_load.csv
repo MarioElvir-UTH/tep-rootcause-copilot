@@ -1,0 +1,4 @@
+arm,F1,loop_gain_vs_cnn,move_pct,generate_pct,defer_pct,acc_when_generate,acc_when_defer,alarms_shown,alarm_reduction_pct
+ablation,0.7521,0.0558,35.0095,73.8476,26.0762,95.9679,19.5987,5.8893,25.803
+lookup,0.7521,0.0558,35.0095,73.8476,26.0762,95.9679,19.5987,5.8893,25.803
+proposed,0.7407,0.0444,66.1111,40.946,58.9778,97.1,59.3358,6.1862,26.5686
