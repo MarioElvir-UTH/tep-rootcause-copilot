@@ -10,54 +10,34 @@
 > The `.tex` (Evaluation, Abstract, objective 4) and the figure were reconciled
 > to this choice.
 
-## Table II (LaTeX, IEEEtran): final, all rows filled
+## Table II: generated, not written here
 
-```latex
-\begin{table}[!t]
-\centering
-\caption{Root-cause identification on the TEP: macro-averaged $F_1$ on
-validation, mean $\pm$ standard deviation over five folds $\times$ three seeds,
-grouped by simulation run, under an identical hyperparameter search for every
-model. Rows v1a and v1b are the networks. Cost is measured on the same run and
-machine (Intel Core i5-13420H, 12 threads, CPU only) and reads as size /
-training seconds / amortized inference milliseconds per episode, where size
-counts stored coefficients for the linear model and the networks and decision
-nodes for the tree ensembles. Size is exact and reproducible; the two timings are
-wall-clock on that machine and move with processor and load, so they indicate
-relative cost rather than fixed values. The two agent rows train nothing, since
-they reuse the saved network of each fold, but they pay a cost the table cannot
-show: the loop moves the observation window in 66\% of decisions, which is
-30~minutes of plant time.}
-\label{tab:results}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lccr@{}}
-\toprule
-Model & Macro $F_1$ & Recall@3 & \multicolumn{1}{c}{\shortstack{Cost \\ {\scriptsize (size / s / ms)}}} \\
-\midrule
-Trivial         & $0.004 \pm 0.000$ & $0.143 \pm 0.000$ & 21 / $<$0.01 / $<$0.001 \\
-Logistic reg.   & $0.652 \pm 0.005$ & $0.733 \pm 0.003$ & 2,205 / 3 / 0.003 \\
-Random forest   & $0.638 \pm 0.005$ & $0.703 \pm 0.006$ & 98,740 / 6 / 0.081 \\
-Gradient boost. & $0.640 \pm 0.005$ & $0.654 \pm 0.007$ & 67,499 / 20 / 0.073 \\
-\midrule
-v1a MLP         & $0.652 \pm 0.013$ & $0.754 \pm 0.017$ & 9,493 / 3 / $<$0.001 \\
-v1b 1D-CNN      & $0.696 \pm 0.006$ & $0.786 \pm 0.007$ & 16,117 / 17 / 0.004 \\
-\midrule
-No agent (abl.) & $\mathbf{0.752 \pm 0.009}$ & $\mathbf{0.852 \pm 0.010}$ & 17,209 / 0 / 0.103 \\
-Copilot v1      & $0.741 \pm 0.008$ & $0.845 \pm 0.009$ & 17,209 / 0 / 0.203 \\
-\bottomrule
-\end{tabular}
-\end{table}
+The table is no longer typed in this file, and it is no longer typed in the
+manuscript either. `results/tabla2.json` holds every number, one row per model,
+with the primary and the secondary metric given per seed rather than already
+averaged; `resultados.py` turns that file into `paper/tabla2.tex` and splices it
+into the `.tex` between two markers. The caption stays in the manuscript, because
+the prose belongs to the authors and the numbers belong to the run.
+
 ```
+python resultados.py           write the table and the paragraph, splice them
+python resultados.py --check   compare only, non-zero if the paper has drifted
+```
+
+This section used to carry the table in full. It was removed because it had
+drifted: seven of its eight cost cells no longer matched the run. Keeping a
+second copy here is the same failure the generator exists to prevent, so the
+copy is gone rather than corrected. The version that drifted is in the git
+history if it is ever needed.
 
 Rows: trivial floor + three classics (one linear, two tree ensembles) + the two
 networks + the two agent arms. The floor and the classics come from
 `classics_cv_comparison.csv`, the networks from `dl_comparison.csv`, the agent
-arms from `agente_comparison.csv`, and the cost figures from
-`10_inference_time.py`, `11_train_dl.py` and `12_agente_v1.py`, all run under this
-exact protocol. Best macro-$F_1$ and best Recall@3 in bold (the ablation, at
-$0.752$). The proposed method does not win the primary metric and the table says
-so: what retrieval buys is reported separately in Section V, not hidden here.
+arms from `agente_comparison.csv`, and every cost cell from `17_cost_table.py`,
+which measures all of them in a single run on one machine. Best macro-$F_1$ and
+best Recall@3 are in bold, and they are the ablation's. The proposed method does
+not win the primary metric and the table says so: what retrieval buys is
+reported separately in Section V, not hidden here.
 
 A third arm was measured and is deliberately absent from Table II: `lookup`,
 which grounds the recommendation by citing the document of the predicted class.
@@ -66,59 +46,68 @@ identical to the ablation row and adding it would repeat two numbers. It is
 reported where it differs, on grounding and root-alarm identification, in the
 text of Section V.
 
-One cost column, following the Week 3 table template: it reads size / training
-seconds / amortized per-episode inference latency, all measured on the same run
-and the same machine. Collapsing the three cost values into a single column is
-what lets the table fit one IEEE column again, at `\footnotesize` with
-`\tabcolsep` 3pt; it was compiled and confirmed to fit. The `Cost` header is
-centred with `\multicolumn` because the column itself is right-aligned for the
-numbers. The exact column layout is still open and may be revisited when the
-formatting pass happens at the end.
+One cost column: it reads size / training seconds / amortized per-episode
+inference latency, all measured on the same run and the same machine. Collapsing
+the three values into one column is what lets the table fit a single IEEE column
+at `\footnotesize` with `\tabcolsep` 3pt. The `Cost` header is centred with
+`\multicolumn` because the column itself is right-aligned for the numbers.
 
 ## Experimental configuration: the classics paragraph (seven sentences)
 
-> Section IV of the paper no longer ends here. It continues with two more
-> paragraphs, one for the two networks and one for the copilot, which declare
-> every constant a reviewer needs to judge the pre-registration. Those constants
-> are NOT restated below to avoid a second source that can drift: they live in
-> `Week 3 pre-registration` and `Proposed method pre-registration` further down,
-> and `results/dl_env.json` and `results/agente_env.json` record what actually
-> ran. The paper's wording is the rendering; these sections are the source.
+> Section IV of the paper is now exactly these seven sentences and nothing
+> else. It used to carry two further paragraphs, one for the two networks and
+> one for the copilot, which declared every constant a reviewer needs to judge
+> the pre-registration; they were cut on 2026-09-15 to bring the paper from
+> eight pages to seven. Those constants were never duplicated here and are not
+> duplicated now: they live in `Week 3 pre-registration` and `Proposed method
+> pre-registration` further down, and `results/dl_env.json` and
+> `results/agente_env.json` record what actually ran.
+>
+> What the paper therefore no longer declares, and what has to find a home if a
+> reviewer needs it: the comparison convention (paired fold by fold, averaged by
+> seed, with the effect size $d$); the sentence that no result is called
+> significant and none carries a $p$-value; the agent constants $k = 3$,
+> correlation $0.8$, $\tau = 0.50$, the flood threshold of 10 variables, the
+> move of 10 samples that is 30 minutes of plant time, and the fusion weight
+> $0.25$; the three arms declared before running; that root-alarm scoring
+> excludes IDV 16 to IDV 20; and that the reasoning step is rule-based rather
+> than a language model, which is what the zero-token claim rests on.
 
-*Experimental configuration.* (1) The primary dataset is the public Tennessee
-Eastman Process in the large-scale simulation release of Rieth et al.,
-comprising 500 runs per class over 21 root-cause classes (1 normal and 20
-faults), with one simulation run as the unit of observation. (2) Data are
-grouped by simulation run and stratified by class under a fixed seed (42): a
-held-out test set of 10,500 runs is sealed from the start and opened only once,
-while a development pool of 10,500 runs is used for all tuning, with the
-partition indices saved to disk. (3) Each run is summarized by the mean and
-standard deviation of its 52 process variables over a causal early window (20
-samples after fault onset), and feature standardization is fit inside each
-cross-validation fold on the training portion only. (4) The compared models are
-a trivial majority-class baseline, a multinomial logistic regression over the
-standardized features, a random forest, and gradient boosting, all implemented
-in scikit-learn 1.9.1; the three learned models span one linear and two
-tree-ensemble inductive biases, so the comparison does not presuppose which one
-suits this representation. (5) Hyperparameters are chosen from a small,
-pre-declared grid of three configurations per model (logistic regression inverse
-regularization strength C in {0.1, 1, 10}; random forest maximum depth in {none,
-10, 20} with 300 trees; gradient boosting learning rate in {0.05, 0.1, 0.2}),
-giving every model
-the same search effort, with model selection on the primary metric and on a
-seed (0) separate from the estimation seeds. (6) Performance is estimated by repeated stratified group
+*Experimental configuration.* (1) The primary dataset is the public Tennessee Eastman Process in the
+large-scale simulation release of Rieth et al., comprising 500 runs per class
+over 21 root-cause classes (1 normal and 20 faults), with one simulation run
+as the unit of observation and process variables sampled every three minutes,
+which is what converts every window length quoted below into plant time. (2)
+Data are grouped by simulation run and stratified by class under a fixed seed
+(42): a held-out test set of 10,500 runs is sealed from the start and opened
+only once, while a development pool of 10,500 runs is used for all tuning,
+with the partition indices saved to disk. (3) Each run is summarized by the
+mean and standard deviation of its 52 process variables over a causal early
+window (20 samples after fault onset), and feature standardization is fit
+inside each cross-validation fold on the training portion only. (4) The
+compared models are a trivial majority-class baseline, a multinomial logistic
+regression over the standardized features, a random forest, and gradient
+boosting, all implemented in scikit-learn 1.9.1; the three learned models span
+one linear and two tree-ensemble inductive biases, so the comparison does not
+presuppose which one suits this representation. (5) Hyperparameters are chosen
+from a small, pre-declared grid of three configurations per model (logistic
+regression inverse regularization strength C in {0.1, 1, 10}; random forest
+maximum depth in {none, 10, 20} with 300 trees; gradient boosting learning
+rate in {0.05, 0.1, 0.2}), giving every model the same search effort, with
+model selection on the primary metric and on a seed (0) separate from the
+estimation seeds. (6) Performance is estimated by repeated stratified group
 k-fold cross-validation by run (k = 5; three seeds: 5, 17, 42), reporting the
 mean and standard deviation over the 15 resulting folds; the primary metric is
-the macro-averaged F1 score, with Recall@1, Recall@3, and mean reciprocal rank
-as secondary metrics, and per-episode inference latency (in milliseconds) as a
-cost measure. (7) All
-experiments run on a single machine on CPU (Intel Core i5-13420H, 12 threads)
-with Python 3.14.2 and fixed seeds
-throughout; the code, the frozen partition, and the pinned environment
-(requirements.txt) are available in the project repository
-https://github.com/MarioElvir-UTH/tep-rootcause-copilot; per-model training time
-on the development pool is about 3 s (logistic regression), 6 s (random forest),
-and 20 s (gradient boosting), and negligible for the trivial baseline.
+the macro-averaged F_1 score, with top-k accuracy reported as Recall@1 and
+Recall@3 and mean reciprocal rank as secondary metrics, and per-episode
+inference latency (in milliseconds) as a cost measure. (7) All experiments run
+on a single machine on CPU (Intel Core i5-13420H, 12 threads) with Python
+3.14.2 and fixed seeds throughout; the code, the frozen partition, and the
+pinned environment (requirements.txt) are available in the project repository
+https://github.com/MarioElvir-UTH/tep-rootcause-copilot, and per-model
+training time on the development pool is about 3 s (logistic regression), 6 s
+(random forest), and 8 s (gradient boosting), and negligible for the trivial
+baseline.
 
 ## Week 3 pre-registration: the neural network row (written BEFORE running anything)
 
@@ -581,12 +570,23 @@ Script: `12_agente_v1.py`, added to `run_all.py`.
   macro-F1, the primary metric (`04_classics_cv.py`, fixed 2026-09-13; it used to
   select by Recall@1, which contradicted the paper). Verified that Recall@1 would
   select the identical configuration for all three models, so no number changed. OK
-- Inference time (ms) -> amortized per-episode latency (`10_inference_time.py`,
-  reproducible): trivial <0.001, logistic regression 0.003, random forest 0.081,
-  gradient boosting 0.073. OK
-- Per-model training time (s) -> median fit on the dev pool
-  (`10_inference_time.py`): trivial <0.01, logistic regression ~3, random forest
-  ~6, gradient boosting ~20. Wall-clock, so it moves with machine load. OK
+- Inference time (ms) -> amortized per-episode latency, now measured for every
+  row in one run by `17_cost_table.py` (`results/cost_table.csv`), not by
+  `10_inference_time.py`: trivial <0.001, logistic regression 0.001, random forest
+  0.054, gradient boosting 0.031. The older figures in this file (0.003 / 0.081 /
+  0.073) came from separate runs and had drifted. OK
+- Per-model training time (s) -> same run, same machine: trivial <0.01, logistic
+  regression ~3, random forest ~6, gradient boosting ~8. Wall-clock, so it
+  moves with machine load. The ~20 s once recorded here for gradient boosting was
+  from an earlier run. OK
+- Table II is generated -> `19_tabla2_json.py` collects every number into
+  `results/tabla2.json` and `resultados.py` renders and splices it, so no cell of
+  Table II is typed anywhere. `python resultados.py --check` fails if the
+  manuscript and the data disagree. OK
+- Section IV of the paper -> reduced on 2026-09-15 to the seven sentences above
+  and nothing else, which took the paper from eight pages to seven, with the
+  bibliography on page 7. What it stopped declaring is listed in the note above
+  the paragraph. OK
 - Repository -> public at https://github.com/MarioElvir-UTH/tep-rootcause-copilot
   (code, frozen partition, results, README with the one-command reproduction). OK
 - PR-AUC (used in Dr. Loo's example) -> NOT computed; the secondary metrics are
