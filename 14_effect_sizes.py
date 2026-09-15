@@ -111,8 +111,12 @@ ARMS = sorted({k[0] for k in agent})
 print("arms in the log: %s" % ", ".join(ARMS))
 
 # ---------------- per-fold macro-F1 for every model ----------------
+PF = os.path.join(RES, "per_fold_f1.csv")
+CACHED = (os.path.exists(PF) and set(pd.read_csv(PF).columns) >=
+          {"seed", "fold", "trivial", "logistic", "rf", "hgb", "mlp", "cnn"} | set(ARMS))
+
 rows = []
-for seed in EST_SEEDS:
+for seed in ([] if CACHED else EST_SEEDS):
     sgkf = StratifiedGroupKFold(n_splits=K, shuffle=True, random_state=seed)
     for fold, (tri, vai) in enumerate(sgkf.split(X, y, groups)):
         rec = {"seed": seed, "fold": fold}
@@ -133,10 +137,52 @@ for seed in EST_SEEDS:
         print("  seed %2d fold %d  " % (seed, fold)
               + "  ".join("%s %.4f" % (k, rec[k]) for k in ("logistic", "cnn", "ablation", "proposed")))
 
-per_fold = pd.DataFrame(rows)
-per_fold.to_csv(os.path.join(RES, "per_fold_f1.csv"), index=False)
-print("\nwrote results/per_fold_f1.csv  (%d folds x %d models)"
-      % (len(per_fold), len(per_fold.columns) - 2))
+if CACHED:
+    per_fold = pd.read_csv(PF)
+    print("reusing results/per_fold_f1.csv (delete it to refit the classics from scratch)")
+else:
+    per_fold = pd.DataFrame(rows)
+    per_fold.to_csv(PF, index=False)
+    print("\nwrote results/per_fold_f1.csv  (%d folds x %d models)"
+          % (len(per_fold), len(per_fold.columns) - 2))
+
+
+# ---------------- explanation quality, per fold, from the same log ----------------
+# The point of the ablation is that these are a SEPARATE result from the classifier
+# F1: documents are expected to move the root-cause rubric and to leave the ranking
+# alone. Reported per fold so the difference can be paired like any other.
+KB = json.load(open(os.path.join(BASE, "kb", "tep_kb.json"), encoding="utf-8"))
+DOCS = {d["clase"]: d for d in KB["documentos"]}
+NAME_OF = {d["nombre"]: d["clase"] for d in KB["documentos"]}
+VAR_OF = {c: set(DOCS[c]["variables_documentadas"]) for c in DOCS}
+DOCUMENTED = {c for c, d in DOCS.items() if d["causa_documentada"] and c != 0}
+
+expl = {}
+with open(LOG, encoding="utf-8") as fh:
+    for line in fh:
+        r = json.loads(line)
+        k = (r["arm"], r["seed"], r["fold"])
+        e = expl.setdefault(k, {"chrono": [], "kb": [], "r2": [], "r3": []})
+        y = r["label"]
+        if y in DOCUMENTED:
+            for src, key in (("raiz_cronologica", "chrono"), ("raiz_conocimiento", "kb")):
+                v = r["percibe"][src]
+                if v:
+                    e[key].append(v in VAR_OF[y])
+        rz = r["razona"]
+        if rz and rz.get("docs"):
+            cited = [NAME_OF.get(n, -1) for n in rz["docs"]]
+            e["r2"].append(cited[0] == y)
+            e["r3"].append(y in cited[:3])
+
+mean = lambda v: float(np.mean(v)) if v else float("nan")
+for (arm, seed, fold), e in expl.items():
+    m = (per_fold.seed == seed) & (per_fold.fold == fold)
+    per_fold.loc[m, "rootchrono_" + arm] = mean(e["chrono"])
+    per_fold.loc[m, "rootkb_" + arm] = mean(e["kb"])
+    per_fold.loc[m, "grounding_" + arm] = (mean(e["r2"]) + mean(e["r3"])) if e["r2"] else float("nan")
+per_fold.to_csv(PF, index=False)
+print("added per-fold root-alarm and grounding for %d arms" % len(ARMS))
 
 # ---------------- the declared comparisons ----------------
 COMPARISONS = [
@@ -146,6 +192,11 @@ COMPARISONS = [
     ("ablation", "cnn", "the loop, against the same network scored once"),
     ("ablation", "proposed", "retrieval removed, against the proposed method"),
     ("lookup", "proposed", "label anchoring against symptom retrieval"),
+    # Reading the ablation: documents are expected to move the explanation and to
+    # leave the classifier alone. These two comparisons test exactly that.
+    ("rootkb_lookup", "rootchrono_lookup", "root alarm: knowledge against chronology"),
+    ("rootkb_proposed", "rootchrono_proposed", "root alarm: symptom retrieval against chronology"),
+    ("grounding_lookup", "grounding_proposed", "grounding: label anchoring against symptom retrieval"),
 ]
 
 out = []

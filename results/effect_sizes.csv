@@ -5,3 +5,6 @@ cnn,mlp,raw window against summary features,0.6962,0.0067,0.6523,0.0135,0.0439,0
 ablation,cnn,"the loop, against the same network scored once",0.7521,0.0091,0.6962,0.0067,0.0558,0.0013,7.0,72.42,24.57,False,large
 ablation,proposed,"retrieval removed, against the proposed method",0.7521,0.0091,0.7407,0.0082,0.0114,0.0024,1.32,8.39,10.1,True,large
 lookup,proposed,label anchoring against symptom retrieval,0.7521,0.0091,0.7407,0.0082,0.0114,0.0024,1.32,8.39,10.1,True,large
+rootkb_lookup,rootchrono_lookup,root alarm: knowledge against chronology,0.6187,0.0082,0.3488,0.0078,0.27,0.0005,33.63,929.3,123.79,False,large
+rootkb_proposed,rootchrono_proposed,root alarm: symptom retrieval against chronology,0.3828,0.0094,0.3585,0.006,0.0244,0.0007,3.1,59.0,9.56,False,large
+grounding_lookup,grounding_proposed,grounding: label anchoring against symptom retrieval,1.6124,0.0152,0.9104,0.0188,0.702,0.005,41.04,242.95,107.7,False,large
