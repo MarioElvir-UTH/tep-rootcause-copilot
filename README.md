@@ -65,8 +65,12 @@ action, chosen by a rule declared in advance and drafted outside the pipeline fr
 the decision log. Those texts **produce no reported number**. See
 `results/samples/README.md`, which also records the two places where the declared
 rule gave an awkward answer and it was reported rather than adjusted.
-- **Label-efficiency curve**: F1-macro / Recall@k vs. fraction of labels used
-  (`results/label_efficiency_curve.{csv,pdf,png}`).
+- **The main figure, in two panels**: macro-F1 against the fraction of labels used, and
+  root-alarm identification on the same budgets, with everything retrained at each
+  budget (`results/label_efficiency_curve.{csv,pdf,png}`,
+  `results/label_efficiency_agent.csv`). The two panels answer different questions:
+  the rubric saturates with 2.5% of the labels, where the classifier is still at 53%
+  of its own ceiling.
 - **The architecture figure**: drawn by `13_plot_architecture.py` from
   `results/agente_env.json`, so the diagram cannot drift away from the constants
   the agent actually ran with (`results/architecture_loop.{pdf,png}`).
@@ -133,7 +137,7 @@ dataverse_files/
 python run_all.py
 ```
 
-Runs the 16 steps in dependency order, stops at the first failure, and lists the
+Runs the 17 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
@@ -212,13 +216,14 @@ which `02_make_partition.py` reproduces exactly.
 06_domain_features_nonlinear.py do domain features help nonlinear models?
 07_cv_audit.py                  cross-validation leakage audit (4 checks)
 08_label_efficiency.py          label-efficiency curve (the measurable contribution)
-09_plot_label_efficiency.py     render the figure (PDF/PNG)
+09_plot_label_efficiency.py     render the main figure, both panels (runs after step 16)
 10_inference_time.py            training time + inference latency (Table II cost)
 11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
 12_agente_v1.py                 copilot agent v1: alarm layer, loop, three arms -> Table II
 13_plot_architecture.py         render the architecture figure (Figure 1) from the run stamp
 14_effect_sizes.py              paired differences and effect sizes -> per_fold_f1.csv, effect_sizes.csv
 15_human_load.py                coverage, precision and operator review load -> human_load.csv
+16_label_efficiency_agent.py    label efficiency of the copilot and the root-alarm rubric
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment

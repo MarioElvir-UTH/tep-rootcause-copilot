@@ -1,13 +1,35 @@
 r"""
-S2 figure: publication-quality label efficiency curve,
-macro-F1 versus the percentage of labeled runs, with the supervised ceiling drawn.
-Reads results/label_efficiency_curve.csv (produced by 08_label_efficiency.py).
+The main figure, in two panels: how many labels each result needs.
+
+Panel A  macro-F1 against the percentage of labeled runs, for the three classical
+         models and for the copilot.
+Panel B  root-alarm identification on the same budgets: ordering alarms by time,
+         and ordering them by retrieved evidence in each of the two grounded arms.
+
+The two panels are the point. The classifier's number and the explanation are
+separate results and they do not need the same number of labels; a reader who
+looks for five seconds should see that the rubric saturates long before the F1
+does.
+
+Reads results/label_efficiency_curve.csv (from 08, the classics) and
+results/label_efficiency_agent.csv (from 16, the copilot). Panel B is skipped if
+the second file is absent, so the figure still builds from the classics alone.
+
+IEEE figure rules this file is written to satisfy:
+  1. one column, 8.89 cm wide, every label at 8 pt so nothing shrinks in LaTeX
+     (no bbox_inches="tight", which would change the width and rescale the text)
+  2. vector PDF
+  3. the +- is drawn as a band, and its source is named in the caption
+  4. axes named with their unit, both starting at zero, so there is no cut to declare
+  5. distinguishable in grayscale and for colorblind readers: Okabe-Ito colors plus
+     a different line style and marker per series
+  6. the caption in the paper stands on its own
 
 Outputs:
   results/label_efficiency_curve.pdf  <- vector, \includegraphics in the paper
   results/label_efficiency_curve.png  <- 300 dpi raster, for quick viewing / slides
 
-Decoupled from the experiment on purpose: restyling the figure never re-runs the models.
+Decoupled from the experiments on purpose: restyling the figure never re-runs a model.
 """
 import os
 import numpy as np
@@ -19,68 +41,116 @@ import matplotlib.pyplot as plt
 BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
 RES = os.path.join(BASE, "results")
 CSV = os.path.join(RES, "label_efficiency_curve.csv")
+CSV_AG = os.path.join(RES, "label_efficiency_agent.csv")
 assert os.path.exists(CSV), "run 08_label_efficiency.py first"
 
-TRIVIAL_F1 = 0.004   # macro-F1 of the trivial majority-class baseline (from 04; 0.0043)
+TRIVIAL_F1 = 0.004   # macro-F1 of the trivial baseline (from 04; 0.0043)
+
+# Okabe-Ito, safe for the common colour vision deficiencies, and paired with a
+# distinct dash pattern and marker so the series survive a grayscale print.
 STYLE = {
-    "logistic": dict(color="#2e7d32", marker="^", label="Logistic regression (C 10)"),
-    "rf":       dict(color="#c1531a", marker="s", label="Random forest (depth 20)"),
-    "hgb":      dict(color="#1f5fa8", marker="o", label="Gradient boosting (lr 0.05)"),
+    "logistic": dict(color="#0072B2", marker="^", ls="-",             label="Logistic regression"),
+    "rf":       dict(color="#D55E00", marker="s", ls=(0, (4, 2)),     label="Random forest"),
+    "hgb":      dict(color="#009E73", marker="o", ls=(0, (1, 2)),     label="Gradient boosting"),
+    "copilot":  dict(color="#000000", marker="D", ls=(0, (6, 2, 1, 2)), label="Copilot"),
+}
+STYLE_B = {
+    "chrono":   dict(color="#666666", marker="v", ls=(0, (1, 2)),     label="By time"),
+    "lookup":   dict(color="#000000", marker="D", ls=(0, (6, 2, 1, 2)), label="By evidence, label-anchored"),
+    "proposed": dict(color="#CC79A7", marker="P", ls="-",             label="By evidence, symptoms"),
 }
 
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman", "DejaVu Serif"],
+    # 8 pt everywhere: the figure is emitted at exactly one column, so LaTeX does
+    # not rescale it and 8 pt on paper is 8 pt here.
     "font.size": 8, "axes.labelsize": 8, "axes.titlesize": 8,
-    "xtick.labelsize": 7, "ytick.labelsize": 7, "legend.fontsize": 7,
-    "axes.linewidth": 0.6, "lines.linewidth": 1.3, "lines.markersize": 3.4,
+    "xtick.labelsize": 8, "ytick.labelsize": 8, "legend.fontsize": 7,
+    "axes.linewidth": 0.6, "lines.linewidth": 1.2, "lines.markersize": 3.2,
     "figure.dpi": 300,
 })
 
 df = pd.read_csv(CSV)
-fig, ax = plt.subplots(figsize=(3.5, 2.65))
+ag = pd.read_csv(CSV_AG) if os.path.exists(CSV_AG) else None
+if ag is None:
+    print("note: results/label_efficiency_agent.csv not found, drawing panel A only")
 
-for kind, st in STYLE.items():
+COL_CM = 8.89 / 2.54                       # one IEEE column, in inches
+fig, axes = plt.subplots(2 if ag is not None else 1, 1, figsize=(COL_CM, 4.35 if ag is not None else 2.65),
+                         sharex=True, constrained_layout=True)
+axes = np.atleast_1d(axes)
+axA = axes[0]
+
+
+def band(ax, x, m, s, st):
+    ax.fill_between(x, m - s, m + s, color=st["color"], alpha=0.13, linewidth=0)
+    ax.plot(x, m, color=st["color"], marker=st["marker"], linestyle=st["ls"], label=st["label"])
+
+
+# ---------------------------------------------------------------- panel A
+for kind in ("logistic", "rf", "hgb"):
     d = df[df.model == kind].sort_values("pct_of_dev_labels")
-    x = d["pct_of_dev_labels"].to_numpy()
-    m = d["F1macro_mean"].to_numpy()
-    s = d["F1macro_std"].to_numpy()
-    ax.fill_between(x, m - s, m + s, color=st["color"], alpha=0.15, linewidth=0)
-    ax.plot(x, m, color=st["color"], marker=st["marker"], label=st["label"])
+    band(axA, d["pct_of_dev_labels"].to_numpy(), d["F1macro_mean"].to_numpy(),
+         d["F1macro_std"].to_numpy(), STYLE[kind])
+if ag is not None:
+    g = ag[ag.arm == "lookup"].groupby("pct_of_dev_labels")["F1macro"].agg(["mean", "std"]).reset_index()
+    band(axA, g["pct_of_dev_labels"].to_numpy(), g["mean"].to_numpy(), g["std"].to_numpy(), STYLE["copilot"])
 
-# reference line: supervised ceiling = best macro-F1 at 100% of the labels
 ceiling = float(df[df.pct_of_dev_labels == 100]["F1macro_mean"].max())
-ax.axhline(ceiling, color="#3a3a3a", linestyle=(0, (5, 3)), linewidth=0.9)
-ax.text(0.22, ceiling + 0.013, f"supervised ceiling ({ceiling:.2f}, all labels)", fontsize=6, color="#444444")
+axA.axhline(ceiling, color="#3a3a3a", linestyle=(0, (5, 3)), linewidth=0.8)
+axA.text(0.22, ceiling + 0.02, "classical ceiling (%.2f)" % ceiling, fontsize=6.5, color="#444444")
+axA.axhline(TRIVIAL_F1, color="#999999", linestyle=(0, (2, 3)), linewidth=0.8)
+axA.text(0.22, TRIVIAL_F1 + 0.02, "trivial baseline (%.3f)" % TRIVIAL_F1, fontsize=6.5, color="#777777")
+axA.set_ylabel(r"Macro $F_1$ (0 to 1)")
+axA.set_ylim(0.0, 0.85)
+axA.legend(loc="lower right", frameon=False, ncol=1, handlelength=2.6)
+axA.set_title("(a)  Identifying the fault", fontsize=8, loc="left", pad=3)
 
-# trivial floor
-ax.axhline(TRIVIAL_F1, color="#999999", linestyle=(0, (2, 3)), linewidth=0.8)
-ax.text(0.22, TRIVIAL_F1 + 0.013, f"trivial baseline ({TRIVIAL_F1:.3f})", fontsize=6, color="#777777")
+# ---------------------------------------------------------------- panel B
+if ag is not None:
+    axB = axes[1]
+    g = ag[ag.arm == "lookup"].groupby("pct_of_dev_labels")["RootAlarmChrono"].agg(["mean", "std"]).reset_index()
+    band(axB, g["pct_of_dev_labels"].to_numpy(), g["mean"].to_numpy(), g["std"].to_numpy(), STYLE_B["chrono"])
+    for arm in ("lookup", "proposed"):
+        g = ag[ag.arm == arm].groupby("pct_of_dev_labels")["RootAlarmKB"].agg(["mean", "std"]).reset_index()
+        band(axB, g["pct_of_dev_labels"].to_numpy(), g["mean"].to_numpy(), g["std"].to_numpy(), STYLE_B[arm])
+    axB.set_ylabel("Root alarm found\n(fraction of episodes)")
+    axB.set_ylim(0.0, 0.85)
+    axB.legend(loc="lower right", frameon=False, handlelength=2.6)
+    axB.set_title("(b)  Naming the alarm that started it", fontsize=8, loc="left", pad=3)
+    bottom = axB
+else:
+    bottom = axA
 
-ax.set_xscale("log")
 ticks = sorted(df["pct_of_dev_labels"].unique())
-ax.set_xticks(ticks)
-ax.set_xticklabels([f"{t:g}" for t in ticks])
-ax.minorticks_off()
-ax.set_xlabel("Labeled runs (% of development pool, log scale)")
-ax.set_ylabel(r"Macro $F_1$")
-ax.set_ylim(0.0, 0.72)
-ax.set_xlim(0.2, 130)
-ax.grid(True, which="major", color="#e8e8e8", linewidth=0.5)
-ax.set_axisbelow(True)
-for side in ("top", "right"):
-    ax.spines[side].set_visible(False)
-ax.legend(loc="lower right", frameon=False, bbox_to_anchor=(1.0, 0.10))
+bottom.set_xscale("log")
+bottom.set_xticks(ticks)
+bottom.set_xticklabels(["%g" % t for t in ticks])
+bottom.minorticks_off()
+bottom.set_xlabel("Labeled runs (% of the development pool, log scale)")
+bottom.set_xlim(0.2, 130)
+for ax in axes:
+    ax.grid(True, which="major", color="#e8e8e8", linewidth=0.5)
+    ax.set_axisbelow(True)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
 
-fig.tight_layout(pad=0.3)
-pdf = os.path.join(RES, "label_efficiency_curve.pdf")
-png = os.path.join(RES, "label_efficiency_curve.png")
-fig.savefig(pdf, bbox_inches="tight")
-fig.savefig(png, bbox_inches="tight")
+# No bbox_inches="tight": it would change the emitted width and make LaTeX rescale
+# the text below 8 pt. The figure is already exactly one column wide.
+for ext in ("pdf", "png"):
+    out = os.path.join(RES, "label_efficiency_curve." + ext)
+    fig.savefig(out)
+    print("wrote", out)
 plt.close(fig)
 
-print("saved:")
-print(" ", pdf)
-print(" ", png)
-print(f"\nmacro-F1 vs % labels | supervised ceiling = {ceiling:.4f} | matplotlib {matplotlib.__version__}")
-print(r"LaTeX usage:  \includegraphics[width=\columnwidth]{label_efficiency_curve.pdf}")
+# ---------------------------------------------------------------- what it says
+if ag is not None:
+    lk = ag[ag.arm == "lookup"].groupby("pct_of_dev_labels")[["F1macro", "RootAlarmKB"]].mean()
+    top_f1, top_rk = lk.loc[100.0, "F1macro"], lk.loc[100.0, "RootAlarmKB"]
+    print("\nlabels needed to reach 90% of the value at full supervision (label-anchored arm):")
+    for col, top, name in (("F1macro", top_f1, "macro-F1"), ("RootAlarmKB", top_rk, "root alarm")):
+        hit = lk[lk[col] >= 0.90 * top]
+        if len(hit):
+            print("  %-11s %.4f at full supervision, 90%% of it (%.4f) reached with %g%% of the labels"
+                  % (name, top, 0.90 * top, hit.index[0]))

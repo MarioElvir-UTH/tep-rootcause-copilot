@@ -41,13 +41,15 @@ STEPS = [
     ("06_domain_features_nonlinear.py", "Do domain features help nonlinear models? (RF/HistGB)"),
     ("07_cv_audit.py",                 "Cross-validation leakage audit (4 checks)"),
     ("08_label_efficiency.py",         "Label-efficiency curve (the measurable contribution)"),
-    ("09_plot_label_efficiency.py",    "Render the label-efficiency figure (PDF/PNG)"),
     ("10_inference_time.py",           "Training time + inference latency (Table II cost)"),
     ("11_train_dl.py",                 "Deep learning v1: MLP + 1D-CNN under the Week-2 contract"),
     ("12_agente_v1.py",                "Copilot agent v1 + its ablation (Table II proposed row)"),
     ("13_plot_architecture.py",        "Render the architecture figure (Figure 1) from the run stamp"),
     ("14_effect_sizes.py",             "Paired fold-by-fold differences and effect sizes for every comparison"),
     ("15_human_load.py",               "Coverage, precision and what each arm costs the operator"),
+    ("16_label_efficiency_agent.py",   "Label efficiency of the copilot and of the root-alarm rubric"),
+    # 09 draws both panels of the main figure, so it runs once 16 has produced the second one.
+    ("09_plot_label_efficiency.py",    "Render the main figure, both panels (PDF/PNG)"),
     ("checkpoint_datos.py",            "Data checkpoint (live evidence)"),
 ]
 
