@@ -236,7 +236,8 @@ which `02_make_partition.py` reproduces exactly.
 17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
 18_worst_errors.py              per-class errors and root-alarm recall at N -> worst_errors.csv
 19_tabla2_json.py               every number of Table II in one file -> results/tabla2.json
-resultados.py                   generate Table II from that JSON -> paper/tabla2.tex
+resultados.py                   Table II and the Results paragraph, generated and
+                                spliced -> paper/tabla2.tex, paper/resultados.tex
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
@@ -273,6 +274,8 @@ than positional, so this is the map:
 |---|---|---|
 | Table II, the numbers | `results/tabla2.json` | `19_tabla2_json.py` |
 | Table II, the LaTeX | `paper/tabla2.tex`, spliced into the manuscript | `resultados.py` |
+| Section V, the Results paragraph | `paper/resultados.tex`, spliced into the manuscript | `resultados.py` |
+| The same paragraph, sentence by sentence | `paper/resultados.md` | `resultados.py` |
 | Figure 1, the architecture | `results/architecture_loop.pdf` | `13_plot_architecture.py` |
 | Figure 2, the main figure | `results/label_efficiency_curve.pdf` | `09_plot_label_efficiency.py` |
 | Cost column | `results/cost_table.csv` | `17_cost_table.py` |
@@ -281,8 +284,8 @@ than positional, so this is the map:
 | Root-alarm recall at N | `results/root_alarm_recall.csv` | `18_worst_errors.py` |
 | Worst cases, with their episode id | `results/samples/05_costly_errors.md` | selected by `18_worst_errors.py` |
 
-`python resultados.py --check` compares the table in the manuscript against the one
-the data generates and exits non-zero if they differ. It exists because they did
+`python resultados.py --check` compares both the table and the Results paragraph in
+the manuscript against what the data generates, and exits non-zero if either differs. It exists because they did
 drift once: seven of the eight cost cells had stopped matching their sources, and
 the cause was that the table lived in the manuscript as text.
 

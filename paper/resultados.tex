@@ -1,0 +1,18 @@
+Eight systems are compared on the Tennessee Eastman Process under one
+protocol: a trivial floor, three classical models, two networks, and the
+copilot with its ablation, all scored on validation folds of a partition
+frozen by simulation run with the test set sealed, over 15 folds from 3 seeds.
+The proposed copilot reaches $0.741 \pm 0.008$ macro-averaged $F_1$ and $0.845
+\pm 0.009$ Recall@3. Against the best classical model, logistic regression at
+$0.652 \pm 0.005$, the paired difference is $+0.089 \pm 0.004$ over the seeds,
+which is larger than either dispersion and keeps its sign in all 15 folds. The
+ablation separates the two things the agent does: the loop is worth $+0.056
+\pm 0.001$ with $d = 7.0$ over the same network scored once, while retrieval
+costs $0.011$ on the primary metric, so the proposed method does not beat its
+own ablation there. It stores 18,405 numbers, trains nothing because it loads
+the network saved for each fold, answers in 0.203~ms per episode, and calls no
+language model, so its token count is zero. The main limitation is coverage
+rather than accuracy: requiring the classifier and the retrieval to agree
+makes the copilot hand 59\% of episodes to the operator against 26\% for the
+ablation, while accuracy on the episodes it does answer goes from 96.0\% to
+97.1\%.
