@@ -1,5 +1,5 @@
 r"""
-S3: the first deep-learning row of Table II, under the Week-2 contract.
+The first deep-learning row of Table II, under the pre-registered contract.
 
 Everything here was fixed in PROTOCOLO.md ("Week 3 pre-registration") BEFORE this
 script was written or run. Nothing below may be retuned after seeing a score.

@@ -42,7 +42,7 @@ STEPS = [
     ("07_cv_audit.py",                 "Cross-validation leakage audit (4 checks)"),
     ("08_label_efficiency.py",         "Label-efficiency curve (the measurable contribution)"),
     ("10_inference_time.py",           "Training time + inference latency (Table II cost)"),
-    ("11_train_dl.py",                 "Deep learning v1: MLP + 1D-CNN under the Week-2 contract"),
+    ("11_train_dl.py",                 "Deep learning v1: MLP + 1D-CNN under the pre-registered contract"),
     ("12_agente_v1.py",                "Copilot agent v1 + its ablation (Table II proposed row)"),
     ("13_plot_architecture.py",        "Render the architecture figure (Figure 1) from the run stamp"),
     ("14_effect_sizes.py",             "Paired fold-by-fold differences and effect sizes for every comparison"),
