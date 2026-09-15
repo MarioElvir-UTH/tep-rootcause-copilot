@@ -45,6 +45,7 @@ STEPS = [
     ("10_inference_time.py",           "Training time + inference latency (Table II cost)"),
     ("11_train_dl.py",                 "Deep learning v1: MLP + 1D-CNN under the Week-2 contract"),
     ("12_agente_v1.py",                "Copilot agent v1 + its ablation (Table II proposed row)"),
+    ("13_plot_architecture.py",        "Render the architecture figure (Figure 1) from the run stamp"),
     ("checkpoint_datos.py",            "Data checkpoint (live evidence)"),
 ]
 

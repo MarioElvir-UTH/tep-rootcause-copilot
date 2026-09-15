@@ -54,6 +54,9 @@ in that order (see the [Fast path](#3-reproduce) below).
   (`results/agente_comparison.csv`, `results/logs/decisiones_muestra.jsonl`).
 - **Label-efficiency curve**: F1-macro / Recall@k vs. fraction of labels used
   (`results/label_efficiency_curve.{csv,pdf,png}`).
+- **The architecture figure**: drawn by `13_plot_architecture.py` from
+  `results/agente_env.json`, so the diagram cannot drift away from the constants
+  the agent actually ran with (`results/architecture_loop.{pdf,png}`).
 - A **cross-validation leakage audit** (4 checks) confirming the protocol is honest.
 
 **Task definition (deliberately harder than typical TEP benchmarks):** one label
@@ -117,7 +120,7 @@ dataverse_files/
 python run_all.py
 ```
 
-Runs the 13 steps in dependency order, stops at the first failure, and lists the
+Runs the 14 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
@@ -200,6 +203,7 @@ which `02_make_partition.py` reproduces exactly.
 10_inference_time.py            training time + inference latency (Table II cost)
 11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
 12_agente_v1.py                 copilot agent v1: alarm layer, loop, three arms -> Table II
+13_plot_architecture.py         render the architecture figure (Figure 1) from the run stamp
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
