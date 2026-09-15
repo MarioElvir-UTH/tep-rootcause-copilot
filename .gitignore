@@ -20,6 +20,16 @@ Anteproyecto_*.md
 # Paper source (mid-draft; add later if you choose to host it here)
 Anteproyecto_*.tex
 
+# Compiled paper and LaTeX build noise from the root. The figures under results/
+# ARE versioned: this only keeps the compiled manuscript out of the artifact.
+/*.pdf
+/*.aux
+/*.log
+/*.out
+/*.bbl
+/*.blg
+/*.synctex.gz
+
 # Python / OS noise
 __pycache__/
 *.py[cod]
