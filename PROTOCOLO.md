@@ -75,7 +75,15 @@ centred with `\multicolumn` because the column itself is right-aligned for the
 numbers. The exact column layout is still open and may be revisited when the
 formatting pass happens at the end.
 
-## Experimental configuration (seven sentences)
+## Experimental configuration: the classics paragraph (seven sentences)
+
+> Section IV of the paper no longer ends here. It continues with two more
+> paragraphs, one for the two networks and one for the copilot, which declare
+> every constant a reviewer needs to judge the pre-registration. Those constants
+> are NOT restated below to avoid a second source that can drift: they live in
+> `Week 3 pre-registration` and `Proposed method pre-registration` further down,
+> and `results/dl_env.json` and `results/agente_env.json` record what actually
+> ran. The paper's wording is the rendering; these sections are the source.
 
 *Experimental configuration.* (1) The primary dataset is the public Tennessee
 Eastman Process in the large-scale simulation release of Rieth et al.,
