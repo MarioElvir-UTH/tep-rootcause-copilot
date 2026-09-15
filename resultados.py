@@ -143,6 +143,8 @@ loop = E[("ablation", "cnn")]
 retr = E[("ablation", "proposed")]
 c = pro["cost"]
 defer_pro, defer_abl = hl.loc["proposed", "defer_pct"], hl.loc["ablation", "defer_pct"]
+acc_pro, acc_abl = (hl.loc["proposed", "acc_when_generate"],
+                    hl.loc["ablation", "acc_when_generate"])
 
 S = [
  ("what is compared, and on what partition",
@@ -177,9 +179,9 @@ S = [
  ("the main limitation",
   "The main limitation is coverage rather than accuracy: requiring the classifier and "
   "the retrieval to agree makes the copilot hand %.0f\\%% of episodes to the operator "
-  "against %.0f\\%% for the ablation, so it buys a small gain in precision with a large "
-  "loss in how often it answers at all."
-  % (defer_pro, defer_abl)),
+  "against %.0f\\%% for the ablation, while accuracy on the episodes it does answer "
+  "goes from %.1f\\%% to %.1f\\%%."
+  % (defer_pro, defer_abl, acc_abl, acc_pro)),
 ]
 
 md = ["# Results, in six sentences", "",
