@@ -1,0 +1,9 @@
+row,size,size_is,train_s,inference_ms,source
+Trivial,21,class priors,0.00033860000007734925,7.162857142854288e-05,17_cost_table.py
+Logistic reg.,2205,coefficients and intercepts,3.100633000000016,0.0012236380952388225,17_cost_table.py
+Random forest,98684,decision nodes over 300 trees,6.1524071999999705,0.054335447619061075,17_cost_table.py
+Gradient boost.,67499,decision nodes over 1113 boosted predictors,8.312705900000083,0.03140575238094676,17_cost_table.py
+v1a MLP,9493,trainable parameters,7.763120500000014,0.0003876095237977833,17_cost_table.py
+v1b 1D-CNN,16117,trainable parameters,15.66061979999995,0.006733828571430509,17_cost_table.py
+No agent (abl.),16221,"network and alarm limits, no retrieval",0.0,0.10259974921040001,size here; latency from 12_agente_v1.py
+Copilot v1,18405,"network, alarm limits, document-variable matrix and class signatures",0.0,0.2027549238095,size here; latency from 12_agente_v1.py

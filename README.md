@@ -52,6 +52,10 @@ in that order (see the [Fast path](#3-reproduce) below).
 - **The agent measurements**: root-alarm identification with and without knowledge,
   the decomposed grounding rubric over three arms, and the action distribution
   (`results/agente_comparison.csv`, `results/logs/decisiones_muestra.jsonl`).
+- **The cost column of Table II**: size, training seconds and inference milliseconds
+  for all eight rows, measured in one run so they are comparable
+  (`results/cost_table.csv`). Size counts what each model stores to make a decision;
+  the two timings are wall-clock and move with machine load.
 - **How every comparison in the paper is settled**: the macro-F1 of all nine models
   on each of the 15 folds (`results/per_fold_f1.csv`), and for each pair the paired
   difference averaged by seed, Cohen's d, and whether the mean ± std intervals
@@ -137,7 +141,7 @@ dataverse_files/
 python run_all.py
 ```
 
-Runs the 17 steps in dependency order, stops at the first failure, and lists the
+Runs the 18 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
@@ -224,6 +228,7 @@ which `02_make_partition.py` reproduces exactly.
 14_effect_sizes.py              paired differences and effect sizes -> per_fold_f1.csv, effect_sizes.csv
 15_human_load.py                coverage, precision and operator review load -> human_load.csv
 16_label_efficiency_agent.py    label efficiency of the copilot and the root-alarm rubric
+17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment

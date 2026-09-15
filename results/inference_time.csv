@@ -1,5 +1,5 @@
 model,train_s,inference_ms
-Trivial (majority class),0.0004,0.0001
-Logistic regression,3.022,0.0028
-Random forest,6.318,0.0809
-Gradient boosting,19.658,0.0733
+Trivial (majority class),0.0003,0.0001
+Logistic regression,3.185,0.0013
+Random forest,6.099,0.0545
+Gradient boosting,8.571,0.0317
