@@ -24,8 +24,8 @@ of each fold's training portion, retrieval over the class signatures of that fol
 and the same knowledge-driven priority.
 
 Outputs:
-  results/worst_errors.csv      per class: F1, recall, what it is taken for, and how often
-  results/root_alarm_recall.csv root-alarm recall at N = 1 to 5, per arm
+  results/errors/worst_errors.csv      per class: F1, recall, what it is taken for, how often
+  results/errors/root_alarm_recall.csv root-alarm recall at N = 1 to 5, per arm
 """
 import os
 import json
@@ -37,6 +37,8 @@ from sklearn.model_selection import StratifiedGroupKFold
 
 BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
 RES = os.path.join(BASE, "results")
+ERR = os.path.join(RES, "errors")
+os.makedirs(ERR, exist_ok=True)
 MODELS = os.path.join(RES, "models")
 LOG = os.path.join(RES, "logs", "decisiones.jsonl")
 N_MAX = 5
@@ -92,7 +94,7 @@ for c in CLASSES:
                     moves_window=float((pro.loc[m, "iters"] == 2).mean()),
                     defers=float((pro.loc[m, "act"] == "defer").mean())))
 p = pd.DataFrame(per).set_index("clase")
-p.to_csv(os.path.join(RES, "worst_errors.csv"))
+p.to_csv(os.path.join(ERR, "worst_errors.csv"))
 
 faults = p.drop(index=0)
 missed = int(faults["called_normal"].sum())                     # a fault read as normal
@@ -192,7 +194,7 @@ for seed in EST_SEEDS:
 rr = pd.DataFrame([{"ordering": a, "N": n, "recall": float(np.mean(hits[(a, n)])),
                     "episodes": len(hits[(a, n)])}
                    for a in ("chrono", "lookup", "proposed") for n in range(1, N_MAX + 1)])
-rr.to_csv(os.path.join(RES, "root_alarm_recall.csv"), index=False)
+rr.to_csv(os.path.join(ERR, "root_alarm_recall.csv"), index=False)
 print("\nRECALL DE LA ALARMA RAIZ DENTRO DE LAS PRIMERAS N ALARMAS")
 print("  %-28s %s" % ("orden", "  ".join("N=%d" % n for n in range(1, N_MAX + 1))))
 for a, lab in (("chrono", "por tiempo"), ("lookup", "por evidencia, anclaje"),
@@ -209,4 +211,4 @@ for c in worst_faults:
     picked.append(ep)
     print("  %-10s F1 %.3f   primer episodio llamado normal: id %s, semilla %d, pliegue %d"
           % (NAME[c], p.loc[c, "F1"], list(ep.run), ep.seed, ep.fold))
-print("\nwrote results/worst_errors.csv and results/root_alarm_recall.csv")
+print("\nwrote results/errors/worst_errors.csv and results/errors/root_alarm_recall.csv")

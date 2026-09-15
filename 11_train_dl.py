@@ -16,7 +16,8 @@ THE SIX RULES (each one is marked [R#] where it is enforced in the code):
   [R5] Same search effort as each classic: 3 pre-declared configurations.
   [R6] Cost recorded in the same run: parameters, training seconds, inference ms, machine.
 
-Outputs: results/dl_comparison.csv, results/dl_confusion_matrix.csv, results/dl_env.json,
+Outputs: results/dl_comparison.csv, results/errors/dl_confusion_matrix.csv,
+         results/dl_env.json,
 and one loss curve per estimation run in results/curves/.
 """
 import os, json, time, platform, copy
@@ -33,6 +34,8 @@ import matplotlib.pyplot as plt
 BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
 DATA = os.path.join(BASE, "dataverse_files")
 RES = os.path.join(BASE, "results")
+ERR = os.path.join(RES, "errors")
+os.makedirs(ERR, exist_ok=True)
 CURVES = os.path.join(RES, "curves")
 os.makedirs(CURVES, exist_ok=True)
 # One trained model per fold and seed, so the agent scores WITHOUT retraining and
@@ -375,7 +378,7 @@ f1c = f1_score(y, oof, average=None, labels=CLASSES)
 hard = [int(c) for c in CLASSES if f1c[c] < 0.90]
 easy = [int(c) for c in CLASSES if c not in hard]
 pd.DataFrame(confusion_matrix(y, oof, labels=CLASSES), index=CLASSES, columns=CLASSES).to_csv(
-    os.path.join(RES, "dl_confusion_matrix.csv"))
+    os.path.join(ERR, "dl_confusion_matrix.csv"))
 print(f"\nout-of-fold per-class F1 (seed 42, {bk}): {len(easy)} classes at F1>=0.90 "
       f"(mean {f1c[easy].mean():.3f}), {len(hard)} hard classes (mean {f1c[hard].mean():.3f})")
 print("  hard classes:", ", ".join(f"{c}:{f1c[c]:.2f}" for c in hard))
@@ -388,5 +391,5 @@ env = {"python": platform.python_version(), "torch": torch.__version__,
        "machine": "Intel Core i5-13420H, 12 threads, CPU only"}
 with open(os.path.join(RES, "dl_env.json"), "w", encoding="utf-8") as f:
     json.dump(env, f, indent=2)
-print("\nsaved: results/dl_comparison.csv, dl_confusion_matrix.csv, dl_env.json, "
+print("\nsaved: results/dl_comparison.csv, results/errors/dl_confusion_matrix.csv, dl_env.json, "
       f"and {len(rows) * len(EST_SEEDS) * K} loss curves in results/curves/")

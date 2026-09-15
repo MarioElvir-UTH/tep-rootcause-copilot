@@ -282,11 +282,11 @@ than positional, so this is the map:
 | The curve behind Figure 2, agent arms | `results/label_efficiency_agent.csv` | `16_label_efficiency_agent.py` |
 | Cost column | `results/cost_table.csv` | `17_cost_table.py` |
 | Paired differences and effect sizes | `results/effect_sizes.csv` | `14_effect_sizes.py` |
-| Confusion and the worst classes | `results/worst_errors.csv` | `18_worst_errors.py` |
-| Confusion matrix, best classic | `results/best_model_confusion_matrix.csv` | `04_classics_cv.py` |
-| Confusion matrix, the 1D-CNN | `results/dl_confusion_matrix.csv` | `11_train_dl.py` |
-| Root-alarm recall at N | `results/root_alarm_recall.csv` | `18_worst_errors.py` |
-| Worst cases, with their episode id | `results/samples/05_costly_errors.md` | selected by `18_worst_errors.py` |
+| Confusion and the worst classes | `results/errors/worst_errors.csv` | `18_worst_errors.py` |
+| Confusion matrix, best classic | `results/errors/best_model_confusion_matrix.csv` | `04_classics_cv.py` |
+| Confusion matrix, the 1D-CNN | `results/errors/dl_confusion_matrix.csv` | `11_train_dl.py` |
+| Root-alarm recall at N | `results/errors/root_alarm_recall.csv` | `18_worst_errors.py` |
+| Worst cases, with their episode id | `results/errors/costly_errors.md` | selected by `18_worst_errors.py` |
 
 `python resultados.py --check` compares both the table and the Results paragraph in
 the manuscript against what the data generates, and exits non-zero if either differs. It exists because they did

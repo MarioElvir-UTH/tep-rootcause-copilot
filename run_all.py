@@ -58,10 +58,10 @@ STEPS = [
 ]
 
 RESULT_FILES = [
-    "baseline_comparison.csv", "classics_cv_comparison.csv", "best_model_confusion_matrix.csv",
+    "baseline_comparison.csv", "classics_cv_comparison.csv", "errors/best_model_confusion_matrix.csv",
     "domain_feature_importance.csv", "domain_nonlinear_comparison.csv", "cv_audit_single_vs_cv.csv",
     "label_efficiency_curve.csv", "label_efficiency_curve.pdf", "inference_time.csv",
-    "dl_comparison.csv", "dl_confusion_matrix.csv",
+    "dl_comparison.csv", "errors/dl_confusion_matrix.csv",
     "agente_comparison.csv", "logs/decisiones.jsonl",
 ]
 

@@ -32,6 +32,8 @@ from sklearn.metrics import f1_score, confusion_matrix
 BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
 DATA = os.path.join(BASE, "dataverse_files")
 RES = os.path.join(BASE, "results"); os.makedirs(RES, exist_ok=True)
+ERR = os.path.join(RES, "errors")
+os.makedirs(ERR, exist_ok=True)
 VARS = [f"xmeas_{i}" for i in range(1, 42)] + [f"xmv_{i}" for i in range(1, 12)]
 ONSET_TRAIN, W = 21, 20
 K, SEL_SEED, EST_SEEDS = 5, 0, [5, 17, 42]
@@ -164,12 +166,14 @@ print("per-class F1 (0=normal, 1-20=faults):")
 print("  " + "  ".join(f"{c}:{f1c[c]:.2f}" for c in CLASSES))
 print("hard faults -> F1  3:%.2f  9:%.2f  15:%.2f" % (f1c[3], f1c[9], f1c[15]))
 cm = confusion_matrix(y, oof, labels=CLASSES)
-pd.DataFrame(cm, index=CLASSES, columns=CLASSES).to_csv(os.path.join(RES, "best_model_confusion_matrix.csv"))
+pd.DataFrame(cm, index=CLASSES, columns=CLASSES).to_csv(
+    os.path.join(ERR, "best_model_confusion_matrix.csv"))
 
 versions = {"python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__,
             "scikit-learn": sklearn.__version__, "cv": f"StratifiedGroupKFold k={K}",
             "sel_seed": SEL_SEED, "est_seeds": EST_SEEDS, "window": [ONSET_TRAIN, ONSET_TRAIN + W]}
 with open(os.path.join(RES, "classics_cv_env.json"), "w") as f:
     json.dump(versions, f, indent=2)
-print("\nsaved: results/classics_cv_comparison.csv, best_model_confusion_matrix.csv, classics_cv_env.json")
+print("\nsaved: results/classics_cv_comparison.csv, "
+      "results/errors/best_model_confusion_matrix.csv, classics_cv_env.json")
 print("versions:", versions)
