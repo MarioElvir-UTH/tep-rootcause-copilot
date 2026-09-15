@@ -169,7 +169,11 @@ ax.text(CX + 1.2, (op["y0"] + pla["y1"]) / 2.0, "  only after approval",
 fig.tight_layout(pad=0.12)
 for ext in ("pdf", "png"):
     out = os.path.join(RES, f"architecture_loop.{ext}")
-    fig.savefig(out, bbox_inches="tight", pad_inches=0.02)
+    # CreationDate=None keeps the PDF byte-identical across runs: without it every
+    # re-run shows up as a change to a file whose content did not change, which is
+    # noise in a repository whose claim is that re-running reproduces the results.
+    fig.savefig(out, bbox_inches="tight", pad_inches=0.02,
+                metadata={"CreationDate": None} if ext == "pdf" else None)
     print("wrote", out)
 plt.close(fig)
 
