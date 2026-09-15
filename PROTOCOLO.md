@@ -10,7 +10,7 @@
 > The `.tex` (Evaluation, Abstract, objective 4) and the figure were reconciled
 > to this choice.
 
-## Table II (LaTeX, IEEEtran): classics filled, proposed method pending
+## Table II (LaTeX, IEEEtran): final, all rows filled
 
 ```latex
 \begin{table}[!t]
@@ -24,7 +24,10 @@ training seconds / amortized inference milliseconds per episode, where size
 counts stored coefficients for the linear model and the networks and decision
 nodes for the tree ensembles. Size is exact and reproducible; the two timings are
 wall-clock on that machine and move with processor and load, so they indicate
-relative cost rather than fixed values.}
+relative cost rather than fixed values. The two agent rows train nothing, since
+they reuse the saved network of each fold, but they pay a cost the table cannot
+show: the loop moves the observation window in 66\% of decisions, which is
+30~minutes of plant time.}
 \label{tab:results}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
@@ -38,20 +41,30 @@ Random forest   & $0.638 \pm 0.005$ & $0.703 \pm 0.006$ & 98,740 / 6 / 0.081 \\
 Gradient boost. & $0.640 \pm 0.005$ & $0.654 \pm 0.007$ & 67,499 / 20 / 0.073 \\
 \midrule
 v1a MLP         & $0.652 \pm 0.013$ & $0.754 \pm 0.017$ & 9,493 / 3 / $<$0.001 \\
-v1b 1D-CNN      & $\mathbf{0.696 \pm 0.006}$ & $\mathbf{0.786 \pm 0.007}$ & 16,117 / 17 / 0.004 \\
+v1b 1D-CNN      & $0.696 \pm 0.006$ & $0.786 \pm 0.007$ & 16,117 / 17 / 0.004 \\
 \midrule
-Proposed method & \multicolumn{3}{c}{\emph{por llenar} (Week 4)} \\
+No agent (abl.) & $\mathbf{0.752 \pm 0.009}$ & $\mathbf{0.852 \pm 0.010}$ & 17,209 / 0 / 0.103 \\
+Copilot v1      & $0.741 \pm 0.008$ & $0.845 \pm 0.009$ & 17,209 / 0 / 0.203 \\
 \bottomrule
 \end{tabular}
 \end{table}
 ```
 
 Rows: trivial floor + three classics (one linear, two tree ensembles) + the two
-networks + proposed method. The floor and the classics come from
-`classics_cv_comparison.csv`, the networks from `dl_comparison.csv`, and the cost
-figures from `10_inference_time.py` and `11_train_dl.py`, all run under this exact
-protocol. The empty proposed-method row is the Week 4 commitment. Best macro-$F_1$
-and best Recall@3 in bold (v1b 1D-CNN).
+networks + the two agent arms. The floor and the classics come from
+`classics_cv_comparison.csv`, the networks from `dl_comparison.csv`, the agent
+arms from `agente_comparison.csv`, and the cost figures from
+`10_inference_time.py`, `11_train_dl.py` and `12_agente_v1.py`, all run under this
+exact protocol. Best macro-$F_1$ and best Recall@3 in bold (the ablation, at
+$0.752$). The proposed method does not win the primary metric and the table says
+so: what retrieval buys is reported separately in Section V, not hidden here.
+
+A third arm was measured and is deliberately absent from Table II: `lookup`,
+which grounds the recommendation by citing the document of the predicted class.
+It shares the classifier with the ablation, so its macro-$F_1$ and Recall@3 are
+identical to the ablation row and adding it would repeat two numbers. It is
+reported where it differs, on grounding and root-alarm identification, in the
+text of Section V.
 
 One cost column, following the Week 3 table template: it reads size / training
 seconds / amortized per-episode inference latency, all measured on the same run

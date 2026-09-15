@@ -46,8 +46,12 @@ in that order (see the [Fast path](#3-reproduce) below).
 
 ## What this reproduces
 
-- **Table II**: trivial floor, three classical baselines, and two networks (MLP, 1D-CNN)
+- **Table II**: trivial floor, three classical baselines, two networks (MLP, 1D-CNN),
+  and the copilot agent with its ablation
   (F1-macro primary; Recall@1/Recall@3/MRR secondary; per-episode inference latency as cost).
+- **The agent measurements**: root-alarm identification with and without knowledge,
+  the decomposed grounding rubric over three arms, and the action distribution
+  (`results/agente_comparison.csv`, `results/logs/decisiones_muestra.jsonl`).
 - **Label-efficiency curve**: F1-macro / Recall@k vs. fraction of labels used
   (`results/label_efficiency_curve.{csv,pdf,png}`).
 - A **cross-validation leakage audit** (4 checks) confirming the protocol is honest.
@@ -107,16 +111,20 @@ dataverse_files/
 
 ## 3. Reproduce
 
-**Everything (one command, ~80 min on 12 CPU threads, no GPU):**
+**Everything (one command, 12 CPU threads, no GPU):**
 
 ```bash
 python run_all.py
 ```
 
-Runs the 11 steps in dependency order, stops at the first failure, and lists the
+Runs the 13 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
+
+Steps 1-10 were measured at about 80 min on the reference machine; steps 11 and
+12 (network training over 15 folds and the agent over three arms) add to that.
+Wall-clock is indicative and moves with processor and load.
 
 **Fast path, just Table II (~18-20 min):** run only the core steps:
 
@@ -130,9 +138,14 @@ python 10_inference_time.py   # training time + inference latency (Table II cost
 Add `08_label_efficiency.py` then `09_plot_label_efficiency.py` to regenerate the
 figure (both need the feature cache built by step 04).
 
+**Agent rows of Table II:** `11_train_dl.py` (needs PyTorch, writes one checkpoint
+per fold to `results/models/`) then `12_agente_v1.py`, which reuses those
+checkpoints and does not retrain.
+
 ## 4. Expected results (frozen)
 
-`results/classics_cv_comparison.csv` and `results/inference_time.csv` should match:
+`results/classics_cv_comparison.csv`, `results/dl_comparison.csv`,
+`results/agente_comparison.csv` and `results/inference_time.csv` should match:
 
 | Model | F1-macro | Recall@3 | Inference |
 |---|---|---|---|
@@ -141,12 +154,31 @@ figure (both need the feature cache built by step 04).
 | Random forest | 0.638 ± 0.005 | 0.703 ± 0.006 | 0.081 ms |
 | Gradient boosting | 0.640 ± 0.005 | 0.654 ± 0.007 | 0.073 ms |
 | Neural net v1a (MLP) | 0.652 ± 0.013 | 0.754 ± 0.017 | < 0.001 ms |
-| **Neural net v1b (1D-CNN)** | **0.696 ± 0.006** | **0.786 ± 0.007** | 0.004 ms |
+| Neural net v1b (1D-CNN) | 0.696 ± 0.006 | 0.786 ± 0.007 | 0.004 ms |
+| **No agent (ablation)** | **0.752 ± 0.009** | **0.852 ± 0.010** | 0.103 ms |
+| Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 0.203 ms |
 
 The MLP sees the same 104 features as the classics and ties logistic regression;
 the 1D-CNN sees the raw `20 x 52` window and beats it by 0.044 macro-F1, about
 seven times the fold-to-fold standard deviation. The gain comes from the
 representation, not from the architecture.
+
+The last two rows are the same 1D-CNN placed inside the agent loop. Both gain
+0.056 macro-F1 over scoring it once, because the loop moves the observation
+window forward in 66% of decisions. That gain belongs to the loop and is present
+in both arms, so the ablation does not measure it; what the ablation isolates is
+retrieval, and retrieval costs 0.011 macro-F1. **The proposed method does not beat
+its own ablation on the primary metric.** What retrieval does buy is measured
+separately and reported in the paper. Ordering alarms chronologically identifies
+the root alarm in 0.349 of the episodes whose cause the source documents;
+weighting each alarm by retrieved evidence raises that to 0.619 for the
+label-anchored arm (`lookup`, the third arm produced by `12_agente_v1.py`) and to
+0.383 for the proposed symptom-based arm, while the same prioritization with no
+knowledge at all changes nothing. What the proposed arm alone provides is a
+confidence signal: classifier and retrieval agree on 42.7% of episodes and are
+then right 94.0% of the time, against 60.4% when they disagree. The `lookup` arm
+shares its classifier with the ablation, so its F1-macro and Recall@3 repeat that
+row and it is not listed above.
 
 Mean ± std over **15 folds** (StratifiedGroupKFold-by-run, k=5, seeds {5,17,42};
 selection seed 0). Determinism is further guaranteed by the committed partition
@@ -167,17 +199,31 @@ which `02_make_partition.py` reproduces exactly.
 09_plot_label_efficiency.py     render the figure (PDF/PNG)
 10_inference_time.py            training time + inference latency (Table II cost)
 11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
+12_agente_v1.py                 copilot agent v1: alarm layer, loop, three arms -> Table II
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
 PROTOCOLO.md                    canonical experimental protocol
 references.bib                  bibliography
+kb/                             reproducible TEP knowledge base (21 documents, JSON)
+prompts/                        fixed reasoning prompt, declared and not executed (see below)
 splits/                         frozen partition manifest + metadata (committed)
 results/                        result tables (CSV), env stamps (JSON), figure (PDF/PNG)
 ```
 
-Feature caches (`results/*.parquet`) and the raw data are intentionally **not**
-committed: both are regenerated deterministically from the steps above.
+Feature caches (`results/*.parquet`, `results/*.npy`), the per-fold network
+checkpoints (`results/models/`), the full decision log
+(`results/logs/decisiones.jsonl`, 94,500 lines) and the raw data are intentionally
+**not** committed: all of them are regenerated deterministically from the steps
+above. A 1,000-line sample of the decision log is committed as
+`results/logs/decisiones_muestra.jsonl`.
+
+**The reasoning step is rule-based, not a language model.** `12_agente_v1.py`
+produces the recommendation from a fixed template over the retrieved documents, so
+the pipeline runs offline with no API key and reproduces exactly.
+`prompts/razona.txt` is the prompt that a language-model version would use; it is
+**declared and not executed**, and no number in this repository depends on it.
+`results/agente_env.json` records this.
 
 ## 6. AI assistance declaration
 

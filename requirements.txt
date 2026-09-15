@@ -6,7 +6,7 @@
 # so use that interpreter (or a venv created from it), then:
 #     python -m pip install -r requirements.txt
 #
-# --- Core pipeline (scripts 01-09 + checkpoint): required to reproduce all results ---
+# --- Core pipeline (scripts 01-10 + checkpoint): the classical half of Table II ---
 numpy==2.5.3
 pandas==3.0.5
 scikit-learn==1.9.1
@@ -14,8 +14,13 @@ pyreadr==0.5.6            # reads the Rieth TEP .RData files
 pyarrow==25.0.1          # parquet feature caches (dev_features, dev_domain_features)
 matplotlib==3.11.2       # publication figure (09_plot_label_efficiency.py)
 #
-# --- Week 3 (deep learning) - NOT imported by scripts 01-09 ---
+# --- Networks and agent (scripts 11-12) - NOT imported by scripts 01-10 ---
+# 11_train_dl.py trains the MLP and the 1D-CNN and saves one checkpoint per fold;
+# 12_agente_v1.py reuses those checkpoints and retrains nothing. Both need torch.
 # CPU build (~200 MB, no GPU needed for this data size). Install separately, since
 # the +cpu build is served from PyTorch's own index, not PyPI:
 #     python -m pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
 # installed version at time of writing: torch==2.14.0+cpu
+#
+# The agent needs nothing beyond the above: its reasoning step is rule-based, so
+# there is no LLM client, no API key and no network access anywhere in the pipeline.
