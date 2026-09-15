@@ -12,7 +12,7 @@ The rule was fixed before looking at any episode:
 
 `18_worst_errors.py` applies it. "Worst-classified" is per-class macro-F1 on the
 proposed arm; "called normal operation" means the top-ranked class was class 0.
-The rule targets the error Dr. Loo names as the costliest, a real alarm buried
+The rule targets what this work treats as the costliest error, a real alarm buried
 under the avalanche, and it leaves no room to pick a flattering example.
 
 | Fault | per-class F1 | Episode | Seed | Fold |

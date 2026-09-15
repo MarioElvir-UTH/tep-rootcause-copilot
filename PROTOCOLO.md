@@ -1,12 +1,11 @@
 # PROTOCOLO / Experimental configuration
 
-> Canonical protocol for the paper (the ONLY protocol document; replaces the
-> earlier `protocolo_validacion.md`). The paragraph below is the *Experimental
+> Canonical protocol for the paper. The paragraph below is the *Experimental
 > Configuration* section: it is pasted almost verbatim into Overleaf and it
 > **overrides whatever the results say afterwards**.
 >
-> **Primary metric: macro-averaged $F_1$** (confirmed 2026-09-12, matching Dr.
-> Loo's Week-2 figure and Table II). Recall@1, Recall@3 and MRR are secondary.
+> **Primary metric: macro-averaged $F_1$** (confirmed 2026-09-12). 
+> Recall@1, Recall@3 and MRR are secondary.
 > The `.tex` (Evaluation, Abstract, objective 4) and the figure were reconciled
 > to this choice.
 
@@ -567,8 +566,8 @@ Script: `12_agente_v1.py`, added to `run_all.py`.
 
 ## Why three costly cases and not five
 
-The Week-4 validation list asks for the five worst cases. It stays at three, and
-the reason is in the numbers rather than in taste. Ten faults qualify, meaning
+Five cases were considered. It stays at three, and the reason is in the numbers
+rather than in taste. Ten faults qualify, meaning
 the copilot ranked normal operation first on at least one episode of each. By
 per-class F1 the first three are separated by real gaps, 0.149, 0.315 and 0.372,
 but the fourth and the fifth are IDV(20) at 0.43184 and IDV(13) at 0.43245: six
@@ -622,6 +621,5 @@ without adding one.
   the paragraph. OK
 - Repository -> public at https://github.com/MarioElvir-UTH/tep-rootcause-copilot
   (code, frozen partition, results, README with the one-command reproduction). OK
-- PR-AUC (used in Dr. Loo's example) -> NOT computed; the secondary metrics are
-  Recall@1, Recall@3 and MRR, and Table II shows Recall@3. If PR-AUC is
-  required, [PENDIENTE].
+- PR-AUC -> NOT computed; the secondary metrics are Recall@1, Recall@3 and MRR, 
+  and Table II shows Recall@3. If PR-AUC is required, [PENDIENTE].
