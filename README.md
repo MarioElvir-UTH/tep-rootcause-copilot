@@ -252,4 +252,4 @@ every Table II value was confirmed to reproduce. What does not run is not report
 
 Data © Rieth et al. 2017 (Harvard Dataverse), used under its terms; not
 redistributed here. Code released for academic reproducibility. Contact: the
-authors (see Team / Authors above), UTH Honduras.
+authors (see Authors above), UTH Honduras.
