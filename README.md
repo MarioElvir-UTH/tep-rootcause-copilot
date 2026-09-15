@@ -52,6 +52,12 @@ in that order (see the [Fast path](#3-reproduce) below).
 - **The agent measurements**: root-alarm identification with and without knowledge,
   the decomposed grounding rubric over three arms, and the action distribution
   (`results/agente_comparison.csv`, `results/logs/decisiones_muestra.jsonl`).
+- **How every comparison in the paper is settled**: the macro-F1 of all nine models
+  on each of the 15 folds (`results/per_fold_f1.csv`), and for each pair the paired
+  difference averaged by seed, Cohen's d, and whether the mean ± std intervals
+  overlap (`results/effect_sizes.csv`). Differences are taken fold by fold, never by
+  subtracting two separate means, and no result is called statistically significant:
+  three seeds do not support that claim.
 
 Not reproduced by the command, and deliberately so: `results/samples/` holds a
 qualitative sample of what the copilot would say to an operator, one episode per
@@ -127,7 +133,7 @@ dataverse_files/
 python run_all.py
 ```
 
-Runs the 14 steps in dependency order, stops at the first failure, and lists the
+Runs the 15 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
@@ -211,6 +217,7 @@ which `02_make_partition.py` reproduces exactly.
 11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
 12_agente_v1.py                 copilot agent v1: alarm layer, loop, three arms -> Table II
 13_plot_architecture.py         render the architecture figure (Figure 1) from the run stamp
+14_effect_sizes.py              paired differences and effect sizes -> per_fold_f1.csv, effect_sizes.csv
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
