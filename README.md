@@ -52,6 +52,13 @@ in that order (see the [Fast path](#3-reproduce) below).
 - **The agent measurements**: root-alarm identification with and without knowledge,
   the decomposed grounding rubric over three arms, and the action distribution
   (`results/agente_comparison.csv`, `results/logs/decisiones_muestra.jsonl`).
+
+Not reproduced by the command, and deliberately so: `results/samples/` holds a
+qualitative sample of what the copilot would say to an operator, one episode per
+action, chosen by a rule declared in advance and drafted outside the pipeline from
+the decision log. Those texts **produce no reported number**. See
+`results/samples/README.md`, which also records the two places where the declared
+rule gave an awkward answer and it was reported rather than adjusted.
 - **Label-efficiency curve**: F1-macro / Recall@k vs. fraction of labels used
   (`results/label_efficiency_curve.{csv,pdf,png}`).
 - **The architecture figure**: drawn by `13_plot_architecture.py` from
@@ -210,6 +217,7 @@ requirements.txt                pinned environment
 PROTOCOLO.md                    canonical experimental protocol
 references.bib                  bibliography
 kb/                             reproducible TEP knowledge base (21 documents, JSON)
+results/samples/                qualitative sample, drafted outside the pipeline
 prompts/                        fixed reasoning prompt, declared and not executed (see below)
 splits/                         frozen partition manifest + metadata (committed)
 results/                        result tables (CSV), env stamps (JSON), figure (PDF/PNG)
