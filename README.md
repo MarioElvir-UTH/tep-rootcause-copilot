@@ -141,7 +141,7 @@ dataverse_files/
 python run_all.py
 ```
 
-Runs the 18 steps in dependency order, stops at the first failure, and lists the
+Runs the 19 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
@@ -229,6 +229,7 @@ which `02_make_partition.py` reproduces exactly.
 15_human_load.py                coverage, precision and operator review load -> human_load.csv
 16_label_efficiency_agent.py    label efficiency of the copilot and the root-alarm rubric
 17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
+18_worst_errors.py              per-class errors and root-alarm recall at N -> worst_errors.csv
 checkpoint_datos.py             live data checkpoint (integrity evidence)
 run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
