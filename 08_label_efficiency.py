@@ -98,7 +98,9 @@ rows = []
 for kind in ["logistic", "rf", "hgb"]:
     for B in BUDGETS:
         acc = {m: [] for m in MET}
+        per_seed = {m: [] for m in MET}          # una media por semilla
         for s in SEEDS:
+            fold_acc = {m: [] for m in MET}
             sgkf = StratifiedGroupKFold(n_splits=K, shuffle=True, random_state=s)
             for f, (tri, vai) in enumerate(sgkf.split(X, y, groups)):
                 rng = np.random.default_rng(1000 * s + f)      # declared, fixed before scoring
@@ -108,12 +110,20 @@ for kind in ["logistic", "rf", "hgb"]:
                 p = clf.predict_proba(sc.transform(X[vai]))
                 for m, v in metrics(y[vai], p, clf.classes_).items():
                     acc[m].append(v)
+                    fold_acc[m].append(v)
+            for m in MET:
+                per_seed[m].append(float(np.mean(fold_acc[m])))
         n_lab = B * len(CLASSES)
         row = {"model": kind, "budget_per_class": B, "labeled_runs": n_lab,
                "pct_of_dev_labels": 100.0 * n_lab / (max_per_class * len(CLASSES)),
                "n_measurements": len(acc["Recall@1"])}
         for m in MET:
             row[f"{m}_mean"] = float(np.mean(acc[m])); row[f"{m}_std"] = float(np.std(acc[m]))
+            # la banda de la figura es esta: la dispersion entre las tres medias
+            # por semilla, no la de los 15 pliegues juntos
+            row[f"{m}_std_over_seeds"] = float(np.std(per_seed[m], ddof=0))
+            for k, sd in enumerate(SEEDS):
+                row[f"{m}_seed{sd}"] = per_seed[m][k]
         rows.append(row)
         print(f"  {kind:<8} B={B:>3}/class ({n_lab:>5} labels, {row['pct_of_dev_labels']:5.1f}%) "
               f"Recall@1 = {row['Recall@1_mean']:.4f} +/- {row['Recall@1_std']:.3f}")

@@ -278,6 +278,8 @@ than positional, so this is the map:
 | The same paragraph, sentence by sentence | `paper/resultados.md` | `resultados.py` |
 | Figure 1, the architecture | `results/architecture_loop.pdf` | `13_plot_architecture.py` |
 | Figure 2, the main figure | `results/label_efficiency_curve.pdf` | `09_plot_label_efficiency.py` |
+| The curve behind Figure 2, classics | `results/label_efficiency_curve.csv` | `08_label_efficiency.py` |
+| The curve behind Figure 2, agent arms | `results/label_efficiency_agent.csv` | `16_label_efficiency_agent.py` |
 | Cost column | `results/cost_table.csv` | `17_cost_table.py` |
 | Paired differences and effect sizes | `results/effect_sizes.csv` | `14_effect_sizes.py` |
 | Confusion and the worst classes | `results/worst_errors.csv` | `18_worst_errors.py` |
@@ -290,6 +292,12 @@ than positional, so this is the map:
 the manuscript against what the data generates, and exits non-zero if either differs. It exists because they did
 drift once: seven of the eight cost cells had stopped matching their sources, and
 the cause was that the table lived in the manuscript as text.
+
+The band of Figure 2 is one standard deviation over the three seed means, not
+over the 15 folds pooled: the folds of one seed share a partition, so pooling
+them mixes the spread of the split with the spread that matters, and every
+comparison elsewhere in the paper averages by seed first. Both are recorded,
+`F1macro_std` and `F1macro_std_over_seeds`, so either can be read.
 
 Two figures are still declared and not executed: `prompts/razona.txt`, the prompt a
 language-model variant of the reasoning step would use, and the human rubric over

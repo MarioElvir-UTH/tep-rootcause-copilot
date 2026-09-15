@@ -83,6 +83,17 @@ axes = np.atleast_1d(axes)
 axA = axes[0]
 
 
+def por_semilla(d, col):
+    """media por presupuesto y desviacion entre las medias de cada semilla.
+
+    Promediar los 15 pliegues de una vez mezcla la variacion del reparto con la
+    de la semilla. El paper compara promediando por semilla primero, y la banda
+    de esta figura es esa misma dispersion."""
+    m = d.groupby(["pct_of_dev_labels", "seed"])[col].mean().reset_index()
+    g = m.groupby("pct_of_dev_labels")[col].agg(["mean", "std"]).reset_index()
+    g["std"] = m.groupby("pct_of_dev_labels")[col].std(ddof=0).to_numpy()
+    return g
+
 def band(ax, x, m, s, st):
     ax.fill_between(x, m - s, m + s, color=st["color"], alpha=0.13, linewidth=0)
     ax.plot(x, m, color=st["color"], marker=st["marker"], linestyle=st["ls"], label=st["label"])
@@ -92,9 +103,9 @@ def band(ax, x, m, s, st):
 for kind in ("logistic", "rf", "hgb"):
     d = df[df.model == kind].sort_values("pct_of_dev_labels")
     band(axA, d["pct_of_dev_labels"].to_numpy(), d["F1macro_mean"].to_numpy(),
-         d["F1macro_std"].to_numpy(), STYLE[kind])
+         d["F1macro_std_over_seeds"].to_numpy(), STYLE[kind])
 if ag is not None:
-    g = ag[ag.arm == "lookup"].groupby("pct_of_dev_labels")["F1macro"].agg(["mean", "std"]).reset_index()
+    g = por_semilla(ag[ag.arm == "lookup"], "F1macro")
     band(axA, g["pct_of_dev_labels"].to_numpy(), g["mean"].to_numpy(), g["std"].to_numpy(), STYLE["copilot"])
 
 ceiling = float(df[df.pct_of_dev_labels == 100]["F1macro_mean"].max())
@@ -112,10 +123,10 @@ axA.set_title("(a)  Identifying the fault", fontsize=8, loc="left", pad=3)
 # ---------------------------------------------------------------- panel B
 if ag is not None:
     axB = axes[1]
-    g = ag[ag.arm == "lookup"].groupby("pct_of_dev_labels")["RootAlarmChrono"].agg(["mean", "std"]).reset_index()
+    g = por_semilla(ag[ag.arm == "lookup"], "RootAlarmChrono")
     band(axB, g["pct_of_dev_labels"].to_numpy(), g["mean"].to_numpy(), g["std"].to_numpy(), STYLE_B["chrono"])
     for arm in ("lookup", "proposed"):
-        g = ag[ag.arm == arm].groupby("pct_of_dev_labels")["RootAlarmKB"].agg(["mean", "std"]).reset_index()
+        g = por_semilla(ag[ag.arm == arm], "RootAlarmKB")
         band(axB, g["pct_of_dev_labels"].to_numpy(), g["mean"].to_numpy(), g["std"].to_numpy(), STYLE_B[arm])
     axB.set_ylabel("Root alarm found\n(fraction of episodes)")
     axB.set_ylim(0.0, 0.85)
