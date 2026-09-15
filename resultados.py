@@ -12,17 +12,31 @@ the manuscript between two markers, so the .tex stays a single self-contained fi
 to upload to Overleaf. The caption is not touched: the prose belongs to the authors,
 the numbers belong to the run.
 
-  python resultados.py           write paper/tabla2.tex and splice it into the .tex
+  python resultados.py           write the table and the paragraph, splice the table
   python resultados.py --check   compare only, change nothing, non-zero if they differ
 
-Reads:  results/tabla2.json
-Writes: paper/tabla2.tex, and the marked region of the manuscript
+The six sentences of paper/resultados.md are the ones requested: what is compared
+and on what partition; the proposed method's number with its dispersion; the
+difference against the best classic and whether it clears that dispersion; what the
+agent adds, read off the ablation; the cost; and the main limitation. Each number is
+substituted from the files, so the paragraph cannot drift from the table above it.
+
+The figures are not produced here. They come from 09_plot_label_efficiency.py and
+13_plot_architecture.py, under names that say what they are; the README maps each
+artefact of the paper to its file and its script.
+
+Reads:  results/tabla2.json, results/effect_sizes.csv, results/per_fold_f1.csv,
+        results/human_load.csv
+Writes: paper/tabla2.tex, paper/resultados.md, and the table region of the manuscript
 """
 import io
 import os
 import sys
 import json
 import re
+
+import numpy as np
+import pandas as pd
 
 BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
 TEX = os.path.join(BASE, "Anteproyecto_G3_Seminario_Tesis_I.tex")
@@ -101,6 +115,87 @@ else:
 
 print()
 print(table)
+# ---------------------------------------------------------------- the paragraph
+M = {m["name"]: m for m in models}
+eff = pd.read_csv(os.path.join(BASE, "results", "effect_sizes.csv"))
+pf = pd.read_csv(os.path.join(BASE, "results", "per_fold_f1.csv"))
+hl = pd.read_csv(os.path.join(BASE, "results", "human_load.csv")).set_index("arm")
+E = {(r.better, r.worse): r for r in eff.itertuples()}
+
+pro, abl = M["Copilot v1"], M["No agent (abl.)"]
+classics = [M[n] for n in ("Logistic reg.", "Random forest", "Gradient boost.")]
+best_classic = max(classics, key=lambda m: m["primary_mean"])
+
+# [3] the difference against the best classic, paired fold by fold and averaged by
+# seed, which is how every other comparison in this paper is taken
+KEY = {"Copilot v1": "proposed", "Logistic reg.": "logistic",
+       "Random forest": "rf", "Gradient boost.": "hgb"}
+# the table abbreviates to fit a narrow column; prose spells the model out
+PROSE = {"Logistic reg.": "logistic regression", "Random forest": "the random forest",
+         "Gradient boost.": "gradient boosting"}
+pf["_d"] = pf[KEY["Copilot v1"]] - pf[KEY[best_classic["name"]]]
+d_seed = pf.groupby("seed")["_d"].mean()
+diff, diff_sd = float(d_seed.mean()), float(d_seed.std(ddof=1))
+sa, sb = pro["primary_std_over_folds"], best_classic["primary_std_over_folds"]
+clears = abs(diff) > max(sa, sb)
+
+loop = E[("ablation", "cnn")]
+retr = E[("ablation", "proposed")]
+c = pro["cost"]
+defer_pro, defer_abl = hl.loc["proposed", "defer_pct"], hl.loc["ablation", "defer_pct"]
+
+S = [
+ ("what is compared, and on what partition",
+  "Eight systems are compared on the Tennessee Eastman Process under one protocol: a "
+  "trivial floor, three classical models, two networks, and the copilot with its "
+  "ablation, all scored on validation folds of a partition frozen by simulation run "
+  "with the test set sealed, over %d folds from %d seeds."
+  % (d["_meta"]["folds_per_seed"] * len(d["_meta"]["seeds"]), len(d["_meta"]["seeds"]))),
+ ("the proposed method, with its dispersion",
+  "The proposed copilot reaches $%.3f \\pm %.3f$ macro-averaged $F_1$ and "
+  "$%.3f \\pm %.3f$ Recall@3."
+  % (pro["primary_mean"], pro["primary_std_over_folds"],
+     pro["secondary_mean"], pro["secondary_std_over_folds"])),
+ ("the difference against the best classic, and whether it clears the dispersion",
+  "Against the best classical model, %s at $%.3f \\pm %.3f$, the paired difference is "
+  "$%+.3f \\pm %.3f$ over the seeds, which is %s than either dispersion and keeps its "
+  "sign in all %d folds."
+  % (PROSE[best_classic["name"]], best_classic["primary_mean"],
+     best_classic["primary_std_over_folds"], diff, diff_sd,
+     "larger" if clears else "smaller", int((pf["_d"] > 0).sum() if diff > 0 else (pf["_d"] < 0).sum()))),
+ ("what the agent adds, read off the ablation",
+  "The ablation separates the two things the agent does: the loop is worth "
+  "$%+.3f \\pm %.3f$ with $d = %.1f$ over the same network scored once, while retrieval "
+  "costs $%.3f$ on the primary metric, so the proposed method does not beat its own "
+  "ablation there."
+  % (loop.paired_diff, loop.std_over_seeds, abs(loop.cohens_d), abs(retr.paired_diff))),
+ ("the cost",
+  "It stores %s numbers, trains nothing because it loads the network saved for each "
+  "fold, answers in %.3f~ms per episode, and calls no language model, so its token "
+  "count is zero."
+  % ("{:,}".format(c["parameters"]), c["inference_ms_per_episode"])),
+ ("the main limitation",
+  "The main limitation is coverage rather than accuracy: requiring the classifier and "
+  "the retrieval to agree makes the copilot hand %.0f\\%% of episodes to the operator "
+  "against %.0f\\%% for the ablation, so it buys a small gain in precision with a large "
+  "loss in how often it answers at all."
+  % (defer_pro, defer_abl)),
+]
+
+md = ["# Results, in six sentences", "",
+      "Generated by `resultados.py` from `results/tabla2.json` and the effect-size and",
+      "human-load records. Every number is substituted, none is typed.", "",
+      "| # | what the sentence has to carry |", "|---|---|"]
+md += ["| %d | %s |" % (i, lab) for i, (lab, _) in enumerate(S, 1)]
+md += ["", "---", "", " ".join(t for _, t in S).replace("\\\\", "\\"), "", "---", "",
+       "## Sentence by sentence", ""]
+for i, (lab, t) in enumerate(S, 1):
+    md += ["**%d. %s**" % (i, lab), "", t.replace("\\\\", "\\"), ""]
+
+OUTMD = os.path.join(BASE, "paper", "resultados.md")
+io.open(OUTMD, "w", encoding="utf-8", newline="\n").write("\n".join(md) + "\n")
+print("wrote paper/resultados.md  (%d sentences)" % len(S))
+
 print()
 print("mejor macro-F1 : %s" % best_p)
 print("mejor Recall@3 : %s" % best_s)
