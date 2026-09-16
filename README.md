@@ -1,20 +1,61 @@
-# Agentic AI Copilot for Operator Decision Support: Reproducible Pipeline
+# An Agentic AI Copilot for Operator Decision Support
 
-Root-cause identification on the **Tennessee Eastman Process (TEP)** under a
-label-scarce, causally-windowed protocol. This repository reproduces every
-number in **Table II** and the **label-efficiency figure** of the paper, from
-the raw TEP data to the final CSV/figure, with a single command.
+**Mario Elvir, Josué Rivera, Christian Barahona, Luis Loo (PhD(c), advisor)**,
+Maestría en Automatización Industrial, UTH Honduras
+*Manuscript in preparation*
 
-> Paper: *"An Agentic AI Copilot for Operator Decision Support: Alarm
-> Rationalization and Root-Cause Diagnosis in DCS-Based Industrial Plants"*
-> (under preparation). Maestría en Automatización Industrial, UTH Honduras.
+> During an alarm flood, can a copilot tell a DCS operator which alarm started
+> the upset and which fault caused it, from few labels, and show its work?
 
-## Authors
+The copilot perceives an alarm episode, scores it with a convolutional network,
+retrieves the documents its symptoms match, and decides on one action: answer,
+look longer, escalate, or hand the episode to the operator. It never writes to
+the plant. Everything below is measured on the public Tennessee Eastman Process
+under one pre-registered protocol, on validation folds, with the test set sealed.
 
-- Mario Elvir, UTH Honduras
-- Josué Rivera, UTH Honduras
-- Christian Barahona, UTH Honduras
-- Luis Loo, PhD(c), UTH Honduras (co-author and academic advisor)
+<p align="center">
+  <img src="results/label_efficiency_curve.png" width="70%"
+       alt="Two panels: macro-F1 against the fraction of labeled runs for three
+            classical models and the copilot, and root-alarm identification on
+            the same budgets for the chronological ordering and two grounded arms">
+</p>
+
+## What we found
+
+- **Naming the alarm that started it is where retrieval pays.** Ordering alarms
+  by retrieved evidence identifies the root alarm in 0.619 of the episodes whose
+  cause the source documents, against 0.349 by time alone: a paired gain of
+  +0.270 ± 0.001 with d = 33.6, and it does not touch the classifier.
+- **The explanation needs far fewer labels than the number does.** It reaches
+  94% of its full-supervision value with 2.5% of the labels, where the
+  classifier is still at 53% of its own. A plant can say which alarm started an
+  upset long before it can say reliably which fault it was.
+- **The loop is worth more than the retrieval.** Letting the agent advance the
+  window and look again gains +0.056 ± 0.001 macro-F1 (d = 7.0) over scoring the
+  same network once.
+- **And retrieval costs 0.011 on the primary metric, which we report rather than
+  bury.** The proposed method reaches 0.741 ± 0.008 against 0.752 ± 0.009 for its
+  own ablation. What it buys is not accuracy but independence: classifier and
+  retrieval agree on 42.7% of episodes and are then right 94.0% of the time,
+  against 60.4% when they disagree, so the copilot can tell the operator when
+  to distrust it.
+- **The price is coverage.** Requiring the two to agree hands 59% of episodes
+  to the operator against 26% for the ablation.
+
+## Verifying this yourself, without trusting us
+
+Three claims carry the paper, and each can be checked from a clone:
+
+- **The split is frozen.** Delete `splits/`, run `python code/02_make_partition.py`,
+  and the manifest must hash to `4cf7e020b0f2faa6`. Continuous integration does exactly this on
+  every push, on Linux.
+- **No number in the paper was typed by hand.** `python code/resultados.py --check`
+  regenerates Table II, the results paragraph and this README's expected-results
+  table from `results/tabla2.json` and fails if any of them drifted.
+- **The agent is rules, not a language model.** `results/agente_env.json` records
+  `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
+  the decision log in `results/logs/` shows the four actions with their guards.
+  That is why the cost column reports zero tokens.
 
 ---
 
@@ -366,5 +407,9 @@ every Table II value was confirmed to reproduce. What does not run is not report
 ## 8. License / contact
 
 Data © Rieth et al. 2017 (Harvard Dataverse), used under its terms; not
-redistributed here. Code released for academic reproducibility. Contact: the
-authors (see Authors above), UTH Honduras.
+redistributed here.
+
+**No licence is set on this code yet**, so the default applies and reuse needs
+the authors' permission. It is published for review and reproduction: clone it,
+run it, check the numbers. A licence will be chosen when the manuscript is
+submitted. Contact: the authors (see Authors above), UTH Honduras.
