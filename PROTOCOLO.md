@@ -88,37 +88,37 @@ at `\footnotesize` with `\tabcolsep` 3pt. The `Cost` header is centred with
 > excludes IDV 16 to IDV 20; and that the reasoning step is rule-based rather
 > than a language model, which is what the zero-token claim rests on.
 
-*Experimental configuration.* (1) The primary dataset is the public Tennessee Eastman Process in the
-large-scale simulation release of Rieth et al., comprising 500 runs per class
-over 21 root-cause classes (1 normal and 20 faults), with one simulation run
-as the unit of observation and process variables sampled every three minutes,
-which is what converts every window length quoted below into plant time. (2)
-Data are grouped by simulation run and stratified by class under a fixed seed
-(42): a held-out test set of 10,500 runs is sealed from the start and opened
-only once, while a development pool of 10,500 runs is used for all tuning,
-with the partition indices saved to disk. (3) Each run is summarized by the
-mean and standard deviation of its 52 process variables over a causal early
-window (20 samples after fault onset), and feature standardization is fit
-inside each cross-validation fold on the training portion only. (4) The
-compared models are a trivial majority-class baseline, a multinomial logistic
-regression over the standardized features, a random forest, and gradient
-boosting, all implemented in scikit-learn 1.9.1; the three learned models span
-one linear and two tree-ensemble inductive biases, so the comparison does not
-presuppose which one suits this representation. (5) Hyperparameters are chosen
-from a small, pre-declared grid of three configurations per model (logistic
-regression inverse regularization strength C in {0.1, 1, 10}; random forest
-maximum depth in {none, 10, 20} with 300 trees; gradient boosting learning
-rate in {0.05, 0.1, 0.2}), giving every model the same search effort, with
-model selection on the primary metric and on a seed (0) separate from the
-estimation seeds. (6) Performance is estimated by repeated stratified group
-k-fold cross-validation by run (k = 5; three seeds: 5, 17, 42), reporting the
-mean and standard deviation over the 15 resulting folds; the primary metric is
-the macro-averaged F_1 score, with top-k accuracy reported as Recall@1 and
-Recall@3 and mean reciprocal rank as secondary metrics, and per-episode
-inference latency (in milliseconds) as a cost measure. (7) All experiments run
-on a single machine on CPU (Intel Core i5-13420H, 12 threads) with Python
-3.14.2 and fixed seeds throughout; the code, the frozen partition, and the
-pinned environment (requirements.txt) are available in the project repository
+*Experimental configuration.* (1) The primary dataset is the public TEP release of Rieth et al., comprising
+500 runs per class over 21 root-cause classes (1 normal and 20 faults), with
+one simulation run as the unit of observation and process variables sampled
+every three minutes, which is what converts every window length quoted below
+into plant time. (2) Data are grouped by simulation run and stratified by
+class under a fixed seed (42): a held-out test set of 10,500 runs is sealed
+from the start and opened only once, while a development pool of 10,500 runs
+is used for all tuning, with the partition indices saved to disk. (3) Each run
+is summarized by the mean and standard deviation of its 52 process variables
+over a causal early window (20 samples after fault onset), and feature
+standardization is fit inside each cross-validation fold on the training
+portion only. (4) The compared models are a trivial majority-class baseline, a
+multinomial logistic regression over the standardized features, a random
+forest, and gradient boosting, all implemented in scikit-learn 1.9.1; the
+three learned models span one linear and two tree-ensemble inductive biases,
+so the comparison does not presuppose which one suits this representation. (5)
+Hyperparameters are chosen from a small, pre-declared grid of three
+configurations per model (logistic regression inverse regularization strength
+C in {0.1, 1, 10}; random forest maximum depth in {none, 10, 20} with 300
+trees; gradient boosting learning rate in {0.05, 0.1, 0.2}), giving every
+model the same search effort, with model selection on the primary metric and
+on a seed (0) separate from the estimation seeds. (6) Performance is estimated
+by repeated stratified group k-fold cross-validation by run (k = 5; three
+seeds: 5, 17, 42), reporting the mean and standard deviation over the 15
+resulting folds; the primary metric is the macro-averaged F_1 score, with
+top-k accuracy reported as Recall@1 and Recall@3 and mean reciprocal rank as
+secondary metrics, and per-episode inference latency (in milliseconds) as a
+cost measure. (7) All experiments run on a single machine on CPU (Intel Core
+i5-13420H, 12 threads) with Python 3.14.2 and fixed seeds throughout; the
+code, the frozen partition, and the pinned environment (requirements.txt) are
+available in the project repository
 https://github.com/MarioElvir-UTH/tep-rootcause-copilot, and per-model
 training time on the development pool is about 3 s (logistic regression), 6 s
 (random forest), and 8 s (gradient boosting), and negligible for the trivial
