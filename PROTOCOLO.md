@@ -332,6 +332,17 @@ the same run and the same machine: index size, retrieval milliseconds per episod
 and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
 `run_all.py`, so one command still reproduces everything.
 
+> **What this became.** Two details of the paragraph above aged and are corrected
+> here rather than rewritten above, because a pre-registration that is edited to
+> look right afterwards is worth nothing. The script is `12_agente_v1.py`, not
+> `12_copilot_rag.py`: the name changed when the alarm layer and the action loop
+> were added to what had been planned as a retrieval step. And the cost column of
+> Table II does not report index size, retrieval milliseconds and end-to-end
+> latency separately; it reports what every other row reports, so the eight rows
+> can be compared: stored numbers, training seconds and inference milliseconds
+> per episode, which for this row are 18,405, 0 and 0.184. The retrieval time is
+> inside that last figure rather than beside it.
+
 ## Figure 1 in text: the four pieces, the guard, the person, the measured point
 
 > This is the figure of the article written as text, so the drawing and the code
