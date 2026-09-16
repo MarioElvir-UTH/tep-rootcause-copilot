@@ -227,6 +227,19 @@ needs roughly **0.662** or more. Per label budget the network has to beat the
 leader of that range, the random forest between 1% and 5% of the labels and
 logistic regression from 12% upward.
 
+> **Measured, and not met.** This bar sat declared and unmeasured until
+> 2026-09-15, because nothing in the pipeline scored the network alone at each
+> budget: 08 measures the classics and 16 measures the agent arms, which are the
+> network inside the loop. 16 now also scores it once, without the loop and
+> without retrieval, which costs no extra training, because that network is
+> already trained at every budget. The result is negative and is reported as
+> such: the network alone is behind the leading classic at every budget up to
+> 25% of the labels (0.5414 against 0.5809 at 10%, 0.5835 against 0.6245 at
+> 25%) and ahead only at 50% and
+> 100%. The copilot has the same shape, so the late crossover belongs to the
+> representation and not to the agent. The label grid also gained the 10% point
+> that the Week 3 note asked for and that had been replaced by 12.5%.
+
 ## Proposed method pre-registration: the copilot (written BEFORE running anything)
 
 > Declared 2026-09-14, before a single line of the copilot was written. Same rule

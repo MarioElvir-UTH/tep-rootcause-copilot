@@ -50,7 +50,7 @@ CACHE = os.path.join(RES, "dev_features.parquet")
 assert os.path.exists(CACHE), "run 04_classics_cv.py first (needs results/dev_features.parquet)"
 
 K = 5
-BUDGETS = [1, 2, 5, 10, 20, 50, 100, 200, 400]   # labeled runs PER CLASS
+BUDGETS = [1, 2, 5, 10, 20, 40, 50, 100, 200, 400]   # labeled runs PER CLASS
 SEEDS = [5, 17, 42]                              # CV repetition seeds; each also seeds its labeled-subset draw
 CLASSES = np.arange(0, 21)
 MET = ["Recall@1", "Recall@3", "MRR", "F1macro"]

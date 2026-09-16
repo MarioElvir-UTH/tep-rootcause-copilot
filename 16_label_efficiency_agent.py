@@ -43,7 +43,7 @@ ONSET, W = env["read_samples"][0], env["scored_steps"]
 LR = dlv["selected_lr"]["cnn"]
 MAX_EPOCHS, PATIENCE, BATCH, INNER_VAL = 60, 10, 256, 0.20
 K, EST_SEEDS = 5, dlv["est_seeds"]
-BUDGETS = [1, 2, 5, 10, 20, 50, 100, 200, 400]     # labeled runs PER CLASS, as in 08
+BUDGETS = [1, 2, 5, 10, 20, 40, 50, 100, 200, 400]     # labeled runs PER CLASS, as in 08
 CLASSES = np.arange(21)
 
 KB = json.load(open(os.path.join(BASE, "kb", "tep_kb.json"), encoding="utf-8"))
@@ -199,6 +199,18 @@ for B in BUDGETS:
                 al, fi, pk, dv = perceive(Xw, m, s)
                 sig = np.stack([dv[lab[y[lab] == c]].mean(axis=0) for c in CLASSES]).astype(np.float32)
                 pack[moved] = (al, fi, pk, dv, sig, proba(net, mu, sd, Xw[vai]))
+            # the network scored once on the first window, no loop and no
+            # retrieval: the per-budget bar the Week 3 block declared and that
+            # nothing measured. The net is already trained above, so this costs
+            # one argmax.
+            rows.append({"budget_per_class": B, "labeled_runs": int(len(lab)),
+                         "pct_of_dev_labels": round(100.0 * len(lab) / len(tri), 4),
+                         "seed": seed, "fold": fold, "arm": "cnn",
+                         "F1macro": float(f1_score(y[vai],
+                                                   CLASSES[pack[False][5].argmax(1)],
+                                                   average="macro")),
+                         "RootAlarmChrono": np.nan, "RootAlarmKB": np.nan,
+                         "RootAlarm_n": 0})
             for arm in ("lookup", "proposed"):
                 # the loop: observe once when the arm is not ready to commit
                 al0, fi0, pk0, dv0, sig0, pc0 = pack[False]

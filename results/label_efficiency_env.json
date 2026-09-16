@@ -15,6 +15,7 @@
     5,
     10,
     20,
+    40,
     50,
     100,
     200,
@@ -38,7 +39,7 @@
     },
     "hgb": {
       "full_supervision_Recall@1": 0.6260317460317459,
-      "labels_for_90pct": 1050,
+      "labels_for_90pct": 840,
       "labels_for_95pct": 8400
     }
   }
