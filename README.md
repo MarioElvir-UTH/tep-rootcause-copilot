@@ -108,6 +108,17 @@ Core dependencies: `numpy`, `pandas`, `scikit-learn`, `pyreadr` (reads the `.RDa
 files), `pyarrow` (parquet caches), `matplotlib` (figure). See `requirements.txt`
 for exact pinned versions.
 
+**PyTorch is a second install, and seven of the 23 steps need it.** It is not in
+`requirements.txt` because the CPU build is served from PyTorch's own index
+rather than from PyPI:
+
+```bash
+python -m pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
+```
+
+`run_all.py` checks for it before running anything, so a missing install costs a
+second rather than the hour it takes to reach the first step that imports it.
+
 **Reference machine** for every runtime quoted in this README: Intel Core
 i5-13420H (8 cores / 12 threads), 32 GB RAM, Windows 11, **CPU only, no GPU
 required**. The scripts use all available cores (`N_JOBS = -1`), so wall-clock

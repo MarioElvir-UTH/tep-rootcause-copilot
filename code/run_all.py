@@ -72,6 +72,44 @@ RESULT_FILES = [
 ]
 
 
+NEEDS = {"numpy": "numpy", "pandas": "pandas", "sklearn": "scikit-learn",
+         "pyreadr": "pyreadr", "pyarrow": "pyarrow", "matplotlib": "matplotlib"}
+
+
+def preflight():
+    """Check what the pipeline imports before it starts importing it.
+
+    torch is deliberately absent from requirements.txt: its CPU build is served
+    from PyTorch's own index rather than PyPI. But seven steps import it, and
+    finding that out at step 11 costs the reader the hour that steps 01 to 10
+    take. The cost of checking here is a few milliseconds."""
+    import importlib.util
+
+    missing = [pkg for mod, pkg in NEEDS.items()
+               if importlib.util.find_spec(mod) is None]
+    if missing:
+        print("ABORT - missing package(s): " + ", ".join(missing))
+        print("   python -m pip install -r requirements.txt")
+        sys.exit(1)
+
+    if importlib.util.find_spec("torch") is None:
+        users = sorted(s for s, _ in STEPS if "import torch" in
+                       open(os.path.join(HERE, s), encoding="utf-8").read())
+        print("ABORT - torch is not installed, and %d of the %d steps import it:"
+              % (len(users), len(STEPS)))
+        for u in users:
+            print("     " + u)
+        print("")
+        print("   It is not in requirements.txt because the CPU build comes from")
+        print("   PyTorch's own index rather than PyPI:")
+        print("")
+        print("     python -m pip install torch==2.14.0 \\")
+        print("       --index-url https://download.pytorch.org/whl/cpu")
+        print("")
+        print("   Checked here rather than at step 11, which is an hour in.")
+        sys.exit(1)
+
+
 def main():
     print("=" * 80)
     print("REPRODUCIBLE PIPELINE  -  TEP root-cause identification")
@@ -79,6 +117,8 @@ def main():
     if HERE != BASE:
         print(f"steps: {HERE}")
     print("=" * 80)
+
+    preflight()
 
     # fail early if a step file is missing
     missing = [s for s, _ in STEPS if not os.path.exists(os.path.join(HERE, s))]
