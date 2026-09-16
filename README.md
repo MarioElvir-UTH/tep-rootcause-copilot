@@ -5,7 +5,7 @@ label-scarce, causally-windowed protocol. This repository reproduces every
 number in **Table II** and the **label-efficiency figure** of the paper, from
 the raw TEP data to the final CSV/figure, with a single command.
 
-> Paper: *"Agentic AI Copilot for Operator Decision Support: Alarm
+> Paper: *"An Agentic AI Copilot for Operator Decision Support: Alarm
 > Rationalization and Root-Cause Diagnosis in DCS-Based Industrial Plants"*
 > (under preparation). Maestría en Automatización Industrial, UTH Honduras.
 
@@ -38,7 +38,7 @@ a number:
 | **Trivial** baseline, with its number | `results/classics_cv_comparison.csv` | `03_baselines.py`, `04_classics_cv.py` | F1-macro **0.004 ± 0.000** |
 | **Simple model**, with its number | `results/classics_cv_comparison.csv` | `04_classics_cv.py` | Logistic regression **0.652 ± 0.005**; Random forest **0.638 ± 0.005**; Gradient boosting **0.640 ± 0.005** (F1-macro) |
 
-Baseline only, skipping the auxiliary domain-feature analyses (~18-20 min): run
+Baseline only, skipping the auxiliary domain-feature analyses (about 16 min): run
 `02_make_partition.py`, `03_baselines.py`, `04_classics_cv.py`, `10_inference_time.py`
 in that order (see the [Fast path](#3-reproduce) below).
 
@@ -68,12 +68,6 @@ in that order (see the [Fast path](#3-reproduce) below).
   subtracting two separate means, and no result is called statistically significant:
   three seeds do not support that claim.
 
-Not reproduced by the command, and deliberately so: `results/samples/` holds a
-qualitative sample of what the copilot would say to an operator, one episode per
-action, chosen by a rule declared in advance and drafted outside the pipeline from
-the decision log. Those texts **produce no reported number**. See
-`results/samples/README.md`, which also records the two places where the declared
-rule gave an awkward answer and it was reported rather than adjusted.
 - **The main figure, in two panels**: macro-F1 against the fraction of labels used, and
   root-alarm identification on the same budgets, with everything retrained at each
   budget (`results/label_efficiency_curve.{csv,pdf,png}`,
@@ -84,6 +78,13 @@ rule gave an awkward answer and it was reported rather than adjusted.
   `results/agente_env.json`, so the diagram cannot drift away from the constants
   the agent actually ran with (`results/architecture_loop.{pdf,png}`).
 - A **cross-validation leakage audit** (4 checks) confirming the protocol is honest.
+
+Not reproduced by the command, and deliberately so: `results/samples/` holds a
+qualitative sample of what the copilot would say to an operator, one episode per
+action, chosen by a rule declared in advance and drafted outside the pipeline from
+the decision log. Those texts **produce no reported number**. See
+`results/samples/README.md`, which also records the two places where the declared
+rule gave an awkward answer and it was reported rather than adjusted.
 
 **Task definition (deliberately harder than typical TEP benchmarks):** one label
 per simulation run, an early **causal window `[21, 41)`** (decision made with data
@@ -155,7 +156,8 @@ Steps 1-10 were measured at about 80 min on the reference machine; steps 11 and
 12 (network training over 15 folds and the agent over three arms) add to that.
 Wall-clock is indicative and moves with processor and load.
 
-**Fast path, just Table II (~18-20 min):** run only the core steps:
+**Fast path, just Table II (about 16 min on the reference machine):** run only
+the core steps:
 
 ```bash
 python 02_make_partition.py   # freeze the by-run split (seed 42)
@@ -238,12 +240,13 @@ which `02_make_partition.py` reproduces exactly.
 15_human_load.py                coverage, precision and operator review load -> human_load.csv
 16_label_efficiency_agent.py    label efficiency of the copilot and the root-alarm rubric
 17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
-18_worst_errors.py              per-class errors and root-alarm recall at N -> worst_errors.csv
+18_worst_errors.py              per-class errors and root-alarm recall at N ->
+                                results/errors/
 19_tabla2_json.py               every number of Table II in one file -> results/tabla2.json
-21_pr_auc.py                    PR-AUC for every row of Table II, as a check on
-                                the ranking -> results/pr_auc.csv
 20_case_separation.py           how far apart the costly cases are, in sigmas of
                                 normal -> results/errors/case_separation.csv
+21_pr_auc.py                    PR-AUC for every row of Table II, as a check on
+                                the ranking -> results/pr_auc.csv
 resultados.py                   Table II and the Results paragraph, generated and
                                 spliced -> paper/tabla2.tex, paper/resultados.tex
 checkpoint_datos.py             live data checkpoint (integrity evidence)

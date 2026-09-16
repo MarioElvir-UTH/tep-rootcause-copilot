@@ -1,13 +1,18 @@
 # PROTOCOLO / Experimental configuration
 
-> Canonical protocol for the paper. The paragraph below is the *Experimental
-> Configuration* section: it is pasted almost verbatim into Overleaf and it
-> **overrides whatever the results say afterwards**.
+> Canonical protocol for the paper. It **overrides whatever the results say
+> afterwards**: what is decided after seeing a number is not protocol, it is
+> tuning on the result.
 >
-> **Primary metric: macro-averaged $F_1$** (confirmed 2026-09-12). 
-> Recall@1, Recall@3 and MRR are secondary.
-> The `.tex` (Evaluation, Abstract, objective 4) and the figure were reconciled
-> to this choice.
+> The seven sentences below are the paper's *Experimental Configuration*
+> section. They used to be copied from here into Overleaf by hand and the two
+> drifted, so the direction is now the other way: `siete.py` generates them from
+> the `.tex`, which is the reviewed wording, and the two are compared on every
+> check.
+>
+> **Primary metric: macro-averaged $F_1$** (confirmed 2026-09-12). Recall@1,
+> Recall@3 and MRR are secondary, and the abstract, the objectives and the
+> figure were reconciled to that choice.
 
 ## Table II: generated, not written here
 
@@ -596,8 +601,8 @@ without adding one.
 - Trivial numbers (macro-F1 0.004; Recall@1 0.048) -> from `04`
   (0.0043 / 0.0476). OK
 - **Primary metric = macro-F1** -> reconciled 2026-09-12 across the `.tex`
-  (Evaluation, Abstract, objective 4) and the figure; `protocolo_validacion.md`
-  removed so this file is the only protocol. OK
+  (the abstract, the objectives and the results) and the figure;
+  `protocolo_validacion.md` removed so this file is the only protocol. OK
 - Selection criterion -> hyperparameters AND the best model are chosen by
   macro-F1, the primary metric (`04_classics_cv.py`, fixed 2026-09-13; it used to
   select by Recall@1, which contradicted the paper). Verified that Recall@1 would
