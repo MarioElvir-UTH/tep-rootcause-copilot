@@ -313,9 +313,21 @@ them mixes the spread of the split with the spread that matters, and every
 comparison elsewhere in the paper averages by seed first. Both are recorded,
 `F1macro_std` and `F1macro_std_over_seeds`, so either can be read.
 
-Two figures are still declared and not executed: `prompts/razona.txt`, the prompt a
-language-model variant of the reasoning step would use, and the human rubric over
-30 episodes with two raters. Both are marked [PENDIENTE] where they are referenced.
+Two things are declared and not executed, for different reasons.
+
+The **human rubric**, 30 episodes scored by two raters with their agreement
+reported, is work that has not been done yet. The paper says so in its
+conclusions: the rubric and an operator study of trust and acceptance "remain
+declared and unmeasured". It evaluates what the copilot already produces, so
+running it changes no number in Table II.
+
+**`prompts/razona.txt`** is deliberate, not pending. It is the prompt a
+language-model variant of the reasoning step would use, and it is never executed:
+the reasoning step is a rule-based template over the retrieved documents, which is
+why the copilot calls no language model and its token count is zero. Executing it
+would not close a gap, it would measure a different system, one with a non-zero
+token count and a latency in seconds rather than the 0.184 ms of the row measured
+here. That belongs in a new row, not in this one.
 
 ## 7. AI assistance declaration
 
