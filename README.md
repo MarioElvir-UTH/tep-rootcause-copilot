@@ -13,6 +13,11 @@ look longer, escalate, or hand the episode to the operator. It never writes to
 the plant. Everything below is measured on the public Tennessee Eastman Process
 under one pre-registered protocol, on validation folds, with the test set sealed.
 
+This is deliberately the **smallest version that produces a number**, not the
+full system: the reasoning step is rules, the corpus is one document per class,
+and the agent looks ahead once. What that leaves out is named as future work in
+the paper, with a reason for each, rather than left for a reviewer to notice.
+
 <p align="center">
   <img src="results/label_efficiency_curve.png" width="70%"
        alt="Two panels: macro-F1 against the fraction of labeled runs for three
