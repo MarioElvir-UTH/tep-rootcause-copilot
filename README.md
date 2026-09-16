@@ -146,7 +146,7 @@ dataverse_files/
 python run_all.py
 ```
 
-Runs the 21 steps in dependency order, stops at the first failure, and lists the
+Runs the 22 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
@@ -236,6 +236,8 @@ which `02_make_partition.py` reproduces exactly.
 17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
 18_worst_errors.py              per-class errors and root-alarm recall at N -> worst_errors.csv
 19_tabla2_json.py               every number of Table II in one file -> results/tabla2.json
+20_case_separation.py           how far apart the costly cases are, in sigmas of
+                                normal -> results/errors/case_separation.csv
 resultados.py                   Table II and the Results paragraph, generated and
                                 spliced -> paper/tabla2.tex, paper/resultados.tex
 checkpoint_datos.py             live data checkpoint (integrity evidence)
@@ -287,6 +289,7 @@ than positional, so this is the map:
 | Confusion matrix, the 1D-CNN | `results/errors/dl_confusion_matrix.csv` | `11_train_dl.py` |
 | Root-alarm recall at N | `results/errors/root_alarm_recall.csv` | `18_worst_errors.py` |
 | Worst cases, with their episode id | `results/errors/costly_errors.md` | selected by `18_worst_errors.py` |
+| How far apart the costly cases are | `results/errors/case_separation.csv` | `20_case_separation.py` |
 
 `python resultados.py --check` compares both the table and the Results paragraph in
 the manuscript against what the data generates, and exits non-zero if either differs. It exists because they did

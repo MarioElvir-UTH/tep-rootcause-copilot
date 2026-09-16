@@ -160,6 +160,17 @@ these through would make the copilot assert that the plant is healthy while a
 fault is running, which is the error this whole section is about. The guard is
 doing exactly what it was declared to do.
 
+A figure of the three windows was drawn and dropped, because two of its three
+panels came out identical. That is not a drawing error and it is worth a number:
+episodes `[15, 12]` and `[9, 12]` differ by at most **0.93 sigma** of normal
+operation in any of the 52 variables, and by **0.02 to 0.47 sigma** in the four
+that crossed the alarm band. For scale, the median separation is 11.7 sigma for
+two faults drawn on the same simulation run and 5.3 sigma for two runs of one
+fault, so these two sit deep in the low tail. `20_case_separation.py` computes
+this, including both controls, because the first reading of it was wrong: sharing
+a run index does not generally make two episodes alike, it only makes the low
+tail possible.
+
 **Case 1, IDV(15): the representation.** The fault is second in the short list
 and the classifier never gets above $0.22$ on anything. Retrieval cites IDV(5)
 and misses IDV(15) entirely, and the knowledge-driven root alarm picks

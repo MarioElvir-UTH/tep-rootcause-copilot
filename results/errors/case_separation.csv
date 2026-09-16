@@ -1,0 +1,6 @@
+pair,same_run,max_sigma_all_52,max_sigma_alarmed,min_sigma_alarmed,widest_variable
+IDV(15)[12] vs IDV(18)[37],0,4.6882,4.6882,2.6483,xmeas_26
+IDV(15)[12] vs IDV(9)[12],1,0.9255,0.465,0.0241,xmeas_22
+IDV(18)[37] vs IDV(9)[12],0,4.6566,4.6566,2.6367,xmeas_26
+"control: two faults, same run (n=300)",1,11.6757,1.1308,28.2452,share under 2 sigma: 12%
+"control: one fault, two runs (n=300)",0,5.3019,4.366,18.1739,share under 2 sigma: 0%
