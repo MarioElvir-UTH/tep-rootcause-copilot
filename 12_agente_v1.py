@@ -237,6 +237,11 @@ def decide(p_cls, p_ret, n_alarm, moved, arm, w):
 
 
 # ---------------- one fold, both window positions precomputed ----------------
+# el vector de puntuacion de cada episodio, que 21_pr_auc.py necesita y el
+# log de decisiones no guarda porque solo lleva el top-3
+SCORES = []
+
+
 def run_fold(seed, fold, tri, vai, arm, w, fh=None):
     net, mean, std = load_fold_model(seed, fold)
     pack = {}
@@ -273,6 +278,7 @@ def run_fold(seed, fold, tri, vai, arm, w, fh=None):
         order_kb = (priority_knowledge(alarming[i], first[i], pr)  # RQ1 proposal
                     if pr is not None else order)
         shown = group_alarms(order, corr)
+        SCORES.append((seed, fold, arm, int(i), int(y[i]), score.astype(np.float32)))
         top3 = np.argsort(-score)[:3]
         rows.append({
             "y": int(y[i]), "top3": top3, "n_alarm": n_alarm,
@@ -489,3 +495,16 @@ env = {"python": platform.python_version(), "torch": torch.__version__,
 with open(os.path.join(RES, "agente_env.json"), "w", encoding="utf-8") as f:
     json.dump(env, f, indent=2, ensure_ascii=False)
 print("\nsaved: results/agente_comparison.csv, agente_env.json, logs/decisiones.jsonl")
+
+
+# ---------------- the score vectors, for the precision-recall analysis ----------------
+_sc = np.stack([r[5] for r in SCORES]) if SCORES else np.zeros((0, 21), np.float32)
+np.savez_compressed(
+    os.path.join(RES, "agent_scores.npz"),
+    seed=np.array([r[0] for r in SCORES], np.int16),
+    fold=np.array([r[1] for r in SCORES], np.int8),
+    arm=np.array([r[2] for r in SCORES]),
+    idx=np.array([r[3] for r in SCORES], np.int32),
+    y=np.array([r[4] for r in SCORES], np.int8),
+    score=_sc)
+print("wrote results/agent_scores.npz  (%d episodes x %d classes)" % _sc.shape)

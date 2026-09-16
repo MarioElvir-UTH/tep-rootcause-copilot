@@ -1,0 +1,9 @@
+model,pr_auc_mean,pr_auc_std_over_folds,pr_auc_std_over_seeds,f1_mean_here
+Trivial,0.0476,0.0,0.0,0.0043
+Logistic reg.,0.6725,0.0054,0.0004,0.6513
+Random forest,0.6425,0.0044,0.0001,0.6381
+Gradient boost.,0.6597,0.0049,0.0003,0.6396
+v1a MLP,0.6677,0.0129,0.0045,0.6524
+v1b 1D-CNN,0.7191,0.0041,0.0,0.6962
+No agent (abl.),0.7831,0.0063,0.0015,0.7521
+Copilot v1,0.775,0.0075,0.0008,0.7407

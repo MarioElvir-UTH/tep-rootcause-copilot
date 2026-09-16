@@ -621,5 +621,11 @@ without adding one.
   the paragraph. OK
 - Repository -> public at https://github.com/MarioElvir-UTH/tep-rootcause-copilot
   (code, frozen partition, results, README with the one-command reproduction). OK
-- PR-AUC -> NOT computed; the secondary metrics are Recall@1, Recall@3 and MRR, 
-  and Table II shows Recall@3. If PR-AUC is required, [PENDIENTE].
+- PR-AUC -> computed on request by `21_pr_auc.py` (`results/pr_auc.csv`), as the
+  macro-averaged average precision over the same folds and seeds. It changes no
+  conclusion: the ablation still leads, the proposed method still trails it in all
+  15 folds, and the only reordering in the table is between the perceptron and
+  logistic regression, the pair already declared comparable. Table II keeps
+  Recall@3 because it is what the operator reads and because it was declared
+  before any score was seen, while PR-AUC was computed after; the paper reports it
+  as a check, not as a criterion. OK
