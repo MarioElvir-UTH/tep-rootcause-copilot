@@ -18,7 +18,9 @@ import os, json, hashlib
 import numpy as np
 import pandas as pd
 
-BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+BASE = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
+    BASE = os.path.dirname(BASE)      # the scripts live in code/, the project one level up
 OUT = os.path.join(BASE, "splits")
 os.makedirs(OUT, exist_ok=True)
 

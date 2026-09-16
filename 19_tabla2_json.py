@@ -25,7 +25,9 @@ import json
 import numpy as np
 import pandas as pd
 
-BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+BASE = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
+    BASE = os.path.dirname(BASE)      # the scripts live in code/, the project one level up
 RES = os.path.join(BASE, "results")
 
 f1 = pd.read_csv(os.path.join(RES, "per_fold_f1.csv"))

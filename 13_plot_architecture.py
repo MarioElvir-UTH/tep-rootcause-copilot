@@ -30,7 +30,9 @@ matplotlib.use("Agg")           # no GUI needed
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 
-BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+BASE = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
+    BASE = os.path.dirname(BASE)      # the scripts live in code/, the project one level up
 RES = os.path.join(BASE, "results")
 ENV = os.path.join(RES, "agente_env.json")
 assert os.path.exists(ENV), "run 12_agente_v1.py first"

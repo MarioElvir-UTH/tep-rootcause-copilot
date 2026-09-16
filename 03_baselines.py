@@ -18,7 +18,9 @@ from sklearn.ensemble import RandomForestClassifier
 
 SEED = 42
 W = 20  # causal window length (samples after onset) = 1 h of post-onset data
-BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+BASE = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
+    BASE = os.path.dirname(BASE)      # the scripts live in code/, the project one level up
 DATA = os.path.join(BASE, "dataverse_files")
 np.random.seed(SEED)
 

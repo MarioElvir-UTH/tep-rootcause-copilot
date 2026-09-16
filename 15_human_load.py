@@ -17,7 +17,9 @@ import json, os
 import numpy as np
 import pandas as pd
 
-B = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+B = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(B, "requirements.txt")):
+    B = os.path.dirname(B)      # the scripts live in code/, the project one level up
 LOG = os.path.join(B, "results", "logs", "decisiones.jsonl")
 ag = pd.read_csv(os.path.join(B, "results", "agente_comparison.csv")).set_index("arm")
 dl = pd.read_csv(os.path.join(B, "results", "dl_comparison.csv")).set_index("model")

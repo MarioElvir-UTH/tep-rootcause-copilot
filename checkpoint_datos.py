@@ -15,7 +15,9 @@ import os, gc, json, hashlib
 import pyreadr
 import pandas as pd
 
-BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+BASE = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
+    BASE = os.path.dirname(BASE)      # the scripts live in code/, the project one level up
 DATA = os.path.join(BASE, "dataverse_files")
 SPLITS = os.path.join(BASE, "splits")
 FILES = ["TEP_FaultFree_Training.RData", "TEP_FaultFree_Testing.RData",

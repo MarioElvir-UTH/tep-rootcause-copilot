@@ -10,7 +10,10 @@ import pyreadr
 import pandas as pd
 import numpy as np
 
-DATA = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II\dataverse_files"
+_ROOT = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(_ROOT, "requirements.txt")):
+    _ROOT = os.path.dirname(_ROOT)      # the scripts live in code/, the project one level up
+DATA = os.path.join(_ROOT, "dataverse_files")
 FILES = [
     "TEP_FaultFree_Training.RData",
     "TEP_FaultFree_Testing.RData",

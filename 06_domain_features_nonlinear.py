@@ -23,7 +23,9 @@ from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassif
 from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.metrics import f1_score
 
-BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+BASE = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
+    BASE = os.path.dirname(BASE)      # the scripts live in code/, the project one level up
 RES = os.path.join(BASE, "results")
 CACHE = os.path.join(RES, "dev_domain_features.parquet")
 assert os.path.exists(CACHE), "run 05_domain_features.py first to build the feature cache"

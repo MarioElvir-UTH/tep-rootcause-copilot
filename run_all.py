@@ -30,7 +30,11 @@ import sys
 import time
 import subprocess
 
-BASE = os.path.dirname(os.path.abspath(__file__))
+# HERE is where the step scripts live, BASE is the project. They are the same
+# folder while the scripts sit at the root and differ once they move into code/,
+# so this file works from either layout and so does every step it launches.
+HERE = os.path.dirname(os.path.abspath(__file__))
+BASE = HERE if os.path.isfile(os.path.join(HERE, "requirements.txt")) else os.path.dirname(HERE)
 
 STEPS = [
     ("01_explore_data.py",             "Understand the raw data (schema, classes, quality)"),
@@ -71,11 +75,13 @@ RESULT_FILES = [
 def main():
     print("=" * 80)
     print("REPRODUCIBLE PIPELINE  -  TEP root-cause identification")
-    print(f"python {sys.version.split()[0]}   |   base: {BASE}")
+    print(f"python {sys.version.split()[0]}   |   project: {BASE}")
+    if HERE != BASE:
+        print(f"steps: {HERE}")
     print("=" * 80)
 
     # fail early if a step file is missing
-    missing = [s for s, _ in STEPS if not os.path.exists(os.path.join(BASE, s))]
+    missing = [s for s, _ in STEPS if not os.path.exists(os.path.join(HERE, s))]
     if missing:
         print("ABORT - missing script(s):", ", ".join(missing))
         sys.exit(1)
@@ -85,7 +91,7 @@ def main():
     for i, (script, desc) in enumerate(STEPS, 1):
         print(f"\n{'-' * 80}\n[{i}/{len(STEPS)}] {script}\n    {desc}\n{'-' * 80}", flush=True)
         t = time.time()
-        result = subprocess.run([sys.executable, script], cwd=BASE)  # streams child output live
+        result = subprocess.run([sys.executable, os.path.join(HERE, script)], cwd=BASE)  # streams child output live
         dt = time.time() - t
         timings.append((script, dt))
         if result.returncode != 0:

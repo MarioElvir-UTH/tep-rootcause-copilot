@@ -35,7 +35,9 @@ import torch
 from torch import nn
 from sklearn.model_selection import StratifiedGroupKFold
 
-BASE = r"C:\Users\melvi\Documents\Maestria\19. Seminario de Tesis II\Anteproyecto - Seminario II"
+BASE = os.path.dirname(os.path.abspath(__file__))
+if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
+    BASE = os.path.dirname(BASE)      # the scripts live in code/, the project one level up
 RES = os.path.join(BASE, "results")
 ERR = os.path.join(RES, "errors")
 os.makedirs(ERR, exist_ok=True)
