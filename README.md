@@ -34,7 +34,7 @@ a number:
 | Requirement | Where in the repo | Reproduced by | Number |
 |---|---|---|---|
 | Script that **loads and describes** the data | `01_explore_data.py` | step 1 of `run_all.py` | schema, 21 classes, quality checks |
-| **Frozen partition**, committed to the repo | `splits/partition_manifest.csv`, `splits/partition_meta.json` | `02_make_partition.py` (seed 42) | sha256 `f55e7729a298e23c` |
+| **Frozen partition**, committed to the repo | `splits/partition_manifest.csv`, `splits/partition_meta.json` | `02_make_partition.py` (seed 42) | sha256 `4cf7e020b0f2faa6` |
 | **Trivial** baseline, with its number | `results/classics_cv_comparison.csv` | `03_baselines.py`, `04_classics_cv.py` | F1-macro **0.004 ± 0.000** |
 | **Simple model**, with its number | `results/classics_cv_comparison.csv` | `04_classics_cv.py` | Logistic regression **0.652 ± 0.005**; Random forest **0.638 ± 0.005**; Gradient boosting **0.640 ± 0.005** (F1-macro) |
 
@@ -150,7 +150,7 @@ python code/run_all.py
 Every push runs `.github/workflows/checks.yml`, which checks what a clone can
 check without the 1.34 GB of raw data: that every script compiles, that the
 pipeline finds all 23 of its steps, that the frozen partition rebuilds to the
-same `f55e7729a298e23c` the paper cites, and that the generated files still
+same `4cf7e020b0f2faa6` the paper cites, and that the generated files still
 match `results/tabla2.json`. The full pipeline needs the download in section 2.
 
 Runs the 23 steps in dependency order, stops at the first failure, and lists the
@@ -223,7 +223,7 @@ row and it is not listed above.
 
 Mean ± std over **15 folds** (StratifiedGroupKFold-by-run, k=5, seeds {5,17,42};
 selection seed 0). Determinism is further guaranteed by the committed partition
-manifest: `splits/partition_meta.json` stores `manifest_sha256_16 = f55e7729a298e23c`,
+manifest: `splits/partition_meta.json` stores `manifest_sha256_16 = 4cf7e020b0f2faa6`,
 which `02_make_partition.py` reproduces exactly.
 
 ## 5. Repository layout
@@ -349,7 +349,7 @@ use is declared here in full, and it changes nothing about how the results are
 judged: **every number and figure is produced by code in this repository that runs
 end-to-end** (`python code/run_all.py`). No agent output was accepted as a result
 without verification: the pipeline was re-executed from the raw data, the
-frozen-partition integrity hash was re-checked (`f55e7729a298e23c`, matched), and
+frozen-partition integrity hash was re-checked (`4cf7e020b0f2faa6`, matched), and
 every Table II value was confirmed to reproduce. What does not run is not reported.
 
 ## 8. License / contact

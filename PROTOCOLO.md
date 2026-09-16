@@ -614,7 +614,18 @@ without adding one.
 
 - Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
 - Partition (by run, stratified, seed 42; test 10,500 sealed; dev 10,500; saved
-  to disk, sha256 f55e7729a298e23c) -> matches `02_make_partition.py`. OK
+  to disk, sha256 4cf7e020b0f2faa6) -> matches `02_make_partition.py`. OK
+
+> **Why this hash is not the one an earlier draft cited.** It was
+> `f55e7729a298e23c` until 2026-09-16, and the partition did not change: the same
+> manifest was being written with CRLF on Windows and LF on Linux, so the file
+> hashed differently on each while its contents were identical. A hash that
+> depends on the operating system cannot serve as proof that a split is frozen,
+> which is what this one is for. The writer now fixes the line terminator and
+> `.gitattributes` keeps git from converting it back, so the three platforms
+> agree. Continuous integration found this on its first run, by rebuilding the
+> manifest on Linux and comparing.
+
 - Features (mean+std of 52 vars; causal window 20 samples; scaler fit in-fold)
   -> matches `04`/`05`. OK
 - Models (trivial, logistic regression, random forest, gradient boosting;

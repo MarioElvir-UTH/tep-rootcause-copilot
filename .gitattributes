@@ -1,0 +1,9 @@
+# The partition manifest and the result tables are hashed and compared across
+# machines, so they stay LF in the working tree on every platform. Without this
+# Windows checks them out as CRLF and the sha256 the paper cites stops matching
+# the one a reviewer on Linux computes, for files whose contents are identical.
+splits/**      text eol=lf
+results/**.csv text eol=lf
+results/**.json text eol=lf
+*.py           text eol=lf
+*.md           text eol=lf

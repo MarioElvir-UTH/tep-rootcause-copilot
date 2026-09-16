@@ -20,9 +20,9 @@ jobs:
   reproducible:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           # The interpreter requirements.txt names, because a pinned environment
           # checked on a different one is not the environment that was pinned.
@@ -65,7 +65,7 @@ jobs:
           python code/02_make_partition.py
           python - <<'PY'
           import hashlib, json
-          EXPECTED = "f55e7729a298e23c"
+          EXPECTED = "4cf7e020b0f2faa6"
           sha = hashlib.sha256(open("splits/partition_manifest.csv", "rb").read()).hexdigest()[:16]
           meta = json.load(open("splits/partition_meta.json", encoding="utf-8"))
           assert sha == EXPECTED, "manifest is %s, the paper cites %s" % (sha, EXPECTED)

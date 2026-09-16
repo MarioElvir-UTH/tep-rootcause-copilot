@@ -56,7 +56,10 @@ assert len(overlap) == 0, "train/val run overlap"
 
 # ---- save ----
 man_path = os.path.join(OUT, "partition_manifest.csv")
-man.to_csv(man_path, index=False)
+# LF on every platform: the sha256 below is quoted in the paper as the proof
+# that the partition has not moved, and a hash that depends on the operating
+# system's line endings cannot serve as that proof.
+man.to_csv(man_path, index=False, lineterminator="\n")
 sha = hashlib.sha256(open(man_path, "rb").read()).hexdigest()[:16]
 
 meta = {
