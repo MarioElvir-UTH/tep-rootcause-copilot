@@ -24,8 +24,8 @@ into the `.tex` between two markers. The caption stays in the manuscript, becaus
 the prose belongs to the authors and the numbers belong to the run.
 
 ```
-python resultados.py           write the table and the paragraph, splice them
-python resultados.py --check   compare only, non-zero if the paper has drifted
+python code/resultados.py      write the table and the paragraph, splice them
+python code/resultados.py --check   compare only, non-zero if the paper has drifted
 ```
 
 This section used to carry the table in full. It was removed because it had
@@ -642,7 +642,7 @@ without adding one.
   from an earlier run. OK
 - Table II is generated -> `19_tabla2_json.py` collects every number into
   `results/tabla2.json` and `resultados.py` renders and splices it, so no cell of
-  Table II is typed anywhere. `python resultados.py --check` fails if the
+  Table II is typed anywhere. `python code/resultados.py --check` fails if the
   manuscript and the data disagree. OK
 - Section IV of the paper -> reduced on 2026-09-15 to the seven sentences above
   and nothing else, which took the paper from eight pages to seven, with the

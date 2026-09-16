@@ -25,7 +25,7 @@ not count.** After placing the data (Section 2), a fresh clone reproduces the
 baseline with a single command:
 
 ```bash
-python run_all.py
+python code/run_all.py
 ```
 
 The reproducible baseline is four checkable pieces, each traceable to a script and
@@ -55,8 +55,8 @@ in that order (see the [Fast path](#3-reproduce) below).
 - **Table II itself**: `results/tabla2.json` holds every number of the table, one row
   per model, with the primary and secondary metric given per seed rather than already
   averaged. `resultados.py` turns that file into the LaTeX table and splices it into
-  the manuscript, so no value in Table II is ever typed by hand; `python resultados.py
-  --check` compares the two and fails if they have drifted apart.
+  the manuscript, so no value in Table II is ever typed by hand; `python
+  code/resultados.py --check` compares the two and fails if they have drifted apart.
 - **The cost column of Table II**: size, training seconds and inference milliseconds
   for all eight rows, measured in one run so they are comparable
   (`results/cost_table.csv`). Size counts what each model stores to make a decision;
@@ -144,7 +144,7 @@ dataverse_files/
 **Everything (one command, 12 CPU threads, no GPU):**
 
 ```bash
-python run_all.py
+python code/run_all.py
 ```
 
 Runs the 23 steps in dependency order, stops at the first failure, and lists the
@@ -160,10 +160,10 @@ Wall-clock is indicative and moves with processor and load.
 the core steps:
 
 ```bash
-python 02_make_partition.py   # freeze the by-run split (seed 42)
-python 03_baselines.py        # trivial + RF on the frozen split
-python 04_classics_cv.py      # logistic + RF + Gradient Boosting, grouped CV -> Table II
-python 10_inference_time.py   # training time + inference latency (Table II cost)
+python code/02_make_partition.py   # freeze the by-run split (seed 42)
+python code/03_baselines.py        # trivial + RF on the frozen split
+python code/04_classics_cv.py      # logistic + RF + Gradient Boosting, grouped CV -> Table II
+python code/10_inference_time.py   # training time + inference latency (Table II cost)
 ```
 
 Add `08_label_efficiency.py` then `09_plot_label_efficiency.py` to regenerate the
@@ -223,34 +223,35 @@ which `02_make_partition.py` reproduces exactly.
 ## 5. Repository layout
 
 ```
-01_explore_data.py              schema, class counts, data-quality checks
-02_make_partition.py            freeze the by-run partition (seed 42) -> splits/
-03_baselines.py                 trivial + Random Forest on the frozen split
-04_classics_cv.py               logistic + RF + Gradient Boosting w/ CV -> Table II + cache
-05_domain_features.py           domain-knowledge features + permutation importance
-06_domain_features_nonlinear.py do domain features help nonlinear models?
-07_cv_audit.py                  cross-validation leakage audit (4 checks)
-08_label_efficiency.py          label-efficiency curve (the measurable contribution)
-09_plot_label_efficiency.py     render the main figure, both panels (runs after step 16)
-10_inference_time.py            training time + inference latency (Table II cost)
-11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
-12_agente_v1.py                 copilot agent v1: alarm layer, loop, three arms -> Table II
-13_plot_architecture.py         render the architecture figure (Figure 1) from the run stamp
-14_effect_sizes.py              paired differences and effect sizes -> per_fold_f1.csv, effect_sizes.csv
-15_human_load.py                coverage, precision and operator review load -> human_load.csv
-16_label_efficiency_agent.py    label efficiency of the copilot and the root-alarm rubric
-17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
-18_worst_errors.py              per-class errors and root-alarm recall at N ->
-                                results/errors/
-19_tabla2_json.py               every number of Table II in one file -> results/tabla2.json
-20_case_separation.py           how far apart the costly cases are, in sigmas of
-                                normal -> results/errors/case_separation.csv
-21_pr_auc.py                    PR-AUC for every row of Table II, as a check on
-                                the ranking -> results/pr_auc.csv
-resultados.py                   Table II and the Results paragraph, generated and
-                                spliced -> paper/tabla2.tex, paper/resultados.tex
-checkpoint_datos.py             live data checkpoint (integrity evidence)
-run_all.py                      one-command reproducible pipeline (all of the above)
+code/                           every script; the project root is the folder above
+    01_explore_data.py              schema, class counts, data-quality checks
+    02_make_partition.py            freeze the by-run partition (seed 42) -> splits/
+    03_baselines.py                 trivial + Random Forest on the frozen split
+    04_classics_cv.py               logistic + RF + Gradient Boosting w/ CV -> Table II + cache
+    05_domain_features.py           domain-knowledge features + permutation importance
+    06_domain_features_nonlinear.py do domain features help nonlinear models?
+    07_cv_audit.py                  cross-validation leakage audit (4 checks)
+    08_label_efficiency.py          label-efficiency curve (the measurable contribution)
+    09_plot_label_efficiency.py     render the main figure, both panels (runs after step 16)
+    10_inference_time.py            training time + inference latency (Table II cost)
+    11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
+    12_agente_v1.py                 copilot agent v1: alarm layer, loop, three arms -> Table II
+    13_plot_architecture.py         render the architecture figure (Figure 1) from the run stamp
+    14_effect_sizes.py              paired differences and effect sizes -> per_fold_f1.csv, effect_sizes.csv
+    15_human_load.py                coverage, precision and operator review load -> human_load.csv
+    16_label_efficiency_agent.py    label efficiency of the copilot and the root-alarm rubric
+    17_cost_table.py                every cost cell of Table II in one run -> cost_table.csv
+    18_worst_errors.py              per-class errors and root-alarm recall at N ->
+                                    results/errors/
+    19_tabla2_json.py               every number of Table II in one file -> results/tabla2.json
+    20_case_separation.py           how far apart the costly cases are, in sigmas of
+                                    normal -> results/errors/case_separation.csv
+    21_pr_auc.py                    PR-AUC for every row of Table II, as a check on
+                                    the ranking -> results/pr_auc.csv
+    resultados.py                   Table II and the Results paragraph, generated and
+                                    spliced -> paper/tabla2.tex, paper/resultados.tex
+    checkpoint_datos.py             live data checkpoint (integrity evidence)
+    run_all.py                      one-command reproducible pipeline (all of the above)
 requirements.txt                pinned environment
 PROTOCOLO.md                    canonical experimental protocol
 references.bib                  bibliography
@@ -260,6 +261,11 @@ prompts/                        fixed reasoning prompt, declared and not execute
 splits/                         frozen partition manifest + metadata (committed)
 results/                        result tables (CSV), env stamps (JSON), figure (PDF/PNG)
 ```
+
+The scripts live in `code/` and the data does not: each one derives the project
+root from its own location, walking up one level when `requirements.txt` is not
+beside it. That file therefore stays at the root, where it also belongs, and a
+clone works from any path instead of one machine's.
 
 Feature caches (`results/*.parquet`, `results/*.npy`), the per-fold network
 checkpoints (`results/models/`), the full decision log
@@ -302,7 +308,7 @@ than positional, so this is the map:
 | PR-AUC for every row, as a check | `results/pr_auc.csv`, `results/pr_auc_per_fold.csv` | `21_pr_auc.py` |
 | The agent's score vector per episode | `results/agent_scores.npz` | `12_agente_v1.py` |
 
-`python resultados.py --check` compares both the table and the Results paragraph in
+`python code/resultados.py --check` compares both the table and the Results paragraph in
 the manuscript against what the data generates, and exits non-zero if either differs. It exists because they did
 drift once: seven of the eight cost cells had stopped matching their sources, and
 the cause was that the table lived in the manuscript as text.
@@ -335,7 +341,7 @@ AI coding assistants (Claude / Claude Code) were used to help implement the
 pipeline scripts, this documentation, and the analysis in this repository. That
 use is declared here in full, and it changes nothing about how the results are
 judged: **every number and figure is produced by code in this repository that runs
-end-to-end** (`python run_all.py`). No agent output was accepted as a result
+end-to-end** (`python code/run_all.py`). No agent output was accepted as a result
 without verification: the pipeline was re-executed from the raw data, the
 frozen-partition integrity hash was re-checked (`f55e7729a298e23c`, matched), and
 every Table II value was confirmed to reproduce. What does not run is not reported.
