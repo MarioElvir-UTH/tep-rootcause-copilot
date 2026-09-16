@@ -144,12 +144,50 @@ a guarantee per episode, and this is one of the episodes on the losing side.
 
 ---
 
-## What would change it
+## What would change it, case by case
 
-All three are deferred because the classifier and the retrieval disagree, and in
-two of the three the fault is already in the short list. Ranking with the
-classifier and keeping symptom retrieval as an independent check, which the paper
-names as future work, would answer on these episodes instead of deferring, at the
-cost of losing the disagreement that currently protects the operator from a wrong
-confident answer. Which of the two an operator prefers is a question about the
-plant, not about the benchmark.
+First, what would **not** change any of them. The guard is
+`ready = agree and conf >= TAU` in the proposed arm and `ready = conf >= TAU` in
+the ablation, with `TAU = 0.50`. The top confidence in these three episodes is
+$0.2229$, $0.2059$ and $0.2005$. All three fall on the confidence test before
+the disagreement is ever consulted, so removing the agreement requirement, which
+the paper names as future work, would not make the copilot answer here. It would
+change other episodes, not these.
+
+Lowering the threshold would not help either, and it is worth saying why: the
+top hypothesis in all three is normal operation. A threshold low enough to let
+these through would make the copilot assert that the plant is healthy while a
+fault is running, which is the error this whole section is about. The guard is
+doing exactly what it was declared to do.
+
+**Case 1, IDV(15): the representation.** The fault is second in the short list
+and the classifier never gets above $0.22$ on anything. Retrieval cites IDV(5)
+and misses IDV(15) entirely, and the knowledge-driven root alarm picks
+`xmeas_21` while the document names `xmv_11` and `xmeas_22`. Nothing in the
+decision layer fixes this: per-run means and standard deviations over an early
+window do not separate this fault from normal operation, which is what its
+per-class $F_1$ of $0.149$ says. The route the paper already names, learning the
+representation from unlabeled episodes, is the one that would move it.
+
+**Case 2, IDV(18): the corpus, not the copilot.** The source documents IDV(18)
+as an unknown disturbance, with no cause and no affected variables. The true
+class is not in the top three and cannot be reasoned to, because there is no
+document describing what to look for. No change to the classifier, the retrieval
+or the guard reaches this episode. Only a corpus that describes the disturbance
+would, and the paper excludes IDV(16) to IDV(20) from the root-alarm metric for
+this reason rather than scoring them as failures.
+
+**Case 3, IDV(9): the prioritization, and only the prioritization.** The fault
+is third in the short list and the chronological order already finds the root
+alarm: `xmv_1` crossed its band first and the document for IDV(9) names it.
+Weighting by retrieved evidence moved `xmeas_21` to the front and lost it. The
+retrieval cites IDV(5), IDV(13) and IDV(8), none of them the true fault, so the
+weighting inherits an error it had no way to detect. This is the one case of the
+three where a change inside the method would help: ranking the alarms by time
+and letting retrieval annotate rather than reorder. Across the run the
+knowledge-driven order still wins, $0.383$ against $0.359$ in this arm, so the
+change would trade a better average for a better worst case.
+
+The three do not share a fix, which is the point of reading them separately. One
+is a limit of the representation, one a limit of the corpus, and only the third
+is a limit of the design.
