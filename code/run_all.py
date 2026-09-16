@@ -96,7 +96,8 @@ def main():
         timings.append((script, dt))
         if result.returncode != 0:
             print(f"\n!! STEP FAILED: {script} (exit {result.returncode}) after {dt:.0f}s. Stopping.")
-            print("   Fix the error shown above, then re-run:  python run_all.py")
+            print(f"   Fix the error shown above, then re-run:  "
+                  f"python {os.path.relpath(__file__, BASE)}")
             sys.exit(result.returncode)
         print(f"    OK in {dt:.0f}s")
 

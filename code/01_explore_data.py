@@ -5,7 +5,7 @@ Reports, per file: rows, classes (faultNumber), per-run and per-sample balance,
 samples per run, missing/duplicate/corrupt checks, and representative examples.
 Every number comes from the data; nothing is estimated.
 """
-import os, gc
+import os, sys, gc
 import pyreadr
 import pandas as pd
 import numpy as np
@@ -95,11 +95,20 @@ def report(fname):
 
 
 if __name__ == "__main__":
+    read = 0
     for f in FILES:
         try:
             report(f)
+            read += 1
         except MemoryError:
             print(f"!! MemoryError on {f}: too large to load fully in RAM; process fault-by-fault or use R.\n")
         except Exception as e:
             print(f"!! Error on {f}: {type(e).__name__}: {e}\n")
-    print("DONE.")
+    print(f"DONE. {read} of {len(FILES)} files read.")
+    if read == 0:
+        # A step that reports success after reading nothing makes run_all say OK
+        # and then fail three steps later on a missing cache. Fail here instead.
+        print(f"\n!! No data file could be read. Expected them in:\n   {DATA}\n"
+              "   Download the four .RData files from the Harvard Dataverse link\n"
+              "   in the README (section 2) and place them there.")
+        sys.exit(1)
