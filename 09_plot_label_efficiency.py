@@ -137,9 +137,27 @@ else:
     bottom = axA
 
 ticks = sorted(df["pct_of_dev_labels"].unique())
+
+
+def readable(ts, gap=0.18):
+    """Label a budget only if it clears the previous label on the log axis.
+
+    Every budget keeps its tick mark, so each measured point stays locatable;
+    what is dropped is only the text. Without this, 10 and 12.5 are 0.097 apart
+    in log10 against a 0.30 typical gap, and they print as "1012.5"."""
+    out, last = [], None
+    for t in ts:
+        if last is None or np.log10(t) - np.log10(last) >= gap:
+            out.append("%g" % t)
+            last = t
+        else:
+            out.append("")
+    return out
+
+
 bottom.set_xscale("log")
 bottom.set_xticks(ticks)
-bottom.set_xticklabels(["%g" % t for t in ticks])
+bottom.set_xticklabels(readable(ticks))
 bottom.minorticks_off()
 bottom.set_xlabel("Labeled runs (% of the development pool, log scale)")
 bottom.set_xlim(0.2, 130)
