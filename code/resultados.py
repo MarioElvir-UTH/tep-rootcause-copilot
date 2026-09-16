@@ -96,12 +96,39 @@ for m in models:
 lines += [r"\bottomrule", r"\end{tabular}"]
 table = "\n".join(lines)
 
-tex = io.open(TEX, encoding="utf-8").read()
-current = re.search(r"\\begin\{tabular\}\{@\{\}lccr@\{\}\}.*?\\end\{tabular\}", tex, re.S)
-assert current, "no se encontro la tabular de la Tabla II en el manuscrito"
-same = current.group(0).strip() == table.strip()
+# The manuscript is not in the repository: it lives in Overleaf and is
+# gitignored. A clone therefore has the generated files but not the .tex, so the
+# two spliced regions are skipped there instead of crashing, and --check reports
+# on what it could actually compare.
+HAS_TEX = os.path.isfile(TEX)
+if not HAS_TEX:
+    print("nota: %s no esta aqui (vive en Overleaf y esta gitignoreado);"
+          % os.path.basename(TEX))
+    print("      se generan y comparan los archivos versionados, no el manuscrito")
 
+tex = io.open(TEX, encoding="utf-8").read() if HAS_TEX else ""
+current = re.search(r"\\begin\{tabular\}\{@\{\}lccr@\{\}\}.*?\\end\{tabular\}", tex, re.S)
+assert current or not HAS_TEX, "no se encontro la tabular de la Tabla II en el manuscrito"
+same = current.group(0).strip() == table.strip() if current else True
+
+# paper/tabla2.tex and paper/resultados.tex are committed, so they can be compared
+# on a clone even when the manuscript is not here. This is what CI checks.
+def compare(path, want, label):
+    if not os.path.isfile(path):
+        print("%s: no existe todavia" % label)
+        return False
+    got = io.open(path, encoding="utf-8").read().strip()
+    ok = got == want.strip()
+    print("%s %s lo que generan los datos" % (label, "COINCIDE con" if ok else "NO coincide con"))
+    return ok
+
+FILES_OK = []
 if CHECK:
+    FILES_OK.append(compare(OUT, table, "paper/tabla2.tex"))
+
+if CHECK and not HAS_TEX:
+    pass
+elif CHECK:
     print("la Tabla II del manuscrito %s lo que generan los datos"
           % ("COINCIDE con" if same else "NO coincide con"))
     if not same:
@@ -112,7 +139,9 @@ else:
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     io.open(OUT, "w", encoding="utf-8", newline="\n").write(table + "\n")
     print("wrote paper/tabla2.tex")
-    if same:
+    if not HAS_TEX:
+        pass
+    elif same:
         print("el manuscrito ya llevaba estos numeros: no se toco")
     else:
         tex = tex[:current.start()] + table + tex[current.end():]
@@ -209,16 +238,22 @@ body = "\n".join(textwrap.wrap(para, 78, break_long_words=False, break_on_hyphen
 OUTTEX = os.path.join(BASE, "paper", "resultados.tex")
 io.open(OUTTEX, "w", encoding="utf-8", newline="\n").write(body + "\n")
 
-tex = io.open(TEX, encoding="utf-8").read()
-i, j = tex.find(PBEGIN), tex.find(PEND)
-assert i >= 0 and j > i, "faltan los marcadores del parrafo en el manuscrito"
-had = tex[i + len(PBEGIN):j].strip()
+if CHECK:
+    FILES_OK.append(compare(OUTTEX, body, "paper/resultados.tex"))
+
+tex = io.open(TEX, encoding="utf-8").read() if HAS_TEX else ""
+i, j = (tex.find(PBEGIN), tex.find(PEND)) if HAS_TEX else (-1, -1)
+assert (i >= 0 and j > i) or not HAS_TEX, "faltan los marcadores del parrafo en el manuscrito"
+had = tex[i + len(PBEGIN):j].strip() if HAS_TEX else body.strip()
 if CHECK:
     ok = had == body.strip()
-    print("el parrafo de Results %s lo que generan los datos"
-          % ("COINCIDE con" if ok else "NO coincide con"))
+    if HAS_TEX:
+        print("el parrafo de Results %s lo que generan los datos"
+              % ("COINCIDE con" if ok else "NO coincide con"))
     # no se sale todavia: falta la tabla del README, que es la tercera region
-    CHECKS = [same, ok]
+    CHECKS = [same, ok] if HAS_TEX else []
+elif not HAS_TEX:
+    pass
 elif had == body.strip():
     print("el manuscrito ya llevaba este parrafo: no se toco")
 else:
@@ -255,7 +290,7 @@ if CHECK:
     ok3 = had == tabla_readme.strip()
     print("la tabla esperada del README %s lo que generan los datos"
           % ("COINCIDE con" if ok3 else "NO coincide con"))
-    raise SystemExit(0 if all(CHECKS + [ok3]) else 1)
+    raise SystemExit(0 if all(CHECKS + FILES_OK + [ok3]) else 1)
 elif had == tabla_readme.strip():
     print("el README ya llevaba estos numeros: no se toco")
 else:

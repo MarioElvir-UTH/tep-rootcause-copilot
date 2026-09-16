@@ -1,0 +1,85 @@
+# What a clone can check without the raw data.
+#
+# The four TEP .RData files are 1.34 GB and are not redistributed here, so no CI
+# run can execute the pipeline end to end: that needs the download described in
+# section 2 of the README. What CI can do is catch the failures that would waste
+# a reader's download, and it does that on every push.
+#
+# The load-bearing check is the partition. 02_make_partition.py derives the run
+# indices arithmetically from a fixed seed, so it needs no raw data, and the
+# sha256 it produces is the one the paper and PROTOCOLO.md name. If that hash
+# ever changes, every number downstream belongs to a different split.
+name: checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  reproducible:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # The interpreter requirements.txt names, because a pinned environment
+          # checked on a different one is not the environment that was pinned.
+          python-version: "3.14"
+          cache: pip
+
+      - name: Every script compiles
+        # No dependencies needed, so this runs first and fails fast on a typo.
+        run: python -m compileall -q code
+
+      - name: The pipeline can find its own steps
+        # run_all resolves the project from its own location. This asserts that
+        # it lands on the repository root and that none of its steps is missing,
+        # which is what breaks when a file is renamed or moved.
+        run: |
+          python - <<'PY'
+          import os, runpy, sys
+          m = runpy.run_path("code/run_all.py", run_name="not_main")
+          root = os.path.abspath(".")
+          assert os.path.abspath(m["BASE"]) == root, (m["BASE"], root)
+          assert os.path.abspath(m["HERE"]) == os.path.join(root, "code")
+          missing = [s for s, _ in m["STEPS"] if not os.path.isfile(os.path.join("code", s))]
+          assert not missing, "steps not found: %s" % missing
+          print("%d steps, all present" % len(m["STEPS"]))
+          PY
+
+      - name: Install the core environment
+        # torch is deliberately absent: requirements.txt documents it as a
+        # separate install from PyTorch's own index, and nothing checked here
+        # needs it.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: The frozen partition reproduces
+        # Delete what is committed, rebuild it, and require the same hash the
+        # paper cites. This is the one end-to-end guarantee a clone can give.
+        run: |
+          rm -f splits/partition_manifest.csv splits/partition_meta.json
+          python code/02_make_partition.py
+          python - <<'PY'
+          import hashlib, json
+          EXPECTED = "f55e7729a298e23c"
+          sha = hashlib.sha256(open("splits/partition_manifest.csv", "rb").read()).hexdigest()[:16]
+          meta = json.load(open("splits/partition_meta.json", encoding="utf-8"))
+          assert sha == EXPECTED, "manifest is %s, the paper cites %s" % (sha, EXPECTED)
+          assert meta["manifest_sha256_16"] == EXPECTED
+          print("partition sha256[:16] =", sha)
+          PY
+          git diff --exit-code splits/
+
+      - name: Generated files match the data
+        # paper/tabla2.tex, paper/resultados.tex and the README's expected-results
+        # table are written from results/tabla2.json. This fails if a number was
+        # edited by hand in any of them. The manuscript itself is not here: it
+        # lives in Overleaf and is gitignored, so those two regions are skipped.
+        run: python code/resultados.py --check
+
+      - name: Nothing regenerated differs from what is committed
+        run: git diff --exit-code

@@ -147,6 +147,12 @@ dataverse_files/
 python code/run_all.py
 ```
 
+Every push runs `.github/workflows/checks.yml`, which checks what a clone can
+check without the 1.34 GB of raw data: that every script compiles, that the
+pipeline finds all 23 of its steps, that the frozen partition rebuilds to the
+same `f55e7729a298e23c` the paper cites, and that the generated files still
+match `results/tabla2.json`. The full pipeline needs the download in section 2.
+
 Runs the 23 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
