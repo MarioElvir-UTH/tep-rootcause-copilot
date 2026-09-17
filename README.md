@@ -13,6 +13,21 @@ look longer, escalate, or hand the episode to the operator. It never writes to
 the plant. Everything below is measured on the public Tennessee Eastman Process
 under one pre-registered protocol, on validation folds, with the test set sealed.
 
+<p align="center">
+  <img src="results/architecture_loop.png" width="92%"
+       alt="Four stages inside a dashed boundary labelled copilot: perceive the
+            window and its alarms, score it with the fold's 1D-CNN, reason over
+            21 documents by symptom similarity, and decide one of four actions.
+            The observe action loops back to perception with the window advanced.
+            The operator sits outside the boundary, between the copilot and the
+            plant">
+</p>
+
+<p align="center"><sub>Drawn by <code>code/13_plot_architecture.py</code> from
+<code>results/agente_env.json</code>, so every constant in it is one the agent
+actually ran with. The operator is outside the dashed boundary on purpose: that
+is the guard, not a promise.</sub></p>
+
 This is deliberately the **smallest version that produces a number**, not the
 full system: the reasoning step is rules, the corpus is one document per class,
 and the agent looks ahead once. What that leaves out is named as future work in

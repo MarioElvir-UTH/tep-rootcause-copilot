@@ -11,6 +11,22 @@ perceive, score, reason, decide; the observe action that closes the loop; the
 guard (the copilot never reaches the process); where the person is; and where the
 Table II number is measured.
 
+Three things are drawn rather than asserted:
+
+  - the guard is a boundary. A dashed frame encloses the four stages and is
+    labelled "copilot". The operator is outside it, and the single arrow that
+    leaves the copilot enters the operator before anything reaches the plant, so
+    "advisory" is geometry and not a sentence in Section III.
+  - the loop is a circuit. The observe return path has rounded corners and runs
+    inside that boundary, instead of reading as a pipe with a stray arrow beneath.
+  - Decide names four actions, not two. Earlier drafts of this figure showed
+    observe and defer and left escalate out, which understated the policy.
+
+The stage number rides its box border as a badge, which costs the box no interior
+width; that is what pays for the boundary. Body text is 7.5 pt rather than 8: the
+frame needs horizontal room and the two IEEE columns do not grow. The assert below
+is what enforces this, and it is the reason the figure cannot quietly overflow.
+
 Drawn by code for the same reason the label-efficiency figure is: a diagram that
 is redrawn by hand cannot drift away from the pipeline without someone noticing,
 and every constant shown here is read from results/agente_env.json rather than
@@ -25,10 +41,12 @@ experiment on purpose: restyling the figure never re-runs the agent.
 """
 import os
 import json
+import numpy as np
 import matplotlib
 matplotlib.use("Agg")           # no GUI needed
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.path import Path
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Circle
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
@@ -59,10 +77,11 @@ plt.rcParams.update({
 
 BLUE, ORANGE, GREEN, GREY = "#1f5fa8", "#c1531a", "#2e7d32", "#555555"
 FILL, FILL_OP = "#eef3fa", "#eef6ee"
+EDGE_C, FILL_C = "#9bb3cf", "#fbfcfe"   # the copilot boundary
 
 # Both IEEE columns plus the gutter. No tight bbox, so LaTeX does not rescale the
-# text and 7 pt on paper is 7 pt here.
-W_IN, H_IN = 7.16, 2.30
+# text and 7.5 pt on paper is 7.5 pt here.
+W_IN, H_IN = 7.16, 2.45
 fig, ax = plt.subplots(figsize=(W_IN, H_IN))
 X1, Y1 = 100.0, 100.0 * H_IN / W_IN
 ax.set_xlim(0, X1)
@@ -70,20 +89,21 @@ ax.set_ylim(0, Y1)
 ax.axis("off")
 
 BOXES = [
-    dict(key="perceive", kind="stage", title="1  Perceive", lines=[
+    dict(key="perceive", kind="stage", n="1", title="Perceive", lines=[
         (r"window $[%d,%d)$" % (W0, W1), "n"),
         (r"alarm at $%d\sigma$" % K, "n")]),
-    dict(key="score", kind="stage", title="2  Score", lines=[
+    dict(key="score", kind="stage", n="2", title="Score", lines=[
         ("the fold's 1D-CNN,", "n"),
         ("never retrained", "n")]),
-    dict(key="reason", kind="stage", title="3  Reason", lines=[
+    dict(key="reason", kind="stage", n="3", title="Reason", lines=[
         ("%d documents, by" % NDOC, "n"),
         ("symptom similarity", "n"),
         ("rules, not an LLM", "i")]),
-    dict(key="decide", kind="stage", title="4  Decide", lines=[
-        (r"conf $\geq %.2f$: answer" % TAU, "n"),
-        ("else observe, defer", "n")]),
-    dict(key="operator", kind="op", title="Operator", lines=[
+    dict(key="decide", kind="stage", n="4", title="Decide", lines=[
+        (r"answer if conf $\geq %.2f$" % TAU, "n"),
+        ("else observe, escalate", "n"),
+        ("or defer to the operator", "n")]),
+    dict(key="operator", kind="op", n="", title="Operator", lines=[
         ("approves", "n"),
         ("or rejects", "n")]),
 ]
@@ -92,98 +112,146 @@ BOXES = [
 # its real size and the box is made wide enough for the longest of them. If the row
 # does not fit the span the script stops, instead of shipping a figure that spills
 # past the column.
-FS_TITLE, FS_BODY, FS_ITAL = 8.0, 8.0, 8.0
-PAD_X, GAP, ARROW = 1.5, 1.2, 4.2
-BY0, BH = Y1 - 21.0, 14.5
+FS = 7.5
+PAD_X, GAP, GAP_OP, ARROW, PADC = 1.5, 1.2, 2.6, 2.8, 1.7
+BH, BY0, Y_LOOP, NUDGE = 14.0, 14.8, 7.8, 1.0
 
 renderer = fig.canvas.get_renderer()
 
 
-def text_units(txt, fs, italic=False):
+def text_units(txt, fs, italic=False, bold=False):
     """Width of a string in axis units, measured at the size it will be drawn."""
-    t = ax.text(0, 0, txt, fontsize=fs, style=("italic" if italic else "normal"))
+    t = ax.text(0, 0, txt, fontsize=fs, style=("italic" if italic else "normal"),
+                fontweight=("bold" if bold else "normal"))
     bb = t.get_window_extent(renderer=renderer)
     t.remove()
     return bb.transformed(ax.transData.inverted()).width
 
 
 for b in BOXES:
-    need = [text_units(b["title"], FS_TITLE)]
-    need += [text_units(t, FS_ITAL if m == "i" else FS_BODY, m == "i")
-             for t, m in b["lines"] if t]
+    # a numbered box also has to fit its badge, which sits left of the title
+    need = [text_units(b["title"], FS, bold=True) + (4.6 if b["n"] else 0)]
+    need += [text_units(t, FS, m == "i") for t, m in b["lines"] if t]
     b["w"] = max(need) + 2 * PAD_X
     b["_widest"] = max(zip(need, [b["title"]] + [t for t, _ in b["lines"] if t]))[1]
 
-total = ARROW * 2 + sum(b["w"] for b in BOXES) + GAP * (len(BOXES) - 1)
+stages, op = BOXES[:4], BOXES[4]
+inner = sum(b["w"] for b in stages) + GAP * 3
+# DCS and plant sit over their arrows, nudged outward so neither lands on a box
+# edge or on the boundary. Both are wider than the arrow they label, so what hangs
+# past each end is reserved here rather than discovered as a cropped word.
+OV = [max(0.0, text_units(s, FS) / 2.0 + NUDGE - ARROW / 2.0) for s in ("DCS", "plant")]
+# the boundary's right edge lives inside the gap that already separates Decide from
+# the Operator, so on that side it costs nothing of its own
+total = OV[0] + ARROW + PADC + inner + GAP_OP + op["w"] + ARROW + OV[1]
 print("row uses %.1f of %.0f units, %.2f cm of %.2f cm"
       % (total, X1, total / X1 * W_IN * 2.54, W_IN * 2.54))
 for _b in BOXES:
     print("   %-9s %5.1f units   widest: %s" % (_b["key"], _b["w"], _b["_widest"]))
 assert total <= X1 + 0.5, (
     "the row needs %.1f of %.0f units: shorten a line or widen the figure" % (total, X1))
-x = (X1 - (total - 2 * ARROW)) / 2.0
-for b in BOXES:
-    b["x0"] = x
-    b["x1"] = x + b["w"]
+
+x = (X1 - total) / 2.0 + OV[0] + ARROW + PADC
+for b in stages:
+    b["x0"], b["x1"] = x, x + b["w"]
     x = b["x1"] + GAP
+op["x0"] = stages[-1]["x1"] + GAP_OP
+op["x1"] = op["x0"] + op["w"]
 B = {b["key"]: b for b in BOXES}
 
+YM = BY0 + BH / 2.0
+CX0, CX1 = B["perceive"]["x0"] - PADC, B["decide"]["x1"] + PADC
+CY0, CY1 = Y_LOOP - 5.4, BY0 + BH + 4.8
+
+# ---------------------------------------------- the copilot boundary, as geometry
+# The operator is drawn outside this frame on purpose: the advisory guard is then
+# something a reader can see rather than something Section III has to promise.
+ax.add_patch(FancyBboxPatch((CX0, CY0), CX1 - CX0, CY1 - CY0,
+                            boxstyle="round,pad=0,rounding_size=2.0",
+                            linewidth=0.8, edgecolor=EDGE_C, facecolor=FILL_C,
+                            linestyle=(0, (4, 3)), zorder=1))
+ax.text(CX0 + 2.2, CY1 - 2.4, "copilot: advises, never writes to the process",
+        ha="left", va="center", fontsize=FS, style="italic", color=GREY, zorder=5)
+
+
+def rounded(pts, r):
+    """Polyline through pts with the corners rounded, so the path reads as a circuit."""
+    verts, codes = [pts[0]], [Path.MOVETO]
+    for i in range(1, len(pts) - 1):
+        p0, p1, p2 = (np.array(p, float) for p in (pts[i - 1], pts[i], pts[i + 1]))
+        a = p1 + (p0 - p1) / np.linalg.norm(p0 - p1) * r
+        c = p1 + (p2 - p1) / np.linalg.norm(p2 - p1) * r
+        verts += [tuple(a), tuple(p1), tuple(c)]
+        codes += [Path.LINETO, Path.CURVE3, Path.CURVE3]
+    verts.append(pts[-1])
+    codes.append(Path.LINETO)
+    return Path(verts, codes)
+
+
+# ----------------------------------------------------------------------- the boxes
 for b in BOXES:
     edge, fill = (GREEN, FILL_OP) if b["kind"] == "op" else (BLUE, FILL)
     ax.add_patch(FancyBboxPatch((b["x0"], BY0), b["w"], BH,
                                 boxstyle="round,pad=0,rounding_size=1.1",
                                 linewidth=0.9, edgecolor=edge, facecolor=fill, zorder=2))
     cx = (b["x0"] + b["x1"]) / 2.0
-    ax.text(cx, BY0 + BH - 3.2, b["title"], ha="center", va="center",
-            fontsize=8.0, fontweight="bold", color=edge, zorder=3)
+    ty = BY0 + BH - 3.2
+    ax.text(cx + (2.3 if b["n"] else 0), ty, b["title"], ha="center", va="center",
+            fontsize=FS, fontweight="bold", color=edge, zorder=3)
+    if b["n"]:
+        # the stage number rides the border, so it costs the box no inner width
+        bx = cx - text_units(b["title"], FS, bold=True) / 2.0 + 0.4
+        ax.add_patch(Circle((bx, ty), 1.7, facecolor=edge, edgecolor="none", zorder=3))
+        ax.text(bx, ty, b["n"], ha="center", va="center", fontsize=6.4,
+                fontweight="bold", color="white", zorder=4)
     # centre the body lines in the space under the title, so a box with two lines
     # does not leave a gap at the bottom
     body = [l for l in b["lines"] if l[0]]
-    top, bot = BY0 + BH - 5.0, BY0 + 1.2
+    top, bot = BY0 + BH - 5.2, BY0 + 1.2
     for j, (txt, mode) in enumerate(body):
-        yj = (top + bot) / 2.0 + (len(body) - 1) / 2.0 * 3.6 - 3.6 * j
-        ax.text(cx, yj, txt, ha="center", va="center",
-                fontsize=8.0, zorder=3,
+        yj = (top + bot) / 2.0 + (len(body) - 1) / 2.0 * 3.4 - 3.4 * j
+        ax.text(cx, yj, txt, ha="center", va="center", fontsize=FS, zorder=3,
                 color=(ORANGE if mode == "i" else "#1a1a1a"),
                 style=("italic" if mode == "i" else "normal"))
 
-YM = BY0 + BH / 2.0
-for a, c in zip(BOXES, BOXES[1:]):
+for a, c in zip(stages, stages[1:]):
     ax.add_patch(FancyArrowPatch((a["x1"] + 0.3, YM), (c["x0"] - 0.3, YM),
                                  arrowstyle="-|>", mutation_scale=7, linewidth=1.0,
                                  color="#333333", zorder=4))
 
-# ----------------------------------------------- the two ends, as arrows not boxes
-ax.add_patch(FancyArrowPatch((B["perceive"]["x0"] - ARROW, YM), (B["perceive"]["x0"] - 0.3, YM),
+# ------------------------------------------------ what enters, and what leaves
+ax.add_patch(FancyArrowPatch((CX0 - ARROW, YM), (B["perceive"]["x0"] - 0.3, YM),
                              arrowstyle="-|>", mutation_scale=7, linewidth=1.0,
                              color=GREY, zorder=4))
-ax.text(B["perceive"]["x0"] - ARROW / 2.0, YM + 3.2, "DCS",
-        ha="center", va="center", fontsize=8.0, color=GREY)
+ax.text(CX0 - ARROW / 2.0 - NUDGE, YM + 3.2, "DCS", ha="center", va="center",
+        fontsize=FS, color=GREY)
 
-ax.add_patch(FancyArrowPatch((B["operator"]["x1"] + 0.3, YM), (B["operator"]["x1"] + ARROW, YM),
+# the only path out of the boundary, and it lands on a person
+ax.add_patch(FancyArrowPatch((B["decide"]["x1"] + 0.3, YM), (op["x0"] - 0.3, YM),
                              arrowstyle="-|>", mutation_scale=7, linewidth=1.0,
                              color=GREEN, zorder=4))
-ax.text(B["operator"]["x1"] + ARROW / 2.0, YM + 3.2, "plant",
-        ha="center", va="center", fontsize=8.0, color=GREEN)
+ax.add_patch(FancyArrowPatch((op["x1"] + 0.3, YM), (op["x1"] + ARROW, YM),
+                             arrowstyle="-|>", mutation_scale=7, linewidth=1.0,
+                             color=GREEN, zorder=4))
+ax.text(op["x1"] + ARROW / 2.0 + NUDGE, YM + 3.2, "plant", ha="center", va="center",
+        fontsize=FS, color=GREEN)
 
-# ------------------------------------------------------------------- the loop
+# -------------------------------------------------------------------- the loop
 # The observe action sends the agent back to perception with the window moved: the
 # one thing that makes this a loop and not a pipeline.
-y_loop = BY0 - 6.2
 xa = (B["decide"]["x0"] + B["decide"]["x1"]) / 2.0
 xb = (B["perceive"]["x0"] + B["perceive"]["x1"]) / 2.0
-for seg in [((xa, BY0), (xa, y_loop)), ((xa, y_loop), (xb, y_loop))]:
-    ax.add_patch(FancyArrowPatch(*seg, arrowstyle="-", linewidth=1.1, color=ORANGE, zorder=4))
-ax.add_patch(FancyArrowPatch((xb, y_loop), (xb, BY0 - 0.3), arrowstyle="-|>",
-                             mutation_scale=7, linewidth=1.1, color=ORANGE, zorder=4))
-ax.text((xa + xb) / 2.0, y_loop - 2.6,
+ax.add_patch(FancyArrowPatch(
+    path=rounded([(xa, BY0), (xa, Y_LOOP), (xb, Y_LOOP), (xb, BY0 - 0.3)], 3.2),
+    arrowstyle="-|>", mutation_scale=7, linewidth=1.2, color=ORANGE, zorder=4))
+ax.text((xa + xb) / 2.0, Y_LOOP - 3.0,
         r"$observe$: the window advances %d samples, %d min of plant time, at most once"
         % (MOVE, MOVE * MIN_PER_SAMPLE),
-        ha="center", va="center", fontsize=8.0, color=ORANGE, zorder=5)
+        ha="center", va="center", fontsize=FS, color=ORANGE, zorder=5)
 
-# ------------------------------------------------- where the number is measured
-ax.text(xa, BY0 + BH + 2.6, r"macro-$F_1$ measured here", ha="center", va="center",
-        fontsize=8.0, color="#1a1a1a", zorder=5)
+# ------------------------------------------------ where the number is measured
+ax.text(xa, BY0 + BH + 2.5, r"macro-$F_1$ measured here", ha="center", va="center",
+        fontsize=FS, color="#1a1a1a", zorder=5)
 ax.add_patch(FancyArrowPatch((xa, BY0 + BH + 1.4), (xa, BY0 + BH + 0.3),
                              arrowstyle="-|>", mutation_scale=6, linewidth=0.7,
                              color=GREY, zorder=4))
