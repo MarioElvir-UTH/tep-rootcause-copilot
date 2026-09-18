@@ -2,8 +2,14 @@
 # machines, so they stay LF in the working tree on every platform. Without this
 # Windows checks them out as CRLF and the sha256 the paper cites stops matching
 # the one a reviewer on Linux computes, for files whose contents are identical.
-splits/**      text eol=lf
-results/**.csv text eol=lf
-results/**.json text eol=lf
+splits/**          text eol=lf
+results/**/*.csv   text eol=lf
+results/**/*.json  text eol=lf
+results/**/*.jsonl text eol=lf
 *.py           text eol=lf
 *.md           text eol=lf
+
+# `results/**.csv` matched only the top level: results/errors/ and
+# results/rubrica_humana/ were relying on core.autocrlf alone, which is a
+# per-machine setting and not a property of the repository. `**/` matches
+# zero or more directories, so these cover both levels.
