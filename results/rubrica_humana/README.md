@@ -12,13 +12,20 @@ steps: the draw is deterministic, the scoring by two people is not.
 
 | File | What it is | Who may open it |
 |---|---|---|
-| `muestra.csv` | the key: which text is which episode, with the true label | **not the raters**, not until both sheets are back |
-| `lineas_log.jsonl` | the thirty raw log lines | whoever drafts the texts |
+| `muestra.csv` | the key: which text is which episode, with the true label | **nobody** until both sheets are back |
+| `entradas_redaccion.jsonl` | the three inputs `prompts/razona.txt` declares, per episode, with the ground truth removed | whoever drafts, **and the raters** |
+| `redaccion.md` | the drafting brief for step 3, to be run in a separate session | whoever drafts |
+| `textos/texto_NN.md` | the thirty texts, once drafted | the raters |
 | `hoja_josue.csv` | blank scoring sheet, shuffled order | Josué Rivera |
 | `hoja_christian.csv` | the same sheet, same order | Christian Barahona |
 
 The sheets carry a text number and nothing else: no label, no probability, no
 episode id, no indication of whether the copilot was right.
+
+**The raters do get `entradas_redaccion.jsonl`, and they need it.** H3 asks
+whether the text states a disagreement between classifier and retrieval. If the
+text hid one, there is no way to know it existed without the input record. That
+file carries no ground truth, so handing it over does not break the blind.
 
 ## The five items
 
@@ -38,6 +45,25 @@ that nothing is invented.
 
 None of the five asks whether the diagnosis was correct. That is R1, already
 measured automatically over 31,500 episodes.
+
+## What a machine checks, and what it does not
+
+`code/23_verifica_textos.py` gates the texts on **form only**: thirty files
+present, six sentences or fewer, no bullets, one paragraph, nothing extra. Form
+is not what this rubric is about, so enforcing it is fair, and it keeps two people
+from spending their evening on a formatting slip.
+
+It does **not** check whether the citation exists, whether the cited document says
+what the text claims, or whether anything was invented. Those are H2, H3 and H5.
+Filtering them beforehand would leave the human rubric with nothing to measure,
+and a high score would become a property of that script rather than of the
+copilot.
+
+> The machine checks the form, the people check the substance.
+
+The consequence is declared: **H1's mechanical part is machine-enforced before
+rating**, so a high H1 is not evidence about the copilot. What H1 still measures
+is the part no script can settle, one cause and two alternatives in that order.
 
 ## What this sample is, and what it is not
 
@@ -64,9 +90,10 @@ rule after seeing the result is what the pre-registration exists to prevent:
 
 1. Commit the rule. Done, before the draw.
 2. Draw. Done.
-3. Draft the thirty texts from `lineas_log.jsonl` and the cited document only,
-   following `prompts/razona.txt`, outside this repository's measured path.
-4. Shuffle, rate blind, return both sheets.
+3. Draft the thirty texts in a separate session, following `redaccion.md`, from
+   `entradas_redaccion.jsonl` and the cited document only. **Pending.**
+4. Shuffle, rate blind, return both sheets. Shuffling is already in the text
+   numbers: they do not follow the strata.
 5. Compute Cohen's kappa, raw percent agreement and both raters' marginals, per
    item, and report per stratum. Disagreements are reported as disagreements:
    there is no third adjudicator.

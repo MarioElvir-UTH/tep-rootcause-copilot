@@ -733,6 +733,28 @@ produce.
 > disagree on twelve of the thirty, so H3 has something to measure on twelve.
 > No episode of normal operation was drawn, which is expected at 500 of 10,500.
 
+> **A leak found and closed on 2026-09-17, before any text was drafted.** The
+> file handed to the drafting step was the raw log line, and the raw log line
+> carries `label`. Worse, `id` is `[true class, run]`, so even stripping `label`
+> would have left the answer in plain sight. The drafter would have been free to
+> write a text better than the evidence the copilot actually had, and H5, which
+> asks whether the text asserts anything absent from that evidence, would have had
+> nothing left to catch. The file now carries only the three inputs
+> `prompts/razona.txt` declares, plus the action and the agreement flag, and
+> `22_muestra_rubrica.py` asserts that neither field can reappear. **The draw did
+> not change**: `muestra.csv` hashes to the same `0d2f6561...` before and after,
+> which is the point of a deterministic rule.
+
+> **What a script is allowed to check.** `23_verifica_textos.py` gates the texts
+> on form alone: thirty files, six sentences or fewer, no bullets, one paragraph,
+> nothing extra. It does not check whether the citation exists, whether the cited
+> document says what the text claims, or whether anything was invented, because
+> those are H2, H3 and H5. A script that filtered them first would leave the human
+> rubric measuring itself. The consequence is declared rather than left implicit:
+> **H1's mechanical part is machine-enforced before rating**, so a high H1 is not
+> evidence about the copilot, and what H1 still measures is the part no script can
+> settle, one cause and two alternatives in that order.
+
 ### Order of operations
 
 1. Commit this section.

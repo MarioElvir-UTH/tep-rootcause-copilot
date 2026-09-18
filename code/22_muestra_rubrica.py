@@ -18,8 +18,9 @@ as not reproducible by the command. Adding it would suggest otherwise.
 Writes to results/rubrica_humana/:
   muestra.csv            the key: which text is which episode. The raters must
                          not open this until both sheets are back.
-  lineas_log.jsonl       the thirty raw log lines, which is all the drafting step
-                         is allowed to read, together with the cited document.
+  entradas_redaccion.jsonl  the three inputs prompts/razona.txt declares, one per
+                         episode, with the ground truth removed. All the drafting
+                         step may read, together with the cited document.
   hoja_<rater>.csv       one blank scoring sheet per rater, in shuffled order,
                          carrying no label, no probability and no episode id.
 
@@ -54,6 +55,25 @@ def stratum_of(d):
         return "generate_correcto" if d["decide"]["top3"][0] == d["label"] \
             else "generate_equivocado"
     return a if a in ("defer", "alert") else None
+
+
+def para_redaccion(d):
+    """The three inputs prompts/razona.txt declares, and nothing that gives the answer.
+
+    The raw log line carries `label`, and `id` is [true class, run], so shipping
+    either one hands the drafting step the ground truth. The drafter would then be
+    free to write a text better than the evidence the copilot actually had, and H5,
+    "does the text assert anything absent from the log line and the cited document",
+    would have nothing left to catch. Traceability is not lost: `texto` joins back
+    to muestra.csv, which keeps the fold and the id.
+    """
+    return {
+        "alarmas_percibidas": d["percibe"],
+        "hipotesis_puntuadas": d["puntua"],
+        "evidencia_recuperada": d["razona"],
+        "accion": d["decide"]["accion"],
+        "concuerdan_clasificador_y_documento": d["decide"]["concuerda"],
+    }
 
 
 def main():
@@ -104,11 +124,15 @@ def main():
                         d["percibe"]["n_alarmas"]])
     print("\nwrote", key, "  <- the key, not for the raters")
 
-    src = os.path.join(OUT, "lineas_log.jsonl")
+    src = os.path.join(OUT, "entradas_redaccion.jsonl")
     with open(src, "w", encoding="utf-8", newline="\n") as fh:
         for i, (_, d) in enumerate(drawn):
-            fh.write(json.dumps({"texto": texto_de[i], "log": d}, ensure_ascii=False) + "\n")
-    print("wrote", src, "  <- all the drafting step may read")
+            flat = json.dumps({"texto": texto_de[i], "entrada": para_redaccion(d)},
+                              ensure_ascii=False)
+            assert "label" not in flat and '"id"' not in flat, \
+                "ground truth leaked into the drafting file"
+            fh.write(flat + "\n")
+    print("wrote", src, "  <- all the drafting step may read, no ground truth in it")
 
     for r in RATERS:
         p = os.path.join(OUT, "hoja_%s.csv" % r)
