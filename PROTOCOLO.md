@@ -610,6 +610,123 @@ all three ended in `defer` and all three read as a healthy plant. IDV(20) and
 IDV(13) defer in 75% and 94% of their episodes and would repeat the finding
 without adding one.
 
+## Human rubric: the sampling rule, the raters and the items (written BEFORE drawing the sample)
+
+Dated 2026-09-17. The section "The rubric, twice" above committed to thirty
+episodes, a declared seed, two raters and their agreement. It did not say which
+episodes, which items, who rates, or how agreement is computed. This section
+fixes all four, and it is committed before the sample is drawn. Nothing above is
+edited: a pre-registration that is rewritten to look right afterwards is worth
+nothing.
+
+### One arm, and what that costs
+
+The original intent was to compare arms, which is why `Anclaje por etiqueta`
+exists as a baseline: it is what makes R2 and R3 comparable. That comparison is
+dropped here for time. Only the `proposed` arm is rated, thirty texts rather than
+sixty.
+
+The consequence is declared rather than discovered: **the human rubric is
+descriptive, not comparative.** It reports whether this copilot's explanation is
+usable by a person. It does not, and may not be reported as if it does, show that
+symptom retrieval explains better than label anchoring. That question stays
+unmeasured, and the article says so.
+
+### Who rates, and who may not
+
+Josue Rivera and Christian Barahona rate. Mario Elvir is excluded because he
+built the system: the same reason the copilot is not exercised by the session
+that wrote it. He draws the sample and holds the key.
+
+**There is no third adjudicator.** Disagreements are reported as disagreements,
+per item. Resolving them would produce a single tidy number that hides the one
+thing two raters were hired to reveal.
+
+### Blinded
+
+The rater sees the text and the cited document. The rater does not see the true
+label, whether the copilot was right, the classifier's probabilities, or the
+episode identifier. Texts are shuffled with the seed below and the key is written
+to a separate file that is not opened until both sheets are returned.
+
+### Which thirty episodes
+
+Drawn from `results/logs/decisiones.jsonl`, arm `proposed`, seed 42, with
+`numpy.random.default_rng(20260917)`, at random inside each stratum. Correct
+means `decide.top3[0] == label`.
+
+| Stratum | Available | Drawn |
+|---|--:|--:|
+| `generate`, correct | 4,169 | 14 |
+| `generate`, wrong | 135 | 4 |
+| `defer` | 6,188 | 9 |
+| `alert` | 8 | 3 |
+
+**Why the four wrong answers are forced.** The copilot answers correctly on 96.9%
+of the episodes it answers, so a uniform draw of eighteen `generate` episodes
+yields half an error on average. The raters would judge clarity only where the
+system is right, which is the less interesting half: what matters for an
+operator-facing system is whether the text stays honest when the diagnosis is
+wrong.
+
+**The price, declared here.** The sample is stratified and is not a random sample
+of what an operator would meet. The rubric mean is therefore **not** an estimate
+of anything about the population of episodes, and neither the article nor the
+README may present it as one. Results are reported per stratum.
+
+This also avoids the failure recorded in `results/samples/README.md`, where the
+declared rule "the first episode in log order" landed on normal operation three
+times out of four, because the fold is ordered by class.
+
+### The items
+
+Five, binary, scored per text.
+
+| Item | Question |
+|---|---|
+| H1 | Does it give one cause and two alternatives, in that order, in six sentences or fewer? |
+| H2 | Does the cited document exist in `kb/tep_kb.json` and say what the text claims it says? |
+| H3 | Where classifier and retrieval disagree, does the text state the disagreement instead of hiding it? |
+| H4 | Would you act on this at three in the morning without asking another question? |
+| H5 | Does the text assert anything absent from the log line and the cited document? |
+
+None of these asks whether the diagnosis was correct. That is R1, already measured
+automatically over 31,500 episodes, and an item that re-measured it would be the
+trap this file warns about in "The trap this design avoids": a rubric that
+secretly re-measures classification accuracy.
+
+**H5 carries the weight and is reported apart from the mean.** A single yes is
+disqualifying for that text, because the claim this whole repository makes is that
+nothing is invented. H4 is the only subjective item and is expected to be where
+the raters agree least.
+
+### Agreement
+
+Reported per item: Cohen's kappa, raw percent agreement, **and** both raters'
+marginals. All three, not one. H2 is expected to be almost all yes, and kappa is
+unstable under a marginal that lopsided, so reporting it alone would mislead in
+either direction.
+
+### Where it lives
+
+Per-rater sheets in `results/rubrica_humana/`, so anyone can recompute kappa from
+the raw scores. The draw is reproducible and its script is committed; the scoring
+is not, and the human rubric stays **declared as not reproducible** by
+`python run_all.py`. The draw script is deliberately not added to `run_all.py`,
+which stays at 23 steps, because it feeds a measurement the command cannot
+produce.
+
+### Order of operations
+
+1. Commit this section.
+2. Draw the thirty episodes.
+3. Draft the thirty texts from the log line and the cited document, following
+   `prompts/razona.txt`, outside this repository's measured path.
+4. Shuffle, rate blind, return both sheets.
+5. Compute agreement and report per stratum.
+
+Steps 1 and 2 in that order are the whole point.
+
 ## Consistency check (paragraph vs. code vs. table)
 
 - Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
