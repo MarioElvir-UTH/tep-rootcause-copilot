@@ -1,0 +1,3 @@
+# Texto 28
+
+El episodio registra 4 variables en alarma, con una tasa de 0,08 en la ventana, y las primeras en aparecer son xmeas_28, xmv_1 y xmv_5. La hipotesis mas probable es IDV(20), y en ella coinciden el clasificador y el documento recuperado, pero ese documento la registra como perturbacion desconocida: la fuente original no le atribuye causa ni variables afectadas, y aqui no se le atribuye ninguna. Por eso las alarmas observadas no pueden vincularse a variables documentadas para esa clase. Las dos alternativas son IDV(19), que el corpus tambien documenta como desconocida, y despues IDV(8). Los otros dos documentos recuperados son IDV(7) e IDV(5), con puntajes menores que el de IDV(20). La decision final es del operador.

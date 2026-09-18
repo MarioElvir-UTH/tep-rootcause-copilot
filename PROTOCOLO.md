@@ -688,7 +688,7 @@ Five, binary, scored per text.
 | H2 | Does the cited document exist in `kb/tep_kb.json` and say what the text claims it says? |
 | H3 | Where classifier and retrieval disagree, does the text state the disagreement instead of hiding it? |
 | H4 | Would you act on this at three in the morning without asking another question? |
-| H5 | Does the text assert anything absent from the log line and the cited document? |
+| H5 | Does the text assert anything the retrieved evidence does not support? |
 
 None of these asks whether the diagnosis was correct. That is R1, already measured
 automatically over 31,500 episodes, and an item that re-measured it would be the
@@ -699,6 +699,38 @@ secretly re-measures classification accuracy.
 disqualifying for that text, because the claim this whole repository makes is that
 nothing is invented. H4 is the only subjective item and is expected to be where
 the raters agree least.
+
+> **H5 was corrected on 2026-09-17, after the texts were written and before
+> anyone rated them. It is recorded here rather than quietly amended above.**
+> As first written it asked whether the text asserts anything "absent from the
+> log line and **the cited document**". That contradicts the prompt the texts
+> were written against: `prompts/razona.txt`, committed 2026-09-14, says "no
+> afirmes nada que no este en **la evidencia recuperada**", and defines that
+> evidence as the **three** retrieved documents, not one. Under the original
+> wording a text that correctly describes the second retrieved document, which
+> `texto_17` does for IDV(11), would be marked as a violation for following its
+> instructions. The item now reads "anything the retrieved evidence does not
+> support".
+>
+> **This correction makes H5 easier to pass, which is the direction that should
+> invite suspicion**, so the argument is stated in full rather than asserted:
+> `razona.txt` is two days older than the rubric, the rubric narrowed it by
+> accident, and the texts were produced under the older document. Fixing the
+> rubric to match the instructions is not the same as fixing it to match the
+> results, which nobody has seen. What is given up is any claim that H5 was
+> untouched after the texts existed, and that claim is given up here explicitly.
+
+> **One near-duplicate pair, found on 2026-09-17 and deliberately not disclosed
+> to the raters.** Median similarity across the 435 pairs of texts is 0.21, but
+> `texto_17` and `texto_26` sit at 0.96. They are not a template: the two
+> episodes share a class, a citation, a retrieved set and their first two alarms,
+> and the texts differ exactly where the inputs differ, three alarms against
+> four, `xmeas_22` against `xmeas_37`. That is the drafting step tracking its
+> input, which is the behaviour wanted. The consequence for the rubric is that
+> thirty texts yield about twenty-nine independent judgements. It is recorded
+> here and **kept out of `paquete_evaluador.md` on purpose**: telling two raters
+> that a pair is nearly identical would make them score it alike and inflate the
+> agreement the statistic is meant to measure.
 
 ### Agreement
 

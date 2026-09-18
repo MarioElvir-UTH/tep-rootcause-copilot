@@ -58,7 +58,7 @@ PREGUNTA = {
     "H2": "el documento citado existe y dice lo que el texto le atribuye",
     "H3": "donde hay discrepancia, el texto la declara en vez de esconderla",
     "H4": "actuarias con esto a las tres de la manana sin otra pregunta",
-    "H5": "el texto afirma algo ausente del registro y del documento citado",
+    "H5": "el texto afirma algo que la evidencia recuperada no sostiene",
 }
 
 

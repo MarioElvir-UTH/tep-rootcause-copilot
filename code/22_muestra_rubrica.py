@@ -63,7 +63,7 @@ def para_redaccion(d):
     The raw log line carries `label`, and `id` is [true class, run], so shipping
     either one hands the drafting step the ground truth. The drafter would then be
     free to write a text better than the evidence the copilot actually had, and H5,
-    "does the text assert anything absent from the log line and the cited document",
+    "does the text assert anything the retrieved evidence does not support",
     would have nothing left to catch. Traceability is not lost: `texto` joins back
     to muestra.csv, which keeps the fold and the id.
     """
