@@ -707,6 +707,26 @@ marginals. All three, not one. H2 is expected to be almost all yes, and kappa is
 unstable under a marginal that lopsided, so reporting it alone would mislead in
 either direction.
 
+> **Written on 2026-09-17, before either sheet was filled in.**
+> `24_acuerdo_rubrica.py` computes this, and it is committed now rather than once
+> the answers are on screen, for the same reason the sampling rule was: a
+> statistic chosen after seeing the data is chosen to flatter it. Four decisions
+> it makes, each of which could have gone the other way and so is declared here:
+>
+> - **No pooled score.** With no third adjudicator, each rater is reported
+>   separately. Averaging the two would invent a consensus nobody reached.
+> - **No rubric total.** H5 is inverted, so a total would subtract one penalty
+>   from four rewards. The items are reported point by point.
+> - **Kappa may be undefined, and is printed as undefined.** If both raters use
+>   one category for every text, expected agreement is 1 and the formula is 0/0.
+>   Printing 0 would read as no agreement and 1 as perfect, and neither is
+>   supported. This is the expected outcome for H2.
+> - **A percentile interval, because n is thirty.** Ten thousand resamples over
+>   texts, seed 20260917, with undefined resamples counted and reported rather
+>   than dropped. A bare kappa over thirty texts is noisier than it looks.
+>
+> Kappa is cross-checked against scikit-learn on every run.
+
 ### Where it lives
 
 Per-rater sheets in `results/rubrica_humana/`, so anyone can recompute kappa from

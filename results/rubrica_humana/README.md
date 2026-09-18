@@ -94,6 +94,9 @@ rule after seeing the result is what the pre-registration exists to prevent:
    `entradas_redaccion.jsonl` and the cited document only. **Pending.**
 4. Shuffle, rate blind, return both sheets. Shuffling is already in the text
    numbers: they do not follow the strata.
-5. Compute Cohen's kappa, raw percent agreement and both raters' marginals, per
-   item, and report per stratum. Disagreements are reported as disagreements:
-   there is no third adjudicator.
+5. Run `python code/24_acuerdo_rubrica.py`. It reports Cohen's kappa, raw percent
+   agreement and both raters' marginals per item, plus a bootstrap interval, and
+   the means per stratum. **It was written before either sheet was filled in**,
+   for the same reason the sampling rule was committed before the draw.
+   Disagreements are reported as disagreements: there is no third adjudicator,
+   no pooled score and no rubric total.
