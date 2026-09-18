@@ -716,6 +716,23 @@ is not, and the human rubric stays **declared as not reproducible** by
 which stays at 23 steps, because it feeds a measurement the command cannot
 produce.
 
+> **What the draw gave, recorded after running it on 2026-09-17.** The four
+> wrong answers are all the same confusion: IDV(8) reported as IDV(1). That is
+> not a bad draw, it is what the errors are. Of the 135 wrong `generate`
+> episodes, 97 are that one pair, 72% of them, over 13 distinct pairs in all, so
+> four uniform draws land on it about a quarter of the time. The consequence is
+> real and is reported rather than fixed: **the raters see one failure mode four
+> times, not four failure modes.** The rule is not re-drawn and no stratum is
+> added inside the errors, because changing the rule after seeing the draw is the
+> thing this file exists to prevent. What the error stratum measures is therefore
+> whether the text stays honest on the copilot's most common mistake, which is a
+> narrower question than the one intended, and the article says so.
+>
+> Two other properties of the draw, neither of them steered: all thirty episodes
+> carry a citation, so H2 is scorable on every text; and classifier and retrieval
+> disagree on twelve of the thirty, so H3 has something to measure on twelve.
+> No episode of normal operation was drawn, which is expected at 500 of 10,500.
+
 ### Order of operations
 
 1. Commit this section.

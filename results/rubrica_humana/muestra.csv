@@ -1,0 +1,31 @@
+texto,estrato,fold,id,accion,label,top1,cita,concuerda,n_alarmas
+18,generate_correcto,2,"[7, 28]",generate,7,7,IDV(7),True,37
+25,generate_correcto,2,"[5, 354]",generate,5,5,IDV(5),True,19
+11,generate_correcto,0,"[13, 240]",generate,13,13,IDV(13),True,0
+28,generate_correcto,1,"[20, 412]",generate,20,20,IDV(20),True,4
+26,generate_correcto,1,"[4, 87]",generate,4,4,IDV(4),True,4
+8,generate_correcto,3,"[1, 289]",generate,1,1,IDV(1),True,19
+10,generate_correcto,0,"[8, 421]",generate,8,8,IDV(8),True,6
+12,generate_correcto,1,"[12, 418]",generate,12,12,IDV(12),True,22
+19,generate_correcto,3,"[2, 419]",generate,2,2,IDV(2),True,11
+15,generate_correcto,0,"[4, 372]",generate,4,4,IDV(4),True,4
+27,generate_correcto,4,"[1, 409]",generate,1,1,IDV(1),True,22
+6,generate_correcto,0,"[5, 351]",generate,5,5,IDV(5),True,22
+5,generate_correcto,3,"[1, 223]",generate,1,1,IDV(1),True,25
+17,generate_correcto,3,"[4, 419]",generate,4,4,IDV(4),True,3
+13,generate_equivocado,2,"[8, 282]",generate,8,1,IDV(1),True,12
+4,generate_equivocado,0,"[8, 410]",generate,8,1,IDV(1),True,16
+21,generate_equivocado,0,"[8, 154]",generate,8,1,IDV(1),True,14
+14,generate_equivocado,1,"[8, 35]",generate,8,1,IDV(1),True,14
+16,defer,0,"[9, 106]",defer,9,3,IDV(16),False,2
+9,defer,2,"[14, 343]",defer,14,14,IDV(17),False,3
+20,defer,1,"[11, 234]",defer,11,11,Operacion normal,False,2
+23,defer,0,"[11, 300]",defer,11,11,IDV(4),False,2
+1,defer,4,"[17, 320]",defer,17,0,IDV(7),False,0
+22,defer,0,"[9, 43]",defer,9,0,IDV(12),False,5
+7,defer,0,"[17, 466]",defer,17,0,IDV(5),False,8
+2,defer,0,"[19, 166]",defer,19,19,IDV(20),False,5
+30,defer,4,"[12, 57]",defer,12,12,IDV(14),False,18
+3,alert,3,"[18, 342]",alert,18,0,IDV(1),False,10
+29,alert,4,"[18, 81]",alert,18,0,IDV(7),False,14
+24,alert,0,"[13, 342]",alert,13,0,IDV(1),False,10
