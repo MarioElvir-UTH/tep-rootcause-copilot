@@ -356,6 +356,45 @@ and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
 > per episode, which for this row are 18,405, 0 and 0.184. The retrieval time is
 > inside that last figure rather than beside it.
 
+> **A Week 3 note, checked against what was built. Recorded 2026-09-17.** The
+> note was never sent at the time. It came from a list titled "what gets
+> implemented tonight, and the minimum version that produces the number", and on
+> this row it read:
+>
+> > *Documentos escasos. Salida: el indice se arma con lo que hay y se declara su
+> > tamano; la rubrica de causa raiz la califican dos personas.*
+>
+> It is checked here rather than absorbed, because two of its four clauses
+> describe a simpler system than the one that exists.
+>
+> **"Documentos escasos" is right.** Twenty-one documents, one per class, and the
+> article says so as part of the minimum-version clause.
+>
+> **"El indice se arma con lo que hay" is half right.** Retrieval stores 2,184
+> numbers, recoverable from Table II as 18,405 minus the ablation's 16,221, and
+> they are two different things. The document-variable matrix, 1,092 of them, does
+> come from the documents. The class signatures, the other 1,092, are **estimated
+> inside each fold from the training runs**, which is what "Documents and index
+> are separate on purpose" above is about. If the index came only from the
+> documents, their scarcity would be the binding constraint. It is not, and that
+> is a design decision rather than an accident.
+>
+> **"Se declara su tamano" was met by another route.** The corpus size is declared
+> in five places including the article and Figure 1. The index size has no cost
+> cell of its own: that was pre-registered and then changed, and the change is
+> recorded in the note above. It stays recoverable by subtraction, and the cost
+> column names what the numbers are.
+>
+> **"La rubrica de causa raiz la califican dos personas" is wrong**, and the note
+> folds two rubrics into one. The root-cause rubric, R1 to R3, is **automatic and
+> deterministic**, committed 2026-09-14 in `177326b` with the reason written down:
+> a human rubric cannot be reproduced by a reviewer running one command. The
+> two-person rubric is a different one, H1 to H5 over thirty episodes, declared as
+> not reproducible and reported apart. Worth noting which way the difference runs:
+> **had it been built as the note says, it would be worse**, because the grounding
+> metric the article leans on would have become unreproducible, which is exactly
+> what the automatic rubric exists to avoid.
+
 ## Figure 1 in text: the four pieces, the guard, the person, the measured point
 
 > This is the figure of the article written as text, so the drawing and the code
@@ -758,6 +797,43 @@ either direction.
 >   than dropped. A bare kappa over thirty texts is noisier than it looks.
 >
 > Kappa is cross-checked against scikit-learn on every run.
+
+> **Thirty was a convention, not a calculation. Recorded on 2026-09-17, after
+> being asked where the number came from.** It entered on 2026-09-14 in commit
+> `4a12538` as a bare figure, and no line of this file ever justified it. It is
+> what two people can score in an evening, which is a real constraint and not a
+> power analysis. `26_precision_kappa.py` measures what it buys, twenty thousand
+> simulated panels of two raters who agree on 85% of items:
+>
+> | n | true kappa | what gets reported | +- kappa | +- raw agreement |
+> |---:|:---:|:---:|:---:|:---:|
+> | **30** | +0.70 | [+0.40, +0.93] | 0.27 | 0.13 |
+> | 50 | +0.70 | [+0.48, +0.88] | 0.20 | 0.10 |
+> | 100 | +0.70 | [+0.55, +0.84] | 0.14 | 0.07 |
+>
+> At thirty a true kappa of 0.70 lands anywhere from 0.40 to 0.93, which spans
+> three categories of the scale everyone cites. With a lopsided marginal, the
+> 90% yes expected for H2, the interval is [-0.04, +0.84] and **crosses zero**:
+> H2 will not be able to rule out no agreement beyond chance even if the two
+> raters coincide on 85 of every 100 texts.
+>
+> **Three consequences, and one refusal.**
+>
+> - The article reports the **interval**, not the point estimate.
+> - It does not use labels like "substantial" or "almost perfect" agreement.
+>   Thirty texts do not support them.
+> - At this size the **raw agreement** is the statistic that carries the weight,
+>   at +-0.13 and interpretable without anyone's scale: "they coincided on 25 of
+>   30". That is the rule about reporting all three doing real work rather than
+>   being thorough for its own sake.
+> - **The number is not raised.** It is pre-registered, the draw is done and the
+>   texts are written; enlarging n after seeing the texts is the failure this
+>   file exists to prevent. More episodes would be an extension, drawn under the
+>   same rule and reported separately.
+>
+> Being a convention is not the same as being wrong, but it is not the same as
+> being justified either, and this file had been letting the second read as the
+> first.
 
 ### Where it lives
 
