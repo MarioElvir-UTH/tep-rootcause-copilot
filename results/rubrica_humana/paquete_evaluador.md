@@ -16,6 +16,33 @@ copiloto tenia delante cuando lo produjo, y los tres documentos que recupero.
 Ninguno de los cinco pregunta si el diagnostico fue correcto. Eso ya esta medido
 aparte. Lo que se califica aqui es el texto.
 
+## Lo minimo que hace falta saber
+
+**El proceso.** Tennessee Eastman, una planta quimica simulada que se usa como
+banco de pruebas. Hay veintiuna clases: operacion normal y veinte perturbaciones,
+IDV(1) a IDV(20). Las cinco ultimas, IDV(16) a IDV(20), estan documentadas en la
+fuente original como **desconocidas**: no se les atribuye causa ni variables. Un
+texto que lo diga esta siendo correcto, no evasivo.
+
+**Las variables.** `xmeas_N` son mediciones del proceso y `xmv_N` son variables
+manipuladas, tipicamente aperturas de valvula. No hace falta saber que mide cada
+una: todo lo que el texto afirma sobre ellas se puede contrastar con los tres
+documentos que vienen debajo de cada texto.
+
+**Las tres acciones que veras.**
+
+- `generate`: el copiloto se compromete con una recomendacion.
+- `defer`: no esta listo para comprometerse y entrega el episodio a la persona.
+  El texto deberia decirlo, y no recomendar como si estuviera seguro.
+- `alert`: lo que reporta es una avalancha de alarmas, no un diagnostico.
+
+**Lo que NO te toca.** Diagnosticar. No decidas si IDV(4) era la respuesta
+correcta, ni busques cual era. Se califica el texto: si esta bien armado, si lo
+que cita lo sostiene, si dice lo que tiene que decir, y si lo usarias.
+
+**Cuanto toma.** Unas dos horas. Si dudas entre 0 y 1, elegi y segui: la duda
+compartida entre ustedes dos es justamente lo que el estadistico va a mostrar.
+
 No abras `results/rubrica_humana/muestra.csv`: lleva la respuesta de cada
 episodio. Califica los treinta antes de mirarlo, y no compares tu hoja con la de
 la otra persona: el desacuerdo entre ustedes es un resultado que se reporta, no
