@@ -43,6 +43,23 @@ que cita lo sostiene, si dice lo que tiene que decir, y si lo usarias.
 **Cuanto toma.** Unas dos horas. Si dudas entre 0 y 1, elegi y segui: la duda
 compartida entre ustedes dos es justamente lo que el estadistico va a mostrar.
 
+**No hace falta hacerlo de un tiron**, y partirlo suele salir mejor que forzar
+treinta textos cansado. Tres condiciones:
+
+- Cortar **entre textos**, nunca a media evaluacion, y volver a leer la lista de
+  los cinco items al empezar cada sesion. Es el control contra que el criterio se
+  corra: lo que uno considera "actuaria con esto" el lunes puede no ser lo mismo
+  el jueves.
+- Terminar en pocos dias, no en dos semanas, por la misma razon.
+- **No comentar nada con la otra persona entre sesiones.** Repartirlo en varios
+  dias da mas oportunidades de cruzarse, y eso es lo unico que arruinaria la
+  medicion: si comparan impresiones, el estadistico deja de medir dos opiniones y
+  mide una.
+
+Y si a mitad del camino te das cuenta de que venias entendiendo distinto algun
+item, **avisa antes de corregir hacia atras**. Eso es informacion sobre la
+rubrica, no sobre los textos, y hay que anotarla en vez de taparla.
+
 No abras `results/rubrica_humana/muestra.csv`: lleva la respuesta de cada
 episodio. Califica los treinta antes de mirarlo, y no compares tu hoja con la de
 la otra persona: el desacuerdo entre ustedes es un resultado que se reporta, no
