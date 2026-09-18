@@ -62,23 +62,47 @@ PREGUNTA = {
 }
 
 
+def filas_de(p):
+    """The rows of a sheet, however Excel decided to save it.
+
+    Two things a rater's spreadsheet does that plain utf-8 does not survive, and
+    both would fail here at the worst possible moment, once the scoring is done:
+
+      - "CSV UTF-8" writes a byte-order mark, which turns the first column name
+        into '\\ufefftexto' and makes fila["texto"] a KeyError.
+      - Saving as plain CSV on a Spanish Windows writes cp1252, so one accented
+        word in the notes column raises UnicodeDecodeError.
+
+    utf-8-sig reads files with and without the mark. cp1252 is the fallback, and
+    the header names are stripped because a spreadsheet will sometimes pad them.
+    """
+    for enc in ("utf-8-sig", "cp1252"):
+        try:
+            with open(p, encoding=enc) as fh:
+                lector = csv.DictReader(fh)
+                lector.fieldnames = [(c or "").strip() for c in (lector.fieldnames or [])]
+                return [{(k or "").strip(): v for k, v in fila.items()} for fila in lector]
+        except UnicodeDecodeError:
+            continue
+    raise SystemExit("ABORT - no se pudo leer %s ni como utf-8 ni como cp1252" % p)
+
+
 def lee_hoja(r):
     """One rater's sheet as {texto: {item: 0|1}}, refusing anything incomplete."""
     p = os.path.join(OUT, "hoja_%s.csv" % r)
     if not os.path.isfile(p):
         raise SystemExit("ABORT - falta %s" % p)
     filas, malas = {}, []
-    with open(p, encoding="utf-8") as fh:
-        for fila in csv.DictReader(fh):
-            t = int(fila["texto"])
-            v = {}
-            for it in ITEMS:
-                s = (fila.get(it) or "").strip()
-                if s not in ("0", "1"):
-                    malas.append("texto %2d, %s: %r" % (t, it, s))
-                else:
-                    v[it] = int(s)
-            filas[t] = v
+    for fila in filas_de(p):
+        t = int(fila["texto"])
+        v = {}
+        for it in ITEMS:
+            s = (fila.get(it) or "").strip()
+            if s not in ("0", "1"):
+                malas.append("texto %2d, %s: %r" % (t, it, s))
+            else:
+                v[it] = int(s)
+        filas[t] = v
     if malas:
         print("ABORT - la hoja de %s tiene %d casillas sin 0 o 1:" % (r, len(malas)))
         for m in malas[:12]:
