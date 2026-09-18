@@ -10,6 +10,9 @@ results/*.parquet
 results/*.npy
 results/models/
 results/logs/decisiones.jsonl
+# Backups of that log, taken before a full re-run to check it comes back identical.
+# Same 51 MB, and `git add -A` would swallow one without asking.
+results/logs/decisiones_antes*.jsonl
 
 # Internal team documents: not part of the reproducible artifact
 *.docx
