@@ -158,5 +158,14 @@ que medir.
 ## Lo que sigue
 
 Paso 4: barajar ya esta hecho, el numero de texto viene desordenado respecto al
-estrato. A cada persona se le entrega su hoja, los treinta textos y
-`entradas_redaccion.jsonl`. La clave se queda guardada.
+estrato.
+
+Terminados los treinta textos se corre `python code/25_paquete_evaluador.py`,
+que arma `paquete_evaluador.md`: los treinta textos con lo que el copiloto tenia
+delante y los tres documentos recuperados completos, que es lo que H2, H3 y H5
+necesitan para poder calificarse.
+
+**A cada persona se le entregan dos archivos y nada mas**: ese paquete y su hoja,
+`hoja_josue.csv` o `hoja_christian.csv`. No se entrega `entradas_redaccion.jsonl`
+por separado, que ya va dentro del paquete y formateado. Y no se entrega
+`muestra.csv`, que es la clave.
