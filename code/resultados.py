@@ -23,7 +23,7 @@ substituted from the files, so the paragraph cannot drift from the table above i
 
 The figures are not produced here. They come from 09_plot_label_efficiency.py and
 13_plot_architecture.py, under names that say what they are; the README maps each
-artefact of the paper to its file and its script.
+artifact of the paper to its file and its script.
 
 Reads:  results/tabla2.json, results/effect_sizes.csv, results/per_fold_f1.csv,
         results/human_load.csv

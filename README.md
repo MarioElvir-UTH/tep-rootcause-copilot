@@ -371,7 +371,7 @@ the pipeline runs offline with no API key and reproduces exactly.
 **declared and not executed**, and no number in this repository depends on it.
 `results/agente_env.json` records this.
 
-## 6. Where each artefact of the paper comes from
+## 6. Where each artifact of the paper comes from
 
 Every table, figure and number in the paper is produced by a script in this
 repository and never typed into the manuscript. Names here are descriptive rather
