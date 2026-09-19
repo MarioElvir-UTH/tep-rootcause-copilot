@@ -4,6 +4,9 @@
 Maestría en Automatización Industrial, UTH Honduras
 *Manuscript in preparation*
 
+`github.com/MarioElvir-UTH/tep-rootcause-copilot` - the address the paper cites,
+and where the continuous integration this README appeals to actually runs.
+
 > During an alarm flood, can a copilot tell a DCS operator which alarm started
 > the upset and which fault caused it, from few labels, and show its work?
 
@@ -329,7 +332,14 @@ code/                           every script; the project root is the folder abo
     resultados.py                   Table II and the Results paragraph, generated and
                                     spliced -> paper/tabla2.tex, paper/resultados.tex
     checkpoint_datos.py             live data checkpoint (integrity evidence)
-    run_all.py                      one-command reproducible pipeline (all of the above)
+    run_all.py                      one-command reproducible pipeline (steps 01 to 21)
+                                    ---- outside run_all.py, for the human rubric ----
+    22_muestra_rubrica.py           draw the 30 episodes under the pre-registered rule
+                                    -> results/rubrica_humana/
+    23_verifica_textos.py           gate the 30 texts on FORM only, never on content
+    24_acuerdo_rubrica.py           kappa, raw agreement and both marginals, per item
+    25_paquete_evaluador.py         what each rater is handed, without the answer key
+    26_precision_kappa.py           what n = 30 buys for kappa, and what it does not
 requirements.txt                pinned environment
 PROTOCOLO.md                    canonical experimental protocol
 references.bib                  bibliography
@@ -338,6 +348,8 @@ results/samples/                qualitative sample, drafted outside the pipeline
 prompts/                        fixed reasoning prompt, declared and not executed (see below)
 splits/                         frozen partition manifest + metadata (committed)
 results/                        result tables (CSV), env stamps (JSON), figure (PDF/PNG)
+results/rubrica_humana/         the human rubric: sample, the 30 texts, the package
+                                each rater receives, and the blank scoring sheets
 ```
 
 The scripts live in `code/` and the data does not: each one derives the project
@@ -397,13 +409,17 @@ them mixes the spread of the split with the spread that matters, and every
 comparison elsewhere in the paper averages by seed first. Both are recorded,
 `F1macro_std` and `F1macro_std_over_seeds`, so either can be read.
 
-Two things are declared and not executed, for different reasons.
+Two things sit outside the measured path, for different reasons.
 
 The **human rubric**, 30 episodes scored by two raters with their agreement
-reported, is work that has not been done yet. The paper says so in its
-conclusions: the rubric and an operator study of trust and acceptance "remain
-declared and unmeasured". It evaluates what the copilot already produces, so
-running it changes no number in Table II.
+reported, is under way rather than pending. The sampling rule was committed
+before the draw, the sample is drawn, the thirty texts are written and the
+package each rater receives is in `results/rubrica_humana/`, which has its own
+README. What is missing is the scoring, which two people do by hand and no
+command can reproduce. The paper still says the rubric and an operator study of
+trust and acceptance "remain declared and unmeasured", and that stays true until
+both sheets come back. Either way it evaluates what the copilot already
+produces, so running it changes no number in Table II.
 
 **`prompts/razona.txt`** is deliberate, not pending. It is the prompt a
 language-model variant of the reasoning step would use, and it is never executed:
