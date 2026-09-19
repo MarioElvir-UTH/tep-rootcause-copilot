@@ -173,7 +173,12 @@ for ax in axes:
 # the text below 8 pt. The figure is already exactly one column wide.
 for ext in ("pdf", "png"):
     out = os.path.join(RES, "label_efficiency_curve." + ext)
-    fig.savefig(out)
+    # CreationDate=None keeps the PDF byte-identical across runs. Without it the
+    # file carries a timestamp, so every re-run shows up as a change to a figure
+    # whose content did not move: seven bytes of noise in a repository whose
+    # claim is that re-running reproduces the results. 13_plot_architecture.py
+    # has done this since it was written; this figure was missed.
+    fig.savefig(out, metadata={"CreationDate": None} if ext == "pdf" else None)
     print("wrote", out)
 plt.close(fig)
 

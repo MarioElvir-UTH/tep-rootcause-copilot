@@ -264,12 +264,12 @@ checkpoints and does not retrain.
 |---|---|---|---|
 | Trivial (majority) | 0.004 ± 0.000 | 0.143 ± 0.000 | < 0.001 ms |
 | Logistic regression | 0.652 ± 0.005 | 0.733 ± 0.003 | 0.001 ms |
-| Random forest | 0.638 ± 0.005 | 0.703 ± 0.006 | 0.052 ms |
-| Gradient boosting | 0.640 ± 0.005 | 0.654 ± 0.007 | 0.032 ms |
+| Random forest | 0.638 ± 0.005 | 0.703 ± 0.006 | 0.054 ms |
+| Gradient boosting | 0.640 ± 0.005 | 0.654 ± 0.007 | 0.033 ms |
 | Neural net v1a (MLP) | 0.652 ± 0.013 | 0.754 ± 0.017 | < 0.001 ms |
 | Neural net v1b (1D-CNN) | 0.696 ± 0.006 | 0.786 ± 0.007 | 0.007 ms |
-| **No agent (ablation)** | **0.752 ± 0.009** | **0.852 ± 0.010** | 0.100 ms |
-| Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 0.184 ms |
+| **No agent (ablation)** | **0.752 ± 0.009** | **0.852 ± 0.010** | 0.105 ms |
+| Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 0.197 ms |
 <!-- END esperados -->
 
 The MLP sees the same 104 features as the classics and ties logistic regression;

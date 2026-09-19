@@ -66,8 +66,8 @@
       "cost": {
         "parameters": 2205,
         "parameters_are": "coefficients and intercepts",
-        "training_seconds": 2.956,
-        "training_minutes": 0.0493,
+        "training_seconds": 6.793,
+        "training_minutes": 0.1132,
         "inference_ms_per_episode": 0.0012,
         "seconds_per_decision": null,
         "tokens": 0,
@@ -96,9 +96,9 @@
       "cost": {
         "parameters": 98684,
         "parameters_are": "decision nodes over 300 trees",
-        "training_seconds": 6.219,
-        "training_minutes": 0.1037,
-        "inference_ms_per_episode": 0.0523,
+        "training_seconds": 6.192,
+        "training_minutes": 0.1032,
+        "inference_ms_per_episode": 0.0541,
         "seconds_per_decision": null,
         "tokens": 0,
         "source": "17_cost_table.py"
@@ -126,9 +126,9 @@
       "cost": {
         "parameters": 67499,
         "parameters_are": "decision nodes over 1113 boosted predictors",
-        "training_seconds": 8.226,
-        "training_minutes": 0.1371,
-        "inference_ms_per_episode": 0.032,
+        "training_seconds": 8.84,
+        "training_minutes": 0.1473,
+        "inference_ms_per_episode": 0.033,
         "seconds_per_decision": null,
         "tokens": 0,
         "source": "17_cost_table.py"
@@ -156,9 +156,9 @@
       "cost": {
         "parameters": 9493,
         "parameters_are": "trainable parameters",
-        "training_seconds": 7.387,
-        "training_minutes": 0.1231,
-        "inference_ms_per_episode": 0.0003,
+        "training_seconds": 8.165,
+        "training_minutes": 0.1361,
+        "inference_ms_per_episode": 0.0004,
         "seconds_per_decision": null,
         "tokens": 0,
         "source": "17_cost_table.py"
@@ -186,9 +186,9 @@
       "cost": {
         "parameters": 16117,
         "parameters_are": "trainable parameters",
-        "training_seconds": 15.828,
-        "training_minutes": 0.2638,
-        "inference_ms_per_episode": 0.0069,
+        "training_seconds": 16.402,
+        "training_minutes": 0.2734,
+        "inference_ms_per_episode": 0.0067,
         "seconds_per_decision": null,
         "tokens": 0,
         "source": "17_cost_table.py"
@@ -218,8 +218,8 @@
         "parameters_are": "network and alarm limits, no retrieval",
         "training_seconds": 0.0,
         "training_minutes": 0.0,
-        "inference_ms_per_episode": 0.1004,
-        "seconds_per_decision": 0.0001,
+        "inference_ms_per_episode": 0.1048,
+        "seconds_per_decision": 0.000105,
         "tokens": 0,
         "source": "size here; latency from 12_agente_v1.py"
       },
@@ -248,8 +248,8 @@
         "parameters_are": "network, alarm limits, document-variable matrix and class signatures",
         "training_seconds": 0.0,
         "training_minutes": 0.0,
-        "inference_ms_per_episode": 0.1843,
-        "seconds_per_decision": 0.000184,
+        "inference_ms_per_episode": 0.1971,
+        "seconds_per_decision": 0.000197,
         "tokens": 0,
         "source": "size here; latency from 12_agente_v1.py"
       },

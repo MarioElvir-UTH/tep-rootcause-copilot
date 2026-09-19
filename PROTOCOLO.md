@@ -931,10 +931,19 @@ Steps 1 and 2 in that order are the whole point.
   between runs: a full re-run on 2026-09-15 gave 0.052 for the random forest against
   the 0.054 of the run before it, and 0.032 for gradient boosting against 0.031. The
   file is the value; this line is not, and no exact latency is pinned here. OK
-- Per-model training time (s) -> same run, same machine: trivial <0.01, logistic
-  regression ~3, random forest ~6, gradient boosting ~8. Wall-clock, so it
-  moves with machine load. The ~20 s once recorded here for gradient boosting was
-  from an earlier run. OK
+- Per-model training time (s) -> wall-clock, so it moves with machine load, and
+  the file is the value: `results/cost_table.csv`, rendered per row in Table II.
+  No seconds are pinned here or in the article any more. OK
+
+> **Why this line no longer quotes seconds.** It used to say "logistic regression
+> ~3, random forest ~6, gradient boosting ~8", and the article repeated those
+> three figures in Section IV. A full re-run on 2026-09-18 measured 6.8, 6.2 and
+> 8.8 on the same machine: logistic regression more than doubled and stopped
+> being the fastest of the three. No metric moved, only the clock. Two numbers
+> that move between runs cannot live in prose that is written once, so the
+> article now says "under ten seconds for every learned model" and points at the
+> table, which is generated. This is the second time this line drifted: the
+> ~20 s once recorded for gradient boosting was from an even earlier run.
 - Table II is generated -> `19_tabla2_json.py` collects every number into
   `results/tabla2.json` and `resultados.py` renders and splices it, so no cell of
   Table II is typed anywhere. `python code/resultados.py --check` fails if the
