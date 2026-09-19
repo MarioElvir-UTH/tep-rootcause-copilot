@@ -110,7 +110,7 @@ a number:
 | **Trivial** baseline, with its number | `results/classics_cv_comparison.csv` | `03_baselines.py`, `04_classics_cv.py` | F1-macro **0.004 ± 0.000** |
 | **Simple model**, with its number | `results/classics_cv_comparison.csv` | `04_classics_cv.py` | Logistic regression **0.652 ± 0.005**; Random forest **0.638 ± 0.005**; Gradient boosting **0.640 ± 0.005** (F1-macro) |
 
-Baseline only, skipping the auxiliary domain-feature analyses (about 16 min): run
+Baseline only, skipping the auxiliary domain-feature analyses (about 18 min): run
 `02_make_partition.py`, `03_baselines.py`, `04_classics_cv.py`, `10_inference_time.py`
 in that order (see the [Fast path](#3-reproduce) below).
 
@@ -241,9 +241,24 @@ result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
 
-Steps 1-10 were measured at about 80 min on the reference machine; steps 11 and
-12 (network training over 15 folds and the agent over three arms) add to that.
-Wall-clock is indicative and moves with processor and load.
+**How long to expect.** Measured end to end on 2026-09-18 on the reference
+machine (Intel Core i5-13420H, 12 threads, CPU only, no GPU):
+
+| Command | Steps | Time |
+|---|--:|--:|
+| `python code/run_all.py` | 23 | **118 min** |
+| `python code/run_all.py --tabla2` | 8 | **31 min** |
+| classics only, the four scripts below | 4 | **18 min** |
+
+Two steps carry most of the full run and neither is needed for Table II:
+`08_label_efficiency.py` at 28 min and `06_domain_features_nonlinear.py` at
+26 min. Inside `--tabla2` the weight is `04_classics_cv.py` at 16 min and
+`11_train_dl.py` at 11 min, which is 27 of its 31.
+
+These are wall-clock: they move with the processor and the load, and a virtual
+machine with fewer cores can take two to four times longer. They are here to
+help you plan, not as a measurement the paper rests on. `run_all.py` prints the
+per-step time of your own run when it finishes.
 
 **Just Table II, one command (about 31 min on the reference machine):**
 
@@ -260,7 +275,7 @@ It leaves out what the table does not need: the data description, the
 domain-feature analyses, the leakage audit, label efficiency, both figures, the
 error tables, PR-AUC and the data checkpoint. Those need the full run.
 
-**Classics only, no PyTorch (about 16 min):** the four classical rows and their
+**Classics only, no PyTorch (about 18 min):** the four classical rows and their
 cost, without the networks or the agent:
 
 ```bash
