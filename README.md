@@ -48,7 +48,7 @@ the paper, with a reason for each, rather than left for a reviewer to notice.
 - **Naming the alarm that started it is where retrieval pays.** Ordering alarms
   by retrieved evidence identifies the root alarm in 0.619 of the episodes whose
   cause the source documents, against 0.349 by time alone: a paired gain of
-  +0.270 ± 0.001 with d = 33.6, and it does not touch the classifier.
+  +0.270 ± 0.001 with d > 30, and it does not touch the classifier.
 - **The explanation needs far fewer labels than the number does.** It reaches
   94% of its full-supervision value with 2.5% of the labels, where the
   classifier is still at 53% of its own. A plant can say which alarm started an
@@ -74,7 +74,15 @@ Three claims carry the paper, and each can be checked from a clone:
   every push, on Linux.
 - **No number in the paper was typed by hand.** `python code/resultados.py --check`
   regenerates Table II, the results paragraph and this README's expected-results
-  table from `results/tabla2.json` and fails if any of them drifted.
+  table from `results/tabla2.json` and fails if any of them drifted. Note what
+  that command is for: it compares the manuscript against the data, which is the
+  check the authors need. **If you have just run the pipeline yourself, it cannot
+  tell you anything**, because the run already overwrote the generated files with
+  your own output and `--check` would be comparing them against themselves. What
+  a reproducer wants is `git diff`, which compares your run against the committed
+  one. Expect the timings to differ and the metrics not to: see *What reproduces
+  on another machine* in `PROTOCOLO.md`, where a full rerun on different hardware
+  returned every macro-F1 and Recall@3 identical to sixteen digits.
 - **The agent is rules, not a language model.** `results/agente_env.json` records
   `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
   the decision log in `results/logs/` shows the four actions with their guards.

@@ -894,6 +894,57 @@ produce.
 
 Steps 1 and 2 in that order are the whole point.
 
+## What reproduces on another machine, and what does not (2026-09-19)
+
+The pipeline had only ever run on the machine that wrote it. It was rerun from
+the raw `.RData` on a Windows virtual machine with a different processor, by
+cloning the repository and following the README with no help from this file.
+
+**Identical, to sixteen digits.** Every macro-averaged F1 and every Recall@3 of
+Table II, for all eight rows, including both networks and both agent arms. The
+per-fold file agrees column by column: `trivial`, `logistic`, `rf`, `hgb`,
+`mlp`, `cnn`, `ablation`, `lookup`, `proposed`. So does everything that depends
+only on scikit-learn: `classics_cv_comparison.csv`, `baseline_comparison.csv`,
+`cv_audit_single_vs_cv.csv`, the three domain-feature files, the best model's
+confusion matrix, and `splits/partition_meta.json`. The frozen partition rebuilt
+to `4cf7e020b0f2faa6` on the third platform, after this laptop and Linux CI.
+
+PyTorch reproducing bitwise on different hardware was not assumed and is worth
+recording: the networks are small, trained on CPU with fixed seeds, and that was
+enough.
+
+**Different, and why.** Only the root-alarm and grounding columns, plus the
+wall-clock timings. Converted to fractions the differences are discrete, not
+rounding:
+
+| Column | This laptop | The other machine |
+|---|---|---|
+| `rootchrono_ablation` | **466 / 1365** | **461 / 1366** |
+| `rootkb_lookup` | 847 / 1365 | 848 / 1366 |
+
+The denominator moves by one. These are counts over the episodes whose cause the
+source documents, and an episode qualifies by crossing a hard `3 sigma` alarm
+limit. That limit comes from a mean and a standard deviation reduced over a
+large array, where the summation order depends on the processor, so an episode
+sitting on the threshold falls on either side. **One episode of 1365 moves a
+recall by 0.004 and Cohen's d by a whole unit**, because d divides by a standard
+deviation over three seeds and amplifies it.
+
+**What changed in the article.** Four figures were reported to a precision the
+hardware does not support and now are not: `d = 33.6` and `d = 41.0` became
+`d > 30` and `d > 40`, true on both machines; the grounding pair went from
+`1.612 against 0.910` to two decimals, and its gap from `+0.702 +- 0.005` to
+`+0.70 +- 0.01`. Nothing else moved: the root-alarm means still round to `0.619`
+and `0.349`, and every Table II number was already exact. One sentence in the
+Discussion states the finding, because a paper that measures its own
+reproducibility boundary is worth more than one that asserts it.
+
+**And the preflight was too weak.** It used `importlib.util.find_spec`, which
+asks whether a package can be found, not whether it imports. On that machine
+torch was found and then failed to load its DLLs, so the run died at step 11
+after eighty-four minutes, which is exactly what the preflight exists to
+prevent. It now imports every dependency.
+
 ## Consistency check (paragraph vs. code vs. table)
 
 - Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
