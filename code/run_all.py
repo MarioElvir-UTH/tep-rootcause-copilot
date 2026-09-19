@@ -76,25 +76,49 @@ NEEDS = {"numpy": "numpy", "pandas": "pandas", "sklearn": "scikit-learn",
          "pyreadr": "pyreadr", "pyarrow": "pyarrow", "matplotlib": "matplotlib"}
 
 
+def torch_users():
+    """Which steps import torch, read from the steps rather than remembered."""
+    return sorted(s for s, _ in STEPS if "import torch" in
+                  open(os.path.join(HERE, s), encoding="utf-8").read())
+
+
 def preflight():
-    """Check what the pipeline imports before it starts importing it.
+    """Actually import what the pipeline imports, before it starts.
 
     torch is deliberately absent from requirements.txt: its CPU build is served
     from PyTorch's own index rather than PyPI. But seven steps import it, and
     finding that out at step 11 costs the reader the hour that steps 01 to 10
-    take. The cost of checking here is a few milliseconds."""
-    import importlib.util
+    take.
 
-    missing = [pkg for mod, pkg in NEEDS.items()
-               if importlib.util.find_spec(mod) is None]
+    Every package here is IMPORTED, not merely located. This used to use
+    importlib.util.find_spec, which answers a weaker question: whether the
+    package can be found on disk. On 2026-09-19 a run on a Windows virtual
+    machine passed that check and then died at step 11 with
+
+        OSError: [WinError 1114] ... Error loading c10.dll
+
+    torch was installed and findable; it could not load its own DLLs. The
+    preflight exists precisely to catch that in the first second rather than the
+    eighty-fourth minute, and find_spec cannot. Importing costs a few seconds,
+    which is the right trade against an hour."""
+    missing, broken = [], []
+    for mod, pkg in NEEDS.items():
+        try:
+            __import__(mod)
+        except ImportError:
+            missing.append(pkg)
+        except Exception as e:                    # installed, but cannot load
+            broken.append((pkg, "%s: %s" % (type(e).__name__, e)))
+
     if missing:
         print("ABORT - missing package(s): " + ", ".join(missing))
         print("   python -m pip install -r requirements.txt")
         sys.exit(1)
 
-    if importlib.util.find_spec("torch") is None:
-        users = sorted(s for s, _ in STEPS if "import torch" in
-                       open(os.path.join(HERE, s), encoding="utf-8").read())
+    try:
+        __import__("torch")
+    except ImportError:
+        users = torch_users()
         print("ABORT - torch is not installed, and %d of the %d steps import it:"
               % (len(users), len(STEPS)))
         for u in users:
@@ -107,6 +131,26 @@ def preflight():
         print("       --index-url https://download.pytorch.org/whl/cpu")
         print("")
         print("   Checked here rather than at step 11, which is an hour in.")
+        sys.exit(1)
+    except Exception as e:
+        broken.append(("torch", "%s: %s" % (type(e).__name__, e)))
+
+    if broken:
+        print("ABORT - installed but cannot be imported:")
+        for pkg, err in broken:
+            print("     %-14s %s" % (pkg, err))
+        print("")
+        if any(p == "torch" for p, _ in broken):
+            print("   torch on Windows loads its own DLLs and needs the Microsoft")
+            print("   Visual C++ Redistributable, which Python does not install:")
+            print("     https://aka.ms/vs/17/release/vc_redist.x64.exe")
+            print("   A WinError 1114 on c10.dll is almost always that. If it")
+            print("   persists, the CPU may not expose the instruction set the")
+            print("   wheel was built for, which a virtual machine can mask.")
+            print("")
+            print("   %d of the %d steps import torch, so the run stops here"
+                  % (len(torch_users()), len(STEPS)))
+            print("   rather than at step 11, an hour in.")
         sys.exit(1)
 
 
