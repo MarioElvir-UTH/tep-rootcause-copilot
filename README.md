@@ -81,8 +81,9 @@ Three claims carry the paper, and each can be checked from a clone:
   your own output and `--check` would be comparing them against themselves. What
   a reproducer wants is `git diff`, which compares your run against the committed
   one. Expect the timings to differ and the metrics not to: see *What reproduces
-  on another machine* in `PROTOCOLO.md`, where a full rerun on different hardware
-  returned every macro-F1 and Recall@3 identical to sixteen digits.
+  on another machine* in `PROTOCOLO.md`, where reruns on two other machines with
+  different processors returned every macro-F1 and Recall@3 identical to sixteen
+  digits, and where the few figures that did move moved identically on both.
 - **The agent is rules, not a language model.** `results/agente_env.json` records
   `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
   the decision log in `results/logs/` shows the four actions with their guards.
@@ -310,12 +311,14 @@ figure (both need the feature cache built by step 04).
 | Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 18,405 |
 <!-- END esperados -->
 
-Every column here is reproducible, which is what "frozen" means: the two metrics
-and the size should come back identical on any machine. **The timings are not in
-this table on purpose.** Training seconds and inference milliseconds are
-wall-clock, they move with machine load even between two runs on one computer,
-and a table headed *frozen* that a reproducer cannot match is worse than no table
-at all. All three cost values live in Table II of the paper and in
+Every column here is reproducible, which is what "frozen" means, and it has been
+checked rather than assumed: the two metrics and the size came back identical to
+sixteen digits on three machines with three different processors.
+
+**The timings are not in this table on purpose.** Training seconds and inference
+milliseconds are wall-clock, they move with machine load even between two runs
+on one computer, and a table headed *frozen* that a reproducer cannot match is
+worse than no table at all. All three cost values live in Table II of the paper and in
 `results/cost_table.csv`, where the header says what they are.
 
 The MLP sees the same 104 features as the classics and ties logistic regression;
@@ -412,7 +415,8 @@ above. A 1,000-line sample of the decision log is committed as
 
 **The reasoning step is rule-based, not a language model.** `12_agente_v1.py`
 produces the recommendation from a fixed template over the retrieved documents, so
-the pipeline runs offline with no API key and reproduces exactly.
+the pipeline runs offline, with no API key, and nothing in it depends on a
+sampled response.
 `prompts/razona.txt` is the prompt that a language-model version would use; it is
 **declared and not executed**, and no number in this repository depends on it.
 `results/agente_env.json` records this.
