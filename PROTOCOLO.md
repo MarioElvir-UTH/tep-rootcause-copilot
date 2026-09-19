@@ -897,8 +897,10 @@ Steps 1 and 2 in that order are the whole point.
 ## What reproduces on another machine, and what does not (2026-09-19)
 
 The pipeline had only ever run on the machine that wrote it. It was rerun from
-the raw `.RData` on a Windows virtual machine with a different processor, by
-cloning the repository and following the README with no help from this file.
+the raw `.RData` on two Windows virtual machines with different processors, by
+cloning the repository and following the README with no help from this file. The
+first ran all 23 steps; the second ran `--tabla2` on a Python 3.14.7 install that
+already had other work on it, rather than a clean one.
 
 **Identical, to sixteen digits.** Every macro-averaged F1 and every Recall@3 of
 Table II, for all eight rows, including both networks and both agent arms. The
@@ -929,6 +931,21 @@ large array, where the summation order depends on the processor, so an episode
 sitting on the threshold falls on either side. **One episode of 1365 moves a
 recall by 0.004 and Cohen's d by a whole unit**, because d divides by a standard
 deviation over three seeds and amplifies it.
+
+**The two machines agree with each other, exactly.** `results/effect_sizes.csv`
+came out byte-identical on both, down to the same git blob hash `83642c2`, and
+both differ from this laptop in the same three rows. So this is not each machine
+drifting on its own: there are two deterministic outcomes, and which one you get
+is a property of the processor rather than of the run. The alternative
+reproduces as reliably as the original, which is a stronger statement than "the
+number is unstable" and the reason the article now says so.
+
+Worth separating the two halves, because the naive guess is backwards. **PyTorch
+reproduced bitwise on all three machines** and NumPy did not: the networks are
+small and their arithmetic is the same everywhere, while the alarm layer reduces
+an array of thousands of runs, and that is where pairwise summation blocks
+differently by SIMD width and thread count. The fragile step was not the
+learned one.
 
 **What changed in the article.** Four figures were reported to a precision the
 hardware does not support and now are not: `d = 33.6` and `d = 41.0` became
