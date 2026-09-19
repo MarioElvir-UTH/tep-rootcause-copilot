@@ -265,18 +265,27 @@ else:
 # ------------------------------------------- the expected-results table of the README
 # It carried six stale inference times, the same ones PROTOCOLO.md had. A table
 # written by hand drifts, so this one is written from the same file as Table II.
+#
+# The third column is SIZE, not the inference latency it used to be. The section
+# is headed "Expected results (frozen)" and latency is the one value there that is
+# not frozen: it is wall-clock, it moved between two runs on the same machine on
+# 2026-09-18 (0.100 to 0.105 ms for the ablation), and it moves further on another
+# machine. Someone reproducing would compare against a table that says frozen,
+# find the last column different, and think something broke. Size is a count of
+# the numbers a model stores to decide, so it is reproducible like the metrics.
+# The three cost values together stay in Table II, where the header says what
+# they are and no one is promised they are frozen.
 NAMES = {"Trivial": "Trivial (majority)", "Logistic reg.": "Logistic regression",
          "Random forest": "Random forest", "Gradient boost.": "Gradient boosting",
          "v1a MLP": "Neural net v1a (MLP)", "v1b 1D-CNN": "Neural net v1b (1D-CNN)",
          "No agent (abl.)": "**No agent (ablation)**", "Copilot v1": "Copilot v1 (proposed)"}
-rows = ["| Model | F1-macro | Recall@3 | Inference |", "|---|---|---|---|"]
+rows = ["| Model | F1-macro | Recall@3 | Size (numbers stored) |", "|---|---|---|---|"]
 for m in models:
     b = "**" if m["name"] == best_p else ""
-    ms = m["cost"]["inference_ms_per_episode"]
     rows.append("| %s | %s%.3f \u00b1 %.3f%s | %s%.3f \u00b1 %.3f%s | %s |"
                 % (NAMES[m["name"]], b, m["primary_mean"], m["primary_std_over_folds"], b,
                    b, m["secondary_mean"], m["secondary_std_over_folds"], b,
-                   "< 0.001 ms" if ms < 0.001 else "%.3f ms" % ms))
+                   "{:,}".format(m["cost"]["parameters"])))
 tabla_readme = "\n".join(rows)
 
 RM = os.path.join(BASE, "README.md")
