@@ -147,7 +147,7 @@ def classifier_proba(net, mean, std, Xw):
 
 # ---------------- [P1] perceive: the alarm layer ----------------
 def fit_alarm_limits(Xw, idx_train):
-    """Limits from NORMAL runs of the training portion only. No labelled fault is used."""
+    """Limits from NORMAL runs of the training portion only. No labeled fault is used."""
     normal = idx_train[y[idx_train] == 0]
     m = Xw[normal].mean(axis=(0, 2), keepdims=True)
     s = Xw[normal].std(axis=(0, 2), keepdims=True)

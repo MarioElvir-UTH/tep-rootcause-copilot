@@ -29,7 +29,7 @@ Anyone reading the CSV on its own would get it wrong, which is why it is here to
 ## The two confusion matrices are not the same thing as `worst_errors.csv`
 
 The matrices are counts of raw predictions. `worst_errors.csv` is the agent's
-behaviour: it is computed at the output of `decide`, so it also records what the
+behavior: it is computed at the output of `decide`, so it also records what the
 loop did about the error, which is the part that matters for an operator. A
 class can be confused often and still be handled well, if the agent defers
 instead of asserting.

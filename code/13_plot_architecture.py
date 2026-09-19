@@ -14,7 +14,7 @@ Table II number is measured.
 Three things are drawn rather than asserted:
 
   - the guard is a boundary. A dashed frame encloses the four stages and is
-    labelled "copilot". The operator is outside it, and the single arrow that
+    labeled "copilot". The operator is outside it, and the single arrow that
     leaves the copilot enters the operator before anything reaches the plant, so
     "advisory" is geometry and not a sentence in Section III.
   - the loop is a circuit. The observe return path has rounded corners and runs
@@ -204,7 +204,7 @@ for b in BOXES:
         ax.add_patch(Circle((bx, ty), 1.7, facecolor=edge, edgecolor="none", zorder=3))
         ax.text(bx, ty, b["n"], ha="center", va="center", fontsize=6.4,
                 fontweight="bold", color="white", zorder=4)
-    # centre the body lines in the space under the title, so a box with two lines
+    # center the body lines in the space under the title, so a box with two lines
     # does not leave a gap at the bottom
     body = [l for l in b["lines"] if l[0]]
     top, bot = BY0 + BH - 5.2, BY0 + 1.2

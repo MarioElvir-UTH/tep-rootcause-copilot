@@ -69,7 +69,7 @@ Tennessee Eastman Process dataset.* It renders in three lines of a single IEEE
 column, which is accepted: the shape matters more than the length. Recall@3 is
 not named in the caption because it is named in its own column header. Collapsing
 the three values into one column is what lets the table fit a single IEEE column
-at `\footnotesize` with `\tabcolsep` 3pt. The `Cost` header is centred with
+at `\footnotesize` with `\tabcolsep` 3pt. The `Cost` header is centered with
 `\multicolumn` because the column itself is right-aligned for the numbers.
 
 ## Experimental configuration: the classics paragraph (seven sentences)
@@ -256,7 +256,7 @@ evidence, and hands the operator a recommendation it can trace.
 
 If retrieval were keyed by the class the classifier predicted, the whole component
 would be a dictionary lookup wearing a costume: it would always find the document
-of the predicted class, the with-and-without ablation would be favourable by
+of the predicted class, the with-and-without ablation would be favorable by
 construction, and the rubric would secretly re-measure the classification accuracy
 already in Table II. **Retrieval therefore starts from the observed symptoms, not
 from the predicted label**, so it can agree or disagree with the classifier, and
@@ -452,7 +452,7 @@ configured limits. It is declared here and implemented now.
   52 variables, the mean and standard deviation over normal-operation runs only.
 - **An alarm fires** for variable `v` at sample `t` when the value leaves the band
   `mean_v +- k * std_v`, with **k = 3** pre-declared, the usual three-sigma
-  convention. No limit is taken from any labelled fault run.
+  convention. No limit is taken from any labeled fault run.
 - **Alarm flow**: the ordered list of (variable, first crossing sample) inside the
   window.
 - **Alarm rate**: alarming variables divided by 52, used by `puntua`.
@@ -765,7 +765,7 @@ the raters agree least.
 > episodes share a class, a citation, a retrieved set and their first two alarms,
 > and the texts differ exactly where the inputs differ, three alarms against
 > four, `xmeas_22` against `xmeas_37`. That is the drafting step tracking its
-> input, which is the behaviour wanted. The consequence for the rubric is that
+> input, which is the behavior wanted. The consequence for the rubric is that
 > thirty texts yield about twenty-nine independent judgements. It is recorded
 > here and **kept out of `paquete_evaluador.md` on purpose**: telling two raters
 > that a pair is nearly identical would make them score it alike and inflate the

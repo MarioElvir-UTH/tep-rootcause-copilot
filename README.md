@@ -18,7 +18,7 @@ under one pre-registered protocol, on validation folds, with the test set sealed
 
 <p align="center">
   <img src="results/architecture_loop.png" width="92%"
-       alt="Four stages inside a dashed boundary labelled copilot: perceive the
+       alt="Four stages inside a dashed boundary labeled copilot: perceive the
             window and its alarms, score it with the fold's 1D-CNN, reason over
             21 documents by symptom similarity, and decide one of four actions.
             The observe action loops back to perception with the window advanced.
@@ -445,7 +445,7 @@ every Table II value was confirmed to reproduce. What does not run is not report
 Data © Rieth et al. 2017 (Harvard Dataverse), used under its terms; not
 redistributed here.
 
-**No licence is set on this code yet**, so the default applies and reuse needs
+**No license is set on this code yet**, so the default applies and reuse needs
 the authors' permission. It is published for review and reproduction: clone it,
-run it, check the numbers. A licence will be chosen when the manuscript is
+run it, check the numbers. A license will be chosen when the manuscript is
 submitted. Contact: the authors (see Authors above), UTH Honduras.
