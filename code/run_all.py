@@ -4,7 +4,8 @@ run_all.py - single-command reproducible pipeline (reproducibility rule, point 5
 Runs the whole study in dependency order, from the raw TEP .RData files to the
 results tables and the label-efficiency figure. One command, nothing to remember:
 
-    python run_all.py
+    python run_all.py              the 23 steps, about 2 h
+    python run_all.py --tabla2     only what Table II needs, 8 steps, about 31 min
 
 It stops at the first failing step and names it. Re-running is safe and yields the
 same numbers: fixed seeds, the partition saved to disk, and the feature caches make
@@ -154,26 +155,59 @@ def preflight():
         sys.exit(1)
 
 
+# The shortest path to the whole of Table II: every one of its eight rows, the
+# cost column, and the rendered table, with nothing else. Derived from what the
+# files actually read, not from taste:
+#
+#   02 freezes the split          04 classics + the feature cache 17 and 14 need
+#   11 the two networks           12 the agent and its ablation
+#   14 per_fold_f1 / per_fold_recall3      17 every cost cell
+#   19 collects it into tabla2.json        resultados.py renders and splices it
+#
+# What it leaves out is the auxiliary analysis, not part of the table: the data
+# description, the domain features, the leakage audit, label efficiency, the
+# figures, the error tables, PR-AUC and the data checkpoint. About 31 min on the
+# reference machine against 118 for everything.
+SOLO_TABLA2 = ["02_make_partition.py", "04_classics_cv.py", "11_train_dl.py",
+               "12_agente_v1.py", "14_effect_sizes.py", "17_cost_table.py",
+               "19_tabla2_json.py", "resultados.py"]
+
+
+def elegir_pasos(argv):
+    """The steps to run, and a label for them. The subset cannot drift from STEPS."""
+    if "--tabla2" not in argv:
+        return STEPS, "ALL %d STEPS" % len(STEPS)
+    porNombre = dict(STEPS)
+    falta = [s for s in SOLO_TABLA2 if s not in porNombre]
+    assert not falta, "SOLO_TABLA2 names steps the pipeline does not have: %s" % falta
+    return ([(s, porNombre[s]) for s in SOLO_TABLA2],
+            "TABLE II COMPLETE, %d of the %d steps" % (len(SOLO_TABLA2), len(STEPS)))
+
+
 def main():
+    pasos, etiqueta = elegir_pasos(sys.argv)
     print("=" * 80)
     print("REPRODUCIBLE PIPELINE  -  TEP root-cause identification")
     print(f"python {sys.version.split()[0]}   |   project: {BASE}")
     if HERE != BASE:
         print(f"steps: {HERE}")
+    if len(pasos) != len(STEPS):
+        print("--tabla2: only what Table II needs, %d of the %d steps"
+              % (len(pasos), len(STEPS)))
     print("=" * 80)
 
     preflight()
 
     # fail early if a step file is missing
-    missing = [s for s, _ in STEPS if not os.path.exists(os.path.join(HERE, s))]
+    missing = [s for s, _ in pasos if not os.path.exists(os.path.join(HERE, s))]
     if missing:
         print("ABORT - missing script(s):", ", ".join(missing))
         sys.exit(1)
 
     t0 = time.time()
     timings = []
-    for i, (script, desc) in enumerate(STEPS, 1):
-        print(f"\n{'-' * 80}\n[{i}/{len(STEPS)}] {script}\n    {desc}\n{'-' * 80}", flush=True)
+    for i, (script, desc) in enumerate(pasos, 1):
+        print(f"\n{'-' * 80}\n[{i}/{len(pasos)}] {script}\n    {desc}\n{'-' * 80}", flush=True)
         t = time.time()
         result = subprocess.run([sys.executable, os.path.join(HERE, script)], cwd=BASE)  # streams child output live
         dt = time.time() - t
@@ -187,14 +221,22 @@ def main():
 
     total = time.time() - t0
     print("\n" + "=" * 80)
-    print(f"ALL {len(STEPS)} STEPS OK  in {total:.0f}s ({total/60:.1f} min)")
+    print(f"{etiqueta} OK  in {total:.0f}s ({total/60:.1f} min)")
     print("per-step time:")
     for s, dt in timings:
         print(f"    {s:<34}{dt:6.0f}s")
+    # with --tabla2 the auxiliary files are not produced and listing them as
+    # missing would read like a failure, so the list follows what was asked for
+    esperados = (["tabla2.json", "cost_table.csv", "agente_comparison.csv",
+                  "per_fold_f1.csv", "dl_comparison.csv", "classics_cv_comparison.csv"]
+                 if len(pasos) != len(STEPS) else RESULT_FILES)
     print("\nresults table / figure produced (in results/):")
-    for f in RESULT_FILES:
+    for f in esperados:
         ok = os.path.exists(os.path.join(BASE, "results", f))
         print(f"    [{'OK' if ok else '--'}] results/{f}")
+    if len(pasos) != len(STEPS):
+        print("\n    Table II is in paper/tabla2.tex. The auxiliary analyses, the")
+        print("    figures and the error tables need the full run.")
     print("\nTest set: SEALED throughout (no *_Testing file opened for scoring).")
     print("=" * 80)
 

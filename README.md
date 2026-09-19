@@ -245,22 +245,37 @@ Steps 1-10 were measured at about 80 min on the reference machine; steps 11 and
 12 (network training over 15 folds and the agent over three arms) add to that.
 Wall-clock is indicative and moves with processor and load.
 
-**Fast path, just Table II (about 16 min on the reference machine):** run only
-the core steps:
+**Just Table II, one command (about 31 min on the reference machine):**
+
+```bash
+python code/run_all.py --tabla2
+```
+
+Runs the eight steps the table depends on and stops: the frozen split, the
+classics, the two networks, the agent with its ablation, the per-fold metrics,
+every cost cell, the JSON that collects them, and the renderer that writes
+`paper/tabla2.tex`. All eight rows, not four.
+
+It leaves out what the table does not need: the data description, the
+domain-feature analyses, the leakage audit, label efficiency, both figures, the
+error tables, PR-AUC and the data checkpoint. Those need the full run.
+
+**Classics only, no PyTorch (about 16 min):** the four classical rows and their
+cost, without the networks or the agent:
 
 ```bash
 python code/02_make_partition.py   # freeze the by-run split (seed 42)
 python code/03_baselines.py        # trivial + RF on the frozen split
-python code/04_classics_cv.py      # logistic + RF + Gradient Boosting, grouped CV -> Table II
-python code/10_inference_time.py   # training time + inference latency (Table II cost)
+python code/04_classics_cv.py      # logistic + RF + gradient boosting, grouped CV
+python code/10_inference_time.py   # training time + inference latency
 ```
+
+This produces `results/classics_cv_comparison.csv`, which is where the first four
+rows of Table II come from, but it does not build the table: that needs the
+networks and the agent, so use `--tabla2` above.
 
 Add `08_label_efficiency.py` then `09_plot_label_efficiency.py` to regenerate the
 figure (both need the feature cache built by step 04).
-
-**Agent rows of Table II:** `11_train_dl.py` (needs PyTorch, writes one checkpoint
-per fold to `results/models/`) then `12_agente_v1.py`, which reuses those
-checkpoints and does not retrain.
 
 ## 4. Expected results (frozen)
 
