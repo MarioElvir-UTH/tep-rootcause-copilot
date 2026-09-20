@@ -210,11 +210,18 @@ S = [
   "costs $%.3f$ on the primary metric, so the proposed method does not beat its own "
   "ablation there."
   % (loop.paired_diff, loop.std_over_seeds, abs(loop.cohens_d), abs(retr.paired_diff))),
+ # The latency is wall-clock and moves with the processor: the same copilot
+ # measured 0.197, 0.123 and 0.254 ms on three machines on 2026-09-19. Three
+ # decimals in prose would be a number a reproducer cannot match, which is the
+ # reason Section IV stopped quoting training seconds two days earlier. The
+ # exact value for this run stays in Table II and in cost_table.csv; the
+ # sentence claims only what survives the move, and the point it carries is
+ # that the loop costs nothing perceivable.
  ("the cost",
   "It stores %s numbers, trains nothing because it loads the network saved for each "
-  "fold, answers in %.3f~ms per episode, and calls no language model, so its token "
-  "count is zero."
-  % ("{:,}".format(c["parameters"]), c["inference_ms_per_episode"])),
+  "fold, answers in under a millisecond per episode, and calls no language model, so "
+  "its token count is zero."
+  % ("{:,}".format(c["parameters"]),)),
  ("the main limitation",
   "The main limitation is coverage rather than accuracy: requiring the classifier and "
   "the retrieval to agree makes the copilot hand %.0f\\%% of episodes to the operator "
