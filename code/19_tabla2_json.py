@@ -1,10 +1,10 @@
 r"""
-results/tabla2.json: every number of Table II in one file, read from the run records.
+results/tabla2.json: every number of Table II in one file.
 
-One row per model, with the primary metric and the secondary metric given per seed
-rather than already averaged, so the paragraph and the table can be produced without
-recomputing anything and without anyone retyping a value. Nothing here is measured:
-it is a consolidation of files that other steps already wrote.
+One row per model, with the primary and the secondary metric given per seed
+rather than already averaged, so the table and the paragraph can be produced
+without recomputing anything. Nothing here is measured: it consolidates files
+other steps wrote.
 
   primary    macro-F1 per seed, from results/per_fold_f1.csv
   secondary  Recall@3 per seed, from results/per_fold_recall3.csv
@@ -12,10 +12,8 @@ it is a consolidation of files that other steps already wrote.
              results/agente_comparison.csv for the arms that have a loop
 
 A field that does not exist for a row is null, never a guess. The two agent rows
-train nothing, so their training time is 0 and not null: that is a measured zero.
-Tokens are 0 for every row because the reasoning step is rule-based and no language
-model is called anywhere in the pipeline; that zero is a property of the design and
-is recorded so the table can state it.
+train nothing, so their training time is 0 and not null: that is a measured zero,
+and the same distinction applies to the token count.
 
 Output:
   results/tabla2.json

@@ -1,40 +1,23 @@
 """
-24_acuerdo_rubrica.py - agreement and per-item results of the human rubric.
+Agreement and per-item results of the human rubric.
 
-Written BEFORE the sheets came back, on purpose. Writing it afterwards, with the
-answers on screen, is an invitation to pick the statistic that looks best, which
-is the same failure the sampling rule was committed early to avoid.
-
-Reports, per item, exactly the three things PROTOCOLO.md declares:
+Reports, per item, the three statistics PROTOCOLO.md declares, and refuses to
+print any one of them without the other two:
 
     Cohen's kappa, raw percent agreement, and both raters' marginals
 
-All three, never one. H2 is expected to be almost all yes, and kappa is unstable
-under a marginal that lopsided: it can sit near zero while the raters agree on
-29 of 30 texts. Reporting it alone would mislead in either direction, so this
-script refuses to print any of the three without the other two.
+Kappa can be undefined, when both raters use one category for every text, and it
+is printed as undefined rather than as 0 or 1. The interval is a percentile
+bootstrap over texts, 10,000 resamples with the seed declared below; resamples
+where kappa is undefined are counted and reported, not dropped. Per stratum only
+the rater means and raw agreement appear, since the strata are 14, 4, 9 and 3
+texts. There is no pooled score and no rubric total.
 
-Four decisions, each of which could have gone the other way:
-
-  - **No pooled score.** There is no third adjudicator, so each rater is reported
-    separately. Averaging the two would invent a consensus that nobody reached.
-  - **No rubric total.** H5 is inverted, where yes is the bad answer, so a total
-    would add a penalty to four rewards. The items are reported point by point.
-  - **Kappa can be undefined, and says so.** When both raters use one category for
-    every text, the expected agreement is 1 and kappa is 0/0. That is printed as
-    undefined, never as 0 and never as 1.
-  - **A bootstrap interval, because n is 30.** A bare kappa over thirty texts is
-    noisier than it looks. Percentile interval over texts, 10,000 resamples,
-    seed declared below. Resamples where kappa is undefined are counted and
-    reported rather than dropped in silence.
-
-Per stratum only the rater means and raw agreement are reported, not kappa: the
-strata are 14, 4, 9 and 3 texts, and a kappa over three texts is noise with a
-Greek letter on it.
+PROTOCOLO.md, "Agreement", says why each of those four choices was made, and was
+committed before the sheets came back.
 
 Reads results/rubrica_humana/{hoja_*.csv, muestra.csv}. Writes acuerdo.csv and
-acuerdo_por_estrato.csv beside them. Not part of run_all.py: the human rubric is
-declared as not reproducible by the command.
+acuerdo_por_estrato.csv beside them. Not part of run_all.py.
 """
 import os
 import sys

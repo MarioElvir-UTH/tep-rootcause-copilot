@@ -1,18 +1,13 @@
 """
-26_precision_kappa.py - what n = 30 buys, and what it does not.
+What n = 30 buys, and what it does not.
 
-PROTOCOLO.md committed to thirty episodes on 2026-09-14 without recording a
-reason. The number is a convention, not a calculation, and this script is what
-turns that admission into something checkable instead of a feeling.
+Simulates two raters who agree on a fixed share of items and asks how precisely
+kappa can be recovered at several sample sizes. Uses no real sheets, which are
+blank: this is a property of the estimator and the sample size, so it can be run
+before anyone scores anything.
 
-It simulates two raters who agree on a fixed share of items and asks how precisely
-kappa can be recovered at several sample sizes. Nothing here uses the real sheets,
-which are blank: it is a property of the estimator and the sample size, knowable
-before anyone scores anything, which is why it is committed before they do.
-
-The raw agreement is included because at this sample size it is the statistic that
-carries the weight, and the protocol's rule of reporting all three is doing real
-work rather than being thorough for its own sake.
+Reports raw agreement alongside kappa, which at this sample size is the statistic
+carrying the weight.
 
 Not part of run_all.py. Prints a table; writes nothing.
 """

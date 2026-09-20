@@ -1,30 +1,22 @@
 """
-25_paquete_evaluador.py - one document with everything a rater needs, and nothing else.
-
-Without this, scoring means flipping between thirty markdown files, a jsonl and a
-JSON corpus. That is not a small inconvenience: it is a source of noise in the
-agreement statistic, because two tired people navigating three formats will
-disagree about things they both understood.
+One document with everything a rater needs, and nothing else.
 
 What goes in, per text:
 
   - the text itself
   - what the copilot had in front of it: alarms, hypotheses, retrieved documents,
     the citation, whether classifier and retrieval agreed, and the action
-  - the full content of the three retrieved documents
+  - the full content of the three retrieved documents, not only the cited one
 
-H3 asks whether the text states a disagreement. If the text hid one, there is no
-way to know it existed without the input record, so the record has to be here.
-H5 asks whether anything was asserted that the evidence does not support, so the
-evidence has to be here too, all three documents and not only the cited one:
-prompts/razona.txt says "no afirmes nada que no este en la evidencia recuperada",
-and the evidence it defines is the three.
+Both of those are there because items H3 and H5 cannot be scored without them: a
+disagreement the text hid is invisible without the input record, and
+prompts/razona.txt defines the evidence as all three documents.
 
 What stays out: the true label, the episode id, the fold and the stratum. Those
-live in muestra.csv and nobody opens that until both sheets are back. This script
-asserts that none of them can reach the page.
+live in muestra.csv, which nobody opens until both sheets are back, and this
+script asserts that none of them can reach the page.
 
-Writes results/rubrica_humana/paquete_evaluador.md. The same document for both
+Writes results/rubrica_humana/paquete_evaluador.md, the same document for both
 raters; what differs is the sheet each one fills in. Not part of run_all.py.
 """
 import os

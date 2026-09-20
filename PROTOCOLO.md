@@ -405,6 +405,79 @@ and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
 > metric the article leans on would have become unreproducible, which is exactly
 > what the automatic rubric exists to avoid.
 
+## Domain features: the seven families, and what the sampling rate forbids
+
+Declared here rather than in `05_domain_features.py`, which implements them.
+
+The TEP is a closed-loop plant, so a fault shows up twice: as a **deviation** of
+the 52 variables from normal operation, and, because the loop is closed, as
+**compensating controller action** on the manipulated valves. Faults differ in
+how the signature appears: sustained offset, inflated variability, slow drift,
+transient excursion, or one loop working harder. The seven families follow from
+that, and all are computable at three-minute sampling over a twenty-sample
+window:
+
+| Family | What it is | What it catches |
+|---|---|---|
+| level | window mean | the steady operating point; feed and composition steps shift it |
+| fluctuation | window standard deviation | random-variation faults inflate variance |
+| trend | linear slope per sample | slow-drift faults ramp a variable |
+| range | max minus min | the transient excursion just after onset |
+| deviation | z against training-fold normal | how far and which way each variable moved, the most directly diagnostic; the baseline uses **only** normal runs of the training fold |
+| control effort | mean absolute change in the valves | which loop is working to counteract the fault |
+| feed and flow ratios | A/(A+C), purge over recycle | the mass-balance couplings a fault breaks |
+
+**Not computable at this sampling and resolution, declared rather than faked:**
+
+- **Frequency-domain features.** Three-minute sampling gives a Nyquist limit of
+  1/6 per minute, and a twenty-sample window gives about 1/60 per minute of
+  resolution: far too coarse to characterise an oscillation spectrum.
+- **Fast valve-stiction limit cycles.** The chatter of IDV 14 and 15 is faster
+  than one sample. Only the slow envelope is visible, which `fluctuation`,
+  `range` and `control effort` already carry.
+- **Lead-lag cross-correlation between coupled variables.** Twenty samples at
+  three-minute resolution make a lag estimate too noisy to trust.
+
+Reported as cross-validated metrics of the domain features against a mean and
+standard deviation ablation on identical folds, family-level permutation
+importance, and a leakage audit.
+
+## Figure rules both figures are drawn to satisfy
+
+Declared here rather than in the plotting scripts, which now only say that they
+implement them.
+
+1. One column, 8.89 cm wide, every label at 8 pt so nothing shrinks in LaTeX.
+   `bbox_inches="tight"` is never used: it changes the width and rescales the
+   text, which defeats the point of fixing the font size.
+2. Vector PDF for the manuscript, with a 300 dpi raster beside it for slides.
+3. The `+-` is drawn as a band and its source is named in the caption.
+4. Axes named with their unit, both starting at zero, so there is no cut to
+   declare.
+5. Distinguishable in grayscale and for colourblind readers: Okabe-Ito colours,
+   plus a different line style and marker per series.
+6. The caption in the paper stands on its own.
+
+Both figures are decoupled from the experiments: restyling one never re-runs a
+model. `13_plot_architecture.py` additionally reads `results/agente_env.json`,
+so the drawing cannot drift from the constants the agent ran with.
+
+Figure 1 is laid out across both columns, left to right, because the subject is a
+sequence. The DCS and the plant are arrows at the two ends rather than boxes:
+they are context, and spending box width on them would shrink the four stages.
+Three claims are drawn rather than asserted. **The guard is a boundary**, a
+dashed frame around the four stages labelled "copilot", with the operator outside
+it and the single arrow leaving the copilot reaching a person before the plant,
+so "advisory" is geometry and not a sentence in Section III. **The loop is a
+circuit**, with the observe return path drawn inside that boundary with rounded
+corners rather than as a stray arrow beneath a pipe. **Decide names four
+actions**, not two: an earlier draft showed observe and defer and left escalate
+out, which understated the policy. The stage number rides its box border as a
+badge, costing the box no interior width, and the body text is 7.5 pt rather than
+8 because the frame needs horizontal room and an IEEE column does not grow. An
+assertion in the script enforces the width, so the figure cannot quietly
+overflow.
+
 ## Figure 1 in text: the four pieces, the guard, the person, the measured point
 
 > This is the figure of the article written as text, so the drawing and the code

@@ -1,8 +1,7 @@
 r"""
 The error that costs most: what the macro average hides.
 
-A macro-averaged F1 of 0.741 says nothing about which fault the copilot misses, and
-in a plant the errors are not interchangeable. This script opens the average:
+Opens the average four ways:
 
   1. the per-class confusion, and the five worst classes with what they are taken for
   2. the split that matters on the floor: a fault read as normal operation, which is
@@ -10,12 +9,9 @@ in a plant the errors are not interchangeable. This script opens the average:
      fault, which is a false alarm
   3. root-alarm recall within the first N alarms the operator is shown, not only at
      the first one, because an operator reads a short list and not a single line
-  4. three episodes chosen by a rule declared in advance, for the discussion
-
-The rule for the three cases: the first episode in decision-log order, for each of
-the three worst-classified faults that the copilot called normal operation. It is
-mechanical, it picks the costly error, and it does not let anyone choose a
-flattering example.
+  4. the three episodes of the discussion, picked by the rule PROTOCOLO.md declares:
+     the first episode in decision-log order, for each of the three worst-classified
+     faults the copilot called normal operation
 
 Recall@N cannot come from the decision log, which keeps only the first three alarms
 and the single root pick, so the alarm ordering is recomputed here from the saved
@@ -24,7 +20,7 @@ of each fold's training portion, retrieval over the class signatures of that fol
 and the same knowledge-driven priority.
 
 Outputs:
-  results/errors/worst_errors.csv      per class: F1, recall, what it is taken for, how often
+  results/errors/worst_errors.csv      per class: F1, recall, what it is taken for
   results/errors/root_alarm_recall.csv root-alarm recall at N = 1 to 5, per arm
 """
 import os

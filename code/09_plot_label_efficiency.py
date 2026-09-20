@@ -1,35 +1,20 @@
 r"""
-The main figure, in two panels: how many labels each result needs.
+The main figure, in two panels.
 
 Panel A  macro-F1 against the percentage of labeled runs, for the three classical
          models and for the copilot.
 Panel B  root-alarm identification on the same budgets: ordering alarms by time,
          and ordering them by retrieved evidence in each of the two grounded arms.
 
-The two panels are the point. The classifier's number and the explanation are
-separate results and they do not need the same number of labels; a reader who
-looks for five seconds should see that the rubric saturates long before the F1
-does.
-
-Reads results/label_efficiency_curve.csv (from 08, the classics) and
-results/label_efficiency_agent.csv (from 16, the copilot). Panel B is skipped if
-the second file is absent, so the figure still builds from the classics alone.
-
-IEEE figure rules this file is written to satisfy:
-  1. one column, 8.89 cm wide, every label at 8 pt so nothing shrinks in LaTeX
-     (no bbox_inches="tight", which would change the width and rescale the text)
-  2. vector PDF
-  3. the +- is drawn as a band, and its source is named in the caption
-  4. axes named with their unit, both starting at zero, so there is no cut to declare
-  5. distinguishable in grayscale and for colorblind readers: Okabe-Ito colors plus
-     a different line style and marker per series
-  6. the caption in the paper stands on its own
+Reads results/label_efficiency_curve.csv (from 08) and
+results/label_efficiency_agent.csv (from 16). Panel B is skipped if the second
+file is absent, so the figure still builds from the classics alone.
 
 Outputs:
-  results/label_efficiency_curve.pdf  <- vector, \includegraphics in the paper
-  results/label_efficiency_curve.png  <- 300 dpi raster, for quick viewing / slides
+  results/label_efficiency_curve.pdf  <- vector, the one the paper includes
+  results/label_efficiency_curve.png  <- 300 dpi raster, for quick viewing
 
-Decoupled from the experiments on purpose: restyling the figure never re-runs a model.
+The figure rules this file implements are declared in PROTOCOLO.md.
 """
 import os
 import numpy as np
@@ -178,6 +163,9 @@ for ext in ("pdf", "png"):
     # whose content did not move: seven bytes of noise in a repository whose
     # claim is that re-running reproduces the results. 13_plot_architecture.py
     # has done this since it was written; this figure was missed.
+    # no bbox_inches="tight": it changes the width and rescales every label,
+    # which is what fixing the font size at 8 pt is for. CreationDate is
+    # dropped so the PDF does not change byte for byte on every run.
     fig.savefig(out, metadata={"CreationDate": None} if ext == "pdf" else None)
     print("wrote", out)
 plt.close(fig)

@@ -1,35 +1,23 @@
 r"""
-Table II, written by code from results/tabla2.json instead of typed into the paper.
+Table II and the Results paragraph, written from results/tabla2.json.
 
-Why this exists: every cost cell of Table II had drifted from its source, and the
-reason was that the table lived in the .tex as text. A number that is typed once is
-a number that can stop matching the run that produced it. This script closes that
-path: the table is generated, and a check compares what it generates against what
-the paper carries.
+Writes the tabular to paper/tabla2.tex and splices that same tabular into the
+manuscript between two markers, so the .tex stays one self-contained file to
+upload. The caption is not touched: the prose belongs to the authors, the numbers
+to the run. The six sentences of paper/resultados.md carry substituted numbers
+for the same reason, so the paragraph cannot drift from the table above it.
 
-It writes the tabular to paper/tabla2.tex and then splices that same tabular into
-the manuscript between two markers, so the .tex stays a single self-contained file
-to upload to Overleaf. The caption is not touched: the prose belongs to the authors,
-the numbers belong to the run.
+  python resultados.py           write the table and the paragraph, splice them
+  python resultados.py --check   compare only, non-zero if the paper has drifted
 
-  python resultados.py           write the table and the paragraph, splice the table
-  python resultados.py --check   compare only, change nothing, non-zero if they differ
-
-The six sentences of paper/resultados.md are the ones requested: what is compared
-and on what partition; the proposed method's number with its dispersion; the
-difference against the best classic and whether it clears that dispersion; what the
-agent adds, read off the ablation; the cost; and the main limitation. Each number is
-substituted from the files, so the paragraph cannot drift from the table above it.
-
-The figures are not produced here. They come from 09_plot_label_efficiency.py and
-13_plot_architecture.py, under names that say what they are; the README maps each
-artifact of the paper to its file and its script.
+The figures come from 09_plot_label_efficiency.py and 13_plot_architecture.py,
+not from here.
 
 Reads:  results/tabla2.json, results/effect_sizes.csv, results/per_fold_f1.csv,
         results/human_load.csv
 Writes: paper/tabla2.tex, paper/resultados.md, paper/resultados.tex, both of
-        those regions of the manuscript, and the expected-results table of
-        the README
+        those regions of the manuscript, and the expected-results table of the
+        README
 """
 import io
 import os

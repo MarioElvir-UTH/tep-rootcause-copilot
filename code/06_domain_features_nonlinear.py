@@ -1,5 +1,5 @@
 """
-S2 - Prompt 2 (optional follow-up): do the domain-knowledge features help a NONLINEAR
+Do the domain-knowledge features help a NONLINEAR
 model, unlike the linear case?
 
 In 05_domain_features.py the 7 domain families gave NO Recall@1 gain over mean+std for

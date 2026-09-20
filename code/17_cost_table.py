@@ -1,13 +1,9 @@
 r"""
 Every cost cell of Table II, measured in one run so the eight rows are comparable.
 
-The cost column reads size / training seconds / inference milliseconds. Before this
-script only four of those twenty-four numbers came from a file: the classical
-training and inference times of 10_inference_time.py. The sizes were not computed
-anywhere, and the two network training times in the table contradicted
-dl_comparison.csv. This script produces all of them together.
+The column reads size / training seconds / inference milliseconds.
 
-What "size" counts, per row, is what the model has to store to make a decision:
+What "size" counts, per row, is what the model stores to make a decision:
   trivial            the 21 class priors
   logistic           coefficients and intercepts
   random forest      decision nodes over the 300 trees
@@ -25,9 +21,9 @@ Timing follows 10_inference_time.py so the numbers stay comparable with it:
 
 The two agent rows train nothing: they load the network saved for each fold. Their
 per-decision latency is measured by 12_agente_v1.py, which owns the loop, and is
-carried here with its source named rather than re-implemented and measured twice.
+carried here with its source named rather than measured twice.
 
-Run it on an idle machine: wall-clock times move with load, which the caption says.
+Run it on an idle machine: wall-clock times move with load.
 
 Output:
   results/cost_table.csv

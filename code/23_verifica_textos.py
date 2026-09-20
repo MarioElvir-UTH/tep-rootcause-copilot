@@ -1,25 +1,19 @@
 """
-23_verifica_textos.py - check the FORM of the thirty rubric texts, and nothing else.
+Check the FORM of the thirty rubric texts, and nothing else.
 
-The drafting step is specified in results/rubrica_humana/redaccion.md. This script
-is the gate it runs before handing the texts to the raters.
-
-It checks only what a machine has the right to check here:
+The gate the drafting step in results/rubrica_humana/redaccion.md runs before the
+texts reach the raters. It checks:
 
   - all thirty files exist, one per drawn episode
   - each is the declared shape: one `# Texto NN` heading and one paragraph
-  - six sentences or fewer, which prompts/razona.txt fixes
-  - no bullets, which prompts/razona.txt forbids
+  - six sentences or fewer, and no bullets, which prompts/razona.txt fixes
   - no long dashes, which is a rule of this project
   - nothing else in the file: no notes, no input JSON, no self-assessment
 
-It deliberately does NOT check whether the citation exists, whether the cited
-document says what the text claims, or whether anything was invented. Those are
-H2, H3 and H5, and they are what the two raters are for. A script that filtered
-them out beforehand would leave the human rubric with nothing left to measure,
-and a high score would then be a property of this file rather than of the copilot.
-
-  the machine checks the form, the people check the substance
+It does NOT check whether the citation exists, whether the cited document says
+what the text claims, or whether anything was invented. Those are items H2, H3
+and H5, and PROTOCOLO.md, "What a script is allowed to check", says why a script
+must leave them alone.
 
 Exit code is non-zero if any text fails, so the drafting session can loop on it.
 """

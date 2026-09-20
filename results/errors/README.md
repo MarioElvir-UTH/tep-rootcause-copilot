@@ -22,6 +22,13 @@ their names say. **For the two control rows** they hold the median, the p10 and
 the p90 over 300 sampled pairs, because a maximum over 300 pairs is an outlier
 and says nothing about how far apart two episodes usually are.
 
+**What the controls turned out to show, which was not the first reading.**
+Sharing a simulation-run index does **not** generally make two episodes alike:
+over 300 random pairs, the median separation between two faults on the same run
+is *larger* than between two runs of the same fault. What is true is narrower and
+more interesting: the low tail of the distribution belongs entirely to same-run
+pairs, and the two confusing episodes sit in it.
+
 So `max_sigma_all_52 = 11.6757` on the control row is a **median**, not a maximum,
 and that is the number the paper quotes as "a median of 11.7". The script says so
 at the point where it writes the row, and it prints the same warning when it runs.

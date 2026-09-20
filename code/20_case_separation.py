@@ -1,20 +1,18 @@
-"""How far apart the costly cases are, in sigmas of normal operation.
+"""
+How far apart the costly cases are, in sigmas of normal operation.
 
-A figure of the three windows was built and dropped: two of the three panels came
+For each pair of the three episodes, reports the largest difference in any of the
+52 variables in sigmas of normal operation, using the alarm limits of the fold
+each episode was decided in, and the same distance restricted to the variables
+that crossed the band, which is what the copilot acted on.
+
+Two control rows put those distances on a scale: 300 random pairs drawn on the
+same simulation run, and 300 drawn from two runs of one fault. Their columns hold
+medians, not maxima, which results/errors/README.md spells out.
+
+A figure of the three windows was built and dropped: two of its three panels came
 out visually identical, because two of the episodes really are almost the same
-data. The number says it better than the picture, so this script produces the
-number instead.
-
-For each pair of the three episodes it reports the largest difference in any of
-the 52 variables, in sigmas of normal operation, using the alarm limits of the
-fold each episode was decided in. It also reports the same distance restricted to
-the variables that crossed the band, which is what the copilot acted on.
-
-Two controls are included because the first reading of this was wrong. Sharing a
-simulation-run index does NOT generally make two episodes alike: over 300 random
-pairs the median separation between two faults on the same run is larger than
-between two runs of the same fault. What is true is that the low tail belongs
-entirely to same-run pairs, and the two confusing episodes sit in it.
+data. The number says it better.
 
 Reads:  results/dev_features.parquet, results/dev_windows_ext.npy
 Writes: results/errors/case_separation.csv

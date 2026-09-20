@@ -1,28 +1,20 @@
 """
-22_muestra_rubrica.py - draw the thirty episodes of the human rubric.
+Draw the thirty episodes of the human rubric.
 
 Implements the rule pre-registered in PROTOCOLO.md, "Human rubric: the sampling
-rule, the raters and the items", which was committed before this script was run.
-The rule is not re-stated here in prose: it is read off the constants below, and
-any change to them is a change to the pre-registration and has to be argued there.
+rule, the raters and the items". The rule is not restated here in prose: it is
+read off the constants below, so changing them is changing the pre-registration.
 
-  arm `proposed`, seed 42, at random inside each stratum with rng(20260917)
-
-      generate, correct   14        defer    9
-      generate, wrong      4        alert    3
-
-Deliberately NOT part of run_all.py, which stays at 23 steps. The draw is
-reproducible; the scoring by two people is not, and the human rubric is declared
-as not reproducible by the command. Adding it would suggest otherwise.
+Not part of run_all.py: the draw is reproducible, the scoring by two people is
+not, and the protocol declares the human rubric as outside the one command.
 
 Writes to results/rubrica_humana/:
-  muestra.csv            the key: which text is which episode. The raters must
-                         not open this until both sheets are back.
+  muestra.csv               the key, which text is which episode. The raters must
+                            not open this until both sheets are back.
   entradas_redaccion.jsonl  the three inputs prompts/razona.txt declares, one per
-                         episode, with the ground truth removed. All the drafting
-                         step may read, together with the cited document.
-  hoja_<rater>.csv       one blank scoring sheet per rater, in shuffled order,
-                         carrying no label, no probability and no episode id.
+                            episode, with the ground truth removed.
+  hoja_<rater>.csv          one blank sheet per rater, shuffled, carrying no
+                            label, no probability and no episode id.
 
 Refuses to overwrite a scoring sheet that already has marks in it.
 """

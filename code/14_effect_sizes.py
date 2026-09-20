@@ -1,25 +1,23 @@
 r"""
-Paired fold-by-fold differences and effect sizes for every comparison the paper makes.
+Paired fold-by-fold differences and effect sizes for every comparison the paper
+makes.
 
-Four rules this script exists to satisfy (Week 4):
-  1. Same seeds, same folds. The difference is computed fold by fold and then
-     averaged by seed, never by subtracting two loose means.
-  2. The effect size is reported: Cohen's d = difference / pooled standard deviation.
-  3. With three seeds almost nothing is "significant"; the paired t is reported
-     with its degrees of freedom so the reader can see how little it settles.
-  4. The word "significant" is never used without a test and a p-value.
+Differences are computed fold by fold and then averaged by seed, never by
+subtracting two loose means. The paired t is reported with its degrees of
+freedom, and the word "significant" appears nowhere: three seeds do not support
+that claim. PROTOCOLO.md says why each of those is a rule rather than a taste.
 
-Nothing is retrained. The three scripts that produced the results build the folds
-identically (groups = faultNumber*1000 + simulationRun, StratifiedGroupKFold k=5,
-shuffle, random_state=seed), so fold f of seed s is the same set of runs everywhere:
-  - classics  -> refit on the cached features, which is cheap
-  - networks  -> scored from the checkpoint saved for that fold, never retrained
-  - agent arms-> read straight out of results/logs/decisiones.jsonl
+Nothing is retrained. The three producing scripts build the folds identically
+(groups = faultNumber*1000 + simulationRun, StratifiedGroupKFold k=5, shuffle,
+random_state=seed), so fold f of seed s is the same set of runs everywhere:
+  - classics   refit on the cached features, which is cheap
+  - networks   scored from the checkpoint saved for that fold, never retrained
+  - agent arms read straight out of results/logs/decisiones.jsonl
 
 Outputs:
-  results/per_fold_f1.csv       <- macro-F1 of every model on every one of the 15 folds
-  results/per_fold_recall3.csv  <- the same for Recall@3, the secondary metric
-  results/effect_sizes.csv   <- one row per declared comparison
+  results/per_fold_f1.csv       macro-F1 of every model on each of the 15 folds
+  results/per_fold_recall3.csv  the same for Recall@3
+  results/effect_sizes.csv      one row per declared comparison
 """
 import os
 import json
@@ -126,16 +124,12 @@ print("arms in the log: %s" % ", ".join(ARMS))
 PF = os.path.join(RES, "per_fold_f1.csv")
 PR3 = os.path.join(RES, "per_fold_recall3.csv")
 NEED = {"seed", "fold", "trivial", "logistic", "rf", "hgb", "mlp", "cnn"} | set(ARMS)
-# This step refits every time, and must keep doing so. It used to skip the loop
-# below whenever results/per_fold_f1.csv already existed with the expected
-# columns. That looked like a harmless cache and was not: the file is committed,
-# so a fresh clone always hit it, and every macro-F1 of Table II came back
-# "identical" on another machine because nothing had recomputed it. The defect
-# was live until 2026-09-19 and it put a reproducibility claim into the paper
-# that the evidence did not support. The fifteen refits cost about twenty
-# minutes, which is the price of the table meaning what it says. If a fast path
-# is ever wanted it belongs behind an explicit flag whose name admits that the
-# numbers are being reused rather than reproduced.
+# This step refits every time and must keep doing so. It used to reuse
+# results/per_fold_f1.csv when that file already existed, and because the file is
+# committed, every clone hit it and Table II came back "identical" on any machine
+# without anything being recomputed. PROTOCOLO.md tells the whole story. Do not
+# reintroduce a cache here; if a fast path is ever wanted, it belongs behind a
+# flag whose name says the numbers are reused rather than reproduced.
 rows, rows3 = [], []
 for seed in EST_SEEDS:
     sgkf = StratifiedGroupKFold(n_splits=K, shuffle=True, random_state=seed)

@@ -1,23 +1,18 @@
 """
-siete.py - the seven sentences of Section IV, generated from the manuscript.
+The seven sentences of Section IV, copied from the manuscript into PROTOCOLO.md.
 
-PROTOCOLO.md carries a copy of the paper's *Experimental Configuration* section
-so that the protocol can be read without the paper. That copy used to be pasted
-by hand, and it drifted: on 2026-09-19 it still quoted per-model training times
-that the article had dropped two days earlier, and it said "1 normal" where the
-article said "one normal". PROTOCOLO already claimed this script existed and
-that the two were compared on every check. Neither was true. This is the script.
+The direction matters and is the whole point: the .tex is the source, because it
+is the wording that gets reviewed and submitted, and PROTOCOLO receives. Copying
+the other way is what let the two drift apart before this script existed.
 
-The direction matters. The `.tex` is the source, because it is the wording that
-gets reviewed and submitted; PROTOCOLO receives. Copying the other way is what
-produced the drift in the first place.
+Aborts if the section does not hold exactly seven sentences.
 
-    python code/siete.py           regenerate the copy in PROTOCOLO.md
-    python code/siete.py --check   compare only, non-zero if they differ
+  python code/siete.py           regenerate the copy in PROTOCOLO.md
+  python code/siete.py --check   compare only, non-zero if they differ
 
 The manuscript is gitignored and lives in Overleaf, so a fresh clone does not
-have it. That is not an error: the script says so and stops, the same way
-resultados.py does, because there is nothing it can check without the source.
+have it. That is not an error: the script says so and stops, as resultados.py
+does, because there is nothing to check without the source.
 """
 import io
 import os

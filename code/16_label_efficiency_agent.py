@@ -2,19 +2,15 @@ r"""
 Panel B of the main figure: how the root-cause rubric scales with the number of
 labeled runs, on the same budgets as the classical curve of 08_label_efficiency.py.
 
-The point of the figure is that the two panels can disagree. The classifier's
-macro-F1 and the root-alarm rate are different results, and the number of labels
-each one needs is a separate question. The chronological baseline is label-free by
-construction and is drawn flat as the reference the knowledge-driven ordering has
-to beat.
-
 Everything is retrained at every budget, because that is what the question asks:
 the network, the alarm limits fit on the normal runs of the labeled subset, and
-the class signatures of the symptom retrieval. The subsample is drawn with the
-same declared rule as 08: rng(1000*seed + fold), so a budget contains the runs
-of every smaller budget.
+the class signatures of the symptom retrieval. The chronological baseline is
+label-free by construction and is drawn as the reference the knowledge-driven
+ordering has to beat.
 
-Budgets, seeds, folds and guards are the ones already fixed; nothing here is tuned.
+The subsample is drawn with the same declared rule as 08, rng(1000*seed + fold),
+so a budget contains the runs of every smaller budget. Budgets, seeds, folds and
+guards are the ones already fixed; nothing here is tuned.
 
 Output:
   results/label_efficiency_agent.csv

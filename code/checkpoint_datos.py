@@ -1,15 +1,15 @@
 """
-DATA CHECKPOINT (single command, raw data -> screen).
-Passes the checkpoint by SHOWING, live, the four required items:
-  (1) the data loads;
-  (2) how many samples and how many classes there are;
-  (3) five example rows (with their ground truth = faultNumber);
-  (4) the frozen partition EXISTS in the repository (file on disk + integrity hash).
+Data checkpoint: raw files to screen, in one command.
 
-Note: we do NOT run the simulator ourselves. We use the
-pre-generated Tennessee Eastman runs of Rieth et al. (2017), which already ship WITH
-their ground truth (faultNumber = root-cause label). Data is confirmed and on disk;
-the alternate plan is the same dataset (best-positioned route).
+Shows, live:
+  1. that the data loads
+  2. how many samples and how many classes there are
+  3. five example rows with their ground truth (faultNumber)
+  4. that the frozen partition exists in the repository, as a file on disk with
+     its integrity hash
+
+The simulator is not run here. These are the pre-generated Tennessee Eastman runs
+of Rieth et al. (2017), which ship with their ground truth.
 """
 import os, gc, json, hashlib
 import pyreadr

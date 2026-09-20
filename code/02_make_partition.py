@@ -1,18 +1,17 @@
 """
-S1 - Step 2: Define and FREEZE the train/validation/test partition (before any model).
+Define and freeze the train/validation/test partition, before any model.
 
-Grouping restriction: one simulation run = one unit. All samples/windows of the
-  same run stay in the same split (split BY RUN), stratified by class.
-Temporal restriction: TEP runs are independent simulations, so there is NO
-  chronological order across runs; a "train-before-test" split does not apply at
-  the run level. Temporal causality is enforced WITHIN each run via causal feature
-  windows in the feature/model steps (only data up to the decision time).
+One simulation run is one unit: every sample of a run stays in the same split,
+stratified by class. The *_Training files become the development pool and are
+split by run into train and validation; the *_Testing files are the sealed test
+pool. Fixed seed, and the run indices are written to disk so the partition is
+always the same one.
 
-Design: standard Rieth split.
-  - train_pool = *_Training files (dev): split by run into train / validation.
-  - test_pool  = *_Testing files: held-out test, opened once.
-Fixed seed; run indices saved to disk (manifest CSV + metadata JSON) so the
-partition is always the same.
+Outputs:
+  splits/partition_manifest.csv
+  splits/partition_meta.json   carries the sha256 the paper cites
+
+The grouping and temporal restrictions behind this design are in PROTOCOLO.md.
 """
 import os, json, hashlib
 import numpy as np

@@ -1,45 +1,19 @@
 """
-S2 - Prompt 2: domain-knowledge features for TEP root-cause identification.
-Task: per-run 21-class diagnosis (0=normal, 1-20=fault/IDV), decided on the causal
-early window [onset, onset+20) (3-min sampling -> ~60 min of data, 20 samples).
+Domain-knowledge features for TEP root-cause identification.
 
-Physics recap (why these features): the TEP is a closed-loop chemical plant
-(reactor / condenser / separator / recycle compressor / stripper). A fault shows up
-(a) as a DEVIATION of the 52 variables from normal operation, and (b) because the
-loop is closed, as COMPENSATING controller action on the manipulated valves (XMV).
-Faults differ in HOW the signature appears: sustained offset, inflated variability,
-slow drift, transient excursion, or a specific loop working harder.
+Per-run 21-class diagnosis decided on the causal early window
+[onset, onset + 20), which is 20 samples at three-minute sampling, about an hour
+of plant time.
 
-Seven domain feature families (5-12, as asked), all calculable at 3-min sampling:
-  1. level      (window mean)            -> steady operating point; feed/composition
-                                            steps shift levels (e.g. IDV1,2,6).
-  2. fluctuation (window std)            -> random-variation faults inflate variance
-                                            (e.g. IDV8,10,11,12).
-  3. trend      (linear slope / sample)  -> slow-drift faults ramp a variable
-                                            (e.g. IDV13 kinetics drift).
-  4. range      (max - min)              -> transient excursion right after onset
-                                            (step faults jump).
-  5. deviation  (z vs TRAIN-normal)      -> how far / which way each var moved from
-                                            nominal; most directly diagnostic. Baseline
-                                            computed ONLY from training-fold normal runs.
-  6. control effort (mean |dXMV|)        -> valve activity; in closed loop a fault is
-                                            counteracted by valves moving (which loop?).
-  7. feed/flow ratios                    -> mass-balance couplings a fault breaks:
-                                            A/(A+C) feed ratio (targets IDV1), purge/recycle.
+Builds the seven feature families declared in PROTOCOLO.md and compares them
+against a mean-and-standard-deviation ablation on identical folds, with
+family-level permutation importance and a leakage audit. The normal-operation
+baseline of the `deviation` family is fitted inside each fold on training runs
+only. Test stays sealed.
 
-NOT computable at this sampling/resolution (declared, not faked):
-  - Frequency-domain features (FFT / dominant oscillation frequency): 3-min sampling
-    gives Nyquist = 1/6 min^-1 and a 20-sample window gives ~1/60 min^-1 resolution,
-    far too coarse to characterize oscillation spectra reliably.
-  - Fast valve-stiction limit-cycle metrics (IDV14/15 chatter): the cycles are faster
-    than a 3-min sample; we can only see the slow envelope (captured by std/range/effort).
-  - Lead-lag cross-correlation between coupled variables: 20 samples with 3-min lag
-    resolution makes lag estimates too noisy to trust.
-
-Protocol (same contract as Prompts 1-2): partition by run, StratifiedGroupKFold-by-run
-k=5 (seed 42), preprocessing + normal-baseline fit INSIDE each fold, test SEALED.
-Reports: (a) CV metrics of domain features vs mean+std-only ablation on identical folds;
-(b) family-level permutation importance (mean +/- std over folds); (c) leakage audit.
+Output:
+  results/dev_domain_features.parquet   the cache 06 reads
+  results/domain_feature_importance.csv
 """
 import os, json, platform
 N_JOBS = -1  # all cores; no thermal cap (laptop holds ~60-65 C under full load)
@@ -208,7 +182,7 @@ def summ(folds, metric):
 MET = ["Recall@1", "Recall@3", "MRR", "F1macro"]
 print("\n============ CV (StratifiedGroupKFold-by-run k=5, 3 seeds (5,17,42); mean +/- std; TEST SEALED) ============")
 hdr = f"{'feature set':<28}" + "".join(f"{m:>16}" for m in MET); print(hdr); print("-" * len(hdr))
-for label, folds in [("mean+std only (Prompt 1)", ms_folds), ("+ domain families (7)", dom_folds)]:
+for label, folds in [("mean+std only", ms_folds), ("+ domain families (7)", dom_folds)]:
     mu = {m: summ(folds, m) for m in MET}
     print(f"{label:<28}" + "".join(f"{mu[m][0]:>9.4f}+/-{mu[m][1]:<4.3f}" for m in MET))
 
@@ -220,7 +194,7 @@ for fam, mu, sd in imp_rows:
 pd.DataFrame([{"family": f, "n_cols": len(FAMILIES[f]), "perm_importance_mean": mu, "perm_importance_std": sd}
               for f, mu, sd in imp_rows]).to_csv(os.path.join(RES, "domain_feature_importance.csv"), index=False)
 
-# ---------------- leakage audit (Prompt point 4) ----------------
+# ---------------- leakage audit ----------------
 print("\n---- leakage audit (future / label information) ----")
 print("SAFE (built only from the causal window [21,41) and/or training-fold normal runs):")
 print("  level, fluctuation, range, trend, control effort, feed/flow ratios -> all within-window, no future used.")

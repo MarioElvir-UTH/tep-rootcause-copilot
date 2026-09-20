@@ -1,5 +1,5 @@
 """
-S2 - Prompt 1: train and compare classic baselines under the validation contract.
+Train and compare the classic baselines under the validation contract.
 Task: root-cause identification per run on TEP (Rieth), 21 classes (0=normal,1-20=faults).
 Features: mean+std of the 52 process variables over the causal window [onset, onset+20).
 Models: logistic regression, random forest, gradient boosting (HistGB).

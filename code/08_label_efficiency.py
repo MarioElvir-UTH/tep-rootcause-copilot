@@ -1,30 +1,24 @@
 """
-S2 (milestone): LABEL EFFICIENCY CURVE - the measurable contribution.
-Performance as a function of the number of LABELED runs, for the supervised
-reference. This produces the reference line(s) against which a label-efficient
-(self/semi-supervised) method must be compared once it exists (Week 3).
+Label-efficiency curve: performance as a function of the number of labeled runs.
 
-Task: per-run root-cause identification on TEP, 21 classes, causal window [21,41),
-features = mean+std of the 52 process variables (cached by 04_classics_cv.py).
+Per-run root-cause identification on TEP, 21 classes, causal window [21, 41),
+features = mean and std of the 52 process variables (cached by 04_classics_cv.py).
 
-Protocol (same audited contract as 04/07):
-  - StratifiedGroupKFold by run, k=5, seed 42. Test SEALED (dev pool only).
-  - For each fold: the training portion has 400 runs/class. We subsample B labeled
-    runs per class from it, fit on ONLY those, and evaluate on the fold's FULL
-    validation set (so every budget is scored on the same 2100 runs per fold).
-  - The labeled subset is drawn with a declared seed BEFORE looking at any score
-    (leakage-control rule: never pick the labeled subset by performance).
-  - Preprocessing (StandardScaler) is fit inside each fold on the labeled subset only.
-  - Budgets B per class: 1..400; B=400 is full supervision and anchors the right end.
+  - StratifiedGroupKFold by run, k=5, seed 42. Test sealed, dev pool only.
+  - For each fold the training portion has 400 runs per class. B of them are
+    subsampled, the model is fit on only those, and it is scored on the fold's
+    FULL validation set, so every budget is scored on the same 2,100 runs.
+  - The labeled subset is drawn with a declared seed before any score is seen:
+    the subset is never picked by performance.
+  - StandardScaler is fit inside each fold on the labeled subset only.
+  - Budgets per class run 1 to 400, where 400 is full supervision.
 
-Models: logistic regression (C=10), random forest (max_depth=20) and gradient
-boosting (lr=0.05) - the three configurations selected in 04. Reporting all three
-answers a real question: does the model ranking hold in the low-label regime, or
-does it flip?
+All three configurations selected in 04 are reported, which answers whether the
+model ranking holds in the low-label regime or flips.
 
-Outputs: results/label_efficiency_curve.csv, .svg (dependency-free figure),
-label_efficiency_env.json. Console: table, ASCII curve, and the headline
-"labels needed to reach 90%/95% of full supervision".
+Outputs: results/label_efficiency_curve.csv, .svg, label_efficiency_env.json.
+Console: the table, an ASCII curve, and the labels needed to reach 90 and 95 per
+cent of full supervision.
 """
 import os, json, platform, warnings
 N_JOBS = -1  # all cores; no thermal cap (laptop holds ~60-65 C under full load)

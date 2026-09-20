@@ -1,19 +1,22 @@
 """
-S2 - Prompt 4: audit the cross-validation before trusting the numbers.
-Audits the pipeline that produces our headline number (logistic + mean+std, from 04):
-features = mean+std of the 52 process variables over the causal window [21,41), one
-window per run; StratifiedGroupKFold by run (k=5, seed 42); test SEALED.
+Audit the cross-validation before trusting the numbers.
 
-Prints hard evidence for each check (no "looks fine"):
-  1. per-fold group (run) counts in train/val + proof no run is on both sides, and that
-     the 5 val folds partition the runs (each run validated exactly once).
-  2. preprocessing is fit INSIDE each fold: per-fold StandardScaler.mean_ differ, and a
-     leaky "fit once on all data" CV is computed to show it is a different procedure.
-  3. temporal check: our runs are INDEPENDENT simulations (no cross-run time order), so
-     the temporal control is the causal window. Evidence: each run in exactly one fold,
-     and features use only samples in [21,40] (re-derived from raw), never the run's future.
-  4. single frozen split vs CV mean for the SAME model config, to separate split variance
-     from the earlier hyperparameter difference (03 used RF max_depth=None).
+Audits the pipeline behind the headline number (logistic on mean and std, from
+04): one window per run over the causal window [21, 41), StratifiedGroupKFold by
+run with k=5 and seed 42, test sealed.
+
+Prints evidence for each check rather than a verdict:
+
+  1. per-fold run counts in train and validation, proof that no run is on both
+     sides, and that the five validation folds partition the runs exactly once
+  2. that preprocessing is fit inside each fold: the per-fold scaler means differ,
+     and a leaky fit-once-on-everything CV is computed to show it is a different
+     procedure
+  3. the temporal control. These runs are independent simulations with no
+     cross-run order, so the control is the causal window: each run is in exactly
+     one fold, and features use only samples in [21, 40], never the run's future
+  4. a single frozen split against the CV mean for the same configuration, which
+     separates split variance from a hyperparameter difference
 """
 import os, json, platform
 N_JOBS = -1  # all cores; no thermal cap (laptop holds ~60-65 C under full load)

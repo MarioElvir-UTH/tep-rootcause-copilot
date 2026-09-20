@@ -1,5 +1,5 @@
 """
-S1 - Step 1: Understand the data before modeling (no training).
+Understand the data before modeling. Nothing is trained here.
 TEP dataset (Rieth et al., 2017, DOI 10.7910/DVN/6C3JR1), .RData format.
 Reports, per file: rows, classes (faultNumber), per-run and per-sample balance,
 samples per run, missing/duplicate/corrupt checks, and representative examples.

@@ -1,43 +1,19 @@
 r"""
-Figure 1: the advisory architecture, drawn as the loop it actually is.
-
-Laid out across both columns, left to right, because the thing being shown is a
-sequence. The DCS and the plant are the arrows at the two ends rather than boxes:
-they are context, and spending box width on them would shrink the four stages that
-are the subject.
+Figure 1: the advisory architecture, drawn as the loop it is.
 
 Renders the four pieces pre-registered in PROTOCOLO.md ("Figure 1 in text"):
 perceive, score, reason, decide; the observe action that closes the loop; the
-guard (the copilot never reaches the process); where the person is; and where the
-Table II number is measured.
-
-Three things are drawn rather than asserted:
-
-  - the guard is a boundary. A dashed frame encloses the four stages and is
-    labeled "copilot". The operator is outside it, and the single arrow that
-    leaves the copilot enters the operator before anything reaches the plant, so
-    "advisory" is geometry and not a sentence in Section III.
-  - the loop is a circuit. The observe return path has rounded corners and runs
-    inside that boundary, instead of reading as a pipe with a stray arrow beneath.
-  - Decide names four actions, not two. Earlier drafts of this figure showed
-    observe and defer and left escalate out, which understated the policy.
-
-The stage number rides its box border as a badge, which costs the box no interior
-width; that is what pays for the boundary. Body text is 7.5 pt rather than 8: the
-frame needs horizontal room and the two IEEE columns do not grow. The assert below
-is what enforces this, and it is the reason the figure cannot quietly overflow.
-
-Drawn by code for the same reason the label-efficiency figure is: a diagram that
-is redrawn by hand cannot drift away from the pipeline without someone noticing,
-and every constant shown here is read from results/agente_env.json rather than
-typed into the drawing.
+dashed boundary that is the guard, with the operator outside it; and where the
+Table II number is measured. Every constant shown is read from
+results/agente_env.json rather than typed in, so the drawing cannot drift from
+the run.
 
 Outputs:
-  results/architecture_loop.pdf  <- vector, \includegraphics* in the paper
-  results/architecture_loop.png  <- 300 dpi raster, for quick viewing / slides
+  results/architecture_loop.pdf  <- vector, the one the paper includes
+  results/architecture_loop.png  <- 300 dpi raster, for quick viewing
 
-Reads results/agente_env.json (produced by 12_agente_v1.py). Decoupled from the
-experiment on purpose: restyling the figure never re-runs the agent.
+Reads results/agente_env.json (produced by 12_agente_v1.py). The figure rules
+this file implements, and the layout decisions behind it, are in PROTOCOLO.md.
 """
 import os
 import json

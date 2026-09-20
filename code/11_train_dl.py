@@ -9,7 +9,7 @@ Two networks, on purpose:
   v1b 1D-CNN on the RAW causal window 20 x 52 sensors        -> isolates REPRESENTATION
 
 THE SIX RULES (each one is marked [R#] where it is enforced in the code):
-  [R1] Same frozen partition as Week 2: same cache, same seed, same grouping by run.
+  [R1] The same frozen partition: same cache, same seed, same grouping by run.
   [R2] Standardization fit INSIDE the fold, on the training portion only. No augmentation.
   [R3] Early stopping looks at validation, never at test. Test files are never opened.
   [R4] Three seeds, mean +- std. The seed also fixes weight initialization.

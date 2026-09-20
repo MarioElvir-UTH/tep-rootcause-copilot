@@ -1,5 +1,5 @@
 """
-S1 - Steps 3 & 4: two baselines for root-cause identification (per run, 21 classes).
+Two baselines for root-cause identification, per run, 21 classes.
   a) Trivial baseline: predict by TRAIN class frequency (floor).
   b) Classic baseline: Random Forest on per-run features.
 Same frozen partition (splits/partition_manifest.csv). Same metrics: Recall@1,
