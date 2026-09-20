@@ -61,9 +61,7 @@ text of Section V.
 One cost column: it reads size / training seconds / amortized per-episode
 inference latency, all measured on the same run and the same machine. The key to
 those three units lives in the column header, `Cost (size / s / ms)`, not in the
-caption. Measured, that costs nothing: the Cost column is already wider than the
-header because its data cells set the width, and the table is 248.4pt against
-the 252pt of an IEEE column with or without it.
+caption.
 
 The caption follows a fixed shape, so that a reader can judge the protocol
 without leaving the table:
@@ -75,10 +73,7 @@ which currently reads: *Macro F1 on validation, mean +- standard deviation over
 five folds x three seeds, stratified group k-fold grouped by simulation run,
 Tennessee Eastman Process dataset.* It renders in three lines of a single IEEE
 column, which is accepted: the shape matters more than the length. Recall@3 is
-not named in the caption because it is named in its own column header. Collapsing
-the three values into one column is what lets the table fit a single IEEE column
-at `\footnotesize` with `\tabcolsep` 3pt. The `Cost` header is centered with
-`\multicolumn` because the column itself is right-aligned for the numbers.
+not named in the caption because it is named in its own column header.
 
 ## Experimental configuration: the classics paragraph (seven sentences)
 
@@ -134,8 +129,7 @@ on a single machine on CPU (Intel Core i5-13420H, 12 threads) with Python
 3.14.2 and fixed seeds throughout; the code, the frozen partition, and the
 pinned environment (requirements.txt) are available in the project repository
 https://github.com/MarioElvir-UTH/tep-rootcause-copilot, and per-model
-training time on the development pool is under ten seconds for every learned
-model and negligible for the trivial baseline, reported per row in Table II.
+training time, seconds rather than hours, is reported per row in Table II.
 <!-- END siete -->
 
 ## Week 3 pre-registration: the neural network row (written BEFORE running anything)
@@ -1017,11 +1011,17 @@ package can be found, not whether it imports. On one machine torch was found and
 then failed to load its DLLs, so the run died at step 11 after eighty-four
 minutes. It now imports every dependency.
 
-## Consistency check (paragraph vs. code vs. table)
+## Where each declared thing comes from
 
-- Dataset (Rieth; 500/class; 21 classes; unit = run) -> matches `01`/`02`. OK
+Not a certificate. Each line names the script that produces what the paper
+declares, so a claim can be traced to a file instead of to a memory. This
+section used to end every line with a tick, and on 2026-09-20 one of those ticks
+was found certifying a sentence that had been false for days. Ticks age; a
+provenance does not.
+
+- Dataset (Rieth; 500 runs per class; 21 classes; the unit is the run) -> `01`, `02`.
 - Partition (by run, stratified, seed 42; test 10,500 sealed; dev 10,500; saved
-  to disk, sha256 4cf7e020b0f2faa6) -> matches `02_make_partition.py`. OK
+  to disk, sha256 `4cf7e020b0f2faa6`) -> `02_make_partition.py`.
 
 > **Why this hash is not the one an earlier draft cited.** It was
 > `f55e7729a298e23c` until 2026-09-16, and the partition did not change: the same
@@ -1029,59 +1029,51 @@ minutes. It now imports every dependency.
 > hashed differently on each while its contents were identical. A hash that
 > depends on the operating system cannot serve as proof that a split is frozen,
 > which is what this one is for. The writer now fixes the line terminator and
-> `.gitattributes` keeps git from converting it back, so the three platforms
-> agree. Continuous integration found this on its first run, by rebuilding the
-> manifest on Linux and comparing.
+> `.gitattributes` keeps git from converting it back. Continuous integration
+> found this on its first run, by rebuilding the manifest on Linux and comparing.
 
-- Features (mean+std of 52 vars; causal window 20 samples; scaler fit in-fold)
-  -> matches `04`/`05`. OK
+- Features (mean and std of 52 variables; causal window of 20 samples; scaler
+  fit inside the fold) -> `04`, `05`.
 - Models (trivial, logistic regression, random forest, gradient boosting;
-  scikit-learn 1.9.1) -> matches `04`. OK
-- Grid + equal effort + selection seed 0 -> matches `04`. OK
+  scikit-learn 1.9.1) -> `04`.
+- Grid, equal effort, selection seed 0 -> `04`.
 - Validation (StratifiedGroupKFold by run, k=5, seeds 5/17/42, 15 folds,
-  mean +- std) -> matches `04`-`08`. OK
-- Trivial numbers (macro-F1 0.004; Recall@1 0.048) -> from `04`
-  (0.0043 / 0.0476). OK
-- **Primary metric = macro-F1** -> reconciled 2026-09-12 across the `.tex`
-  (the abstract, the objectives and the results) and the figure;
-  `protocolo_validacion.md` removed so this file is the only protocol. OK
-- Selection criterion -> hyperparameters AND the best model are chosen by
-  macro-F1, the primary metric (`04_classics_cv.py`, fixed 2026-09-13; it used to
-  select by Recall@1, which contradicted the paper). Verified that Recall@1 would
-  select the identical configuration for all three models, so no number changed. OK
-- Inference time (ms) -> amortized per-episode latency, measured for every row in
-  one run by `17_cost_table.py` (`results/cost_table.csv`). Wall-clock, so it moves
-  between runs: a full re-run on 2026-09-15 gave 0.052 for the random forest against
-  the 0.054 of the run before it, and 0.032 for gradient boosting against 0.031. The
-  file is the value; this line is not, and no exact latency is pinned here. OK
-- Per-model training time (s) -> wall-clock, so it moves with machine load, and
-  the file is the value: `results/cost_table.csv`, rendered per row in Table II.
-  No seconds are pinned here or in the article any more. OK
+  mean +- std) -> `04` through `08`.
+- Trivial numbers (macro-F1 0.004; Recall@1 0.048) -> `04`, which gives
+  0.0043 and 0.0476.
+- Primary metric, macro-F1 -> the same one in the abstract, the objectives, the
+  results and the figure. This file is the only protocol.
+- Selection criterion -> the hyperparameters and the best model are both chosen
+  by macro-F1, the primary metric (`04_classics_cv.py`). It used to select by
+  Recall@1, which contradicted the paper; Recall@1 selects the identical
+  configuration for all three models, so no number changed when it was fixed.
+- Inference time (ms) -> amortized per-episode latency, every row measured in
+  one run by `17_cost_table.py` -> `results/cost_table.csv`. Wall-clock, so no
+  latency is pinned here.
+- Per-model training time (s) -> wall-clock, `results/cost_table.csv`, rendered
+  per row in Table II. No seconds are pinned here or in the article.
 
-> **Why this line no longer quotes seconds.** It used to say "logistic regression
-> ~3, random forest ~6, gradient boosting ~8", and the article repeated those
-> three figures in Section IV. A full re-run on 2026-09-18 measured 6.8, 6.2 and
-> 8.8 on the same machine: logistic regression more than doubled and stopped
-> being the fastest of the three. No metric moved, only the clock. Two numbers
-> that move between runs cannot live in prose that is written once, so the
-> article now says "under ten seconds for every learned model" and points at the
-> table, which is generated. This is the second time this line drifted: the
-> ~20 s once recorded for gradient boosting was from an even earlier run.
-- Table II is generated -> `19_tabla2_json.py` collects every number into
-  `results/tabla2.json` and `resultados.py` renders and splices it, so no cell of
-  Table II is typed anywhere. `python code/resultados.py --check` fails if the
-  manuscript and the data disagree. OK
-- Section IV of the paper -> reduced on 2026-09-15 to the seven sentences above
-  and nothing else, which took the paper from eight pages to seven, with the
-  bibliography on page 7. What it stopped declaring is listed in the note above
-  the paragraph. OK
-- Repository -> public at https://github.com/MarioElvir-UTH/tep-rootcause-copilot
-  (code, frozen partition, results, README with the one-command reproduction). OK
-- PR-AUC -> computed on request by `21_pr_auc.py` (`results/pr_auc.csv`), as the
-  macro-averaged average precision over the same folds and seeds. It changes no
-  conclusion: the ablation still leads, the proposed method still trails it in all
-  15 folds, and the only reordering in the table is between the perceptron and
-  logistic regression, the pair already declared comparable. Table II keeps
-  Recall@3 because it is what the operator reads and because it was declared
-  before any score was seen, while PR-AUC was computed after; the paper reports it
-  as a check, not as a criterion. OK
+> **Why neither this line nor the article quotes seconds.** It took three tries.
+> The line once said "logistic regression ~3, random forest ~6, gradient
+> boosting ~8" and the article repeated those figures; a re-run on 2026-09-18
+> measured 6.8, 6.2 and 8.8 on the same machine, so logistic regression had more
+> than doubled and stopped being the fastest. Before that, a `~20 s` recorded for
+> gradient boosting came from an even earlier run. The replacement, "under ten
+> seconds for every learned model", was written looking at the classics and was
+> **simply false**: the 1D-CNN takes sixteen, and Table II printed that on the
+> same page. A bound in prose is a number and it drifts like one, so the article
+> now names no figure at all and points at the generated table.
+
+- Table II -> `19_tabla2_json.py` collects every number into
+  `results/tabla2.json` and `resultados.py` renders and splices it, so no cell is
+  typed anywhere. `python code/resultados.py --check` fails if the manuscript and
+  the data disagree.
+- Section IV -> the seven sentences above and nothing else, regenerated from the
+  manuscript by `siete.py`, which aborts if the count is not seven.
+- Repository -> https://github.com/MarioElvir-UTH/tep-rootcause-copilot
+- PR-AUC -> `21_pr_auc.py` -> `results/pr_auc.csv`, the macro-averaged average
+  precision over the same folds and seeds. It changes no conclusion: the ablation
+  leads, the proposed method trails it in all 15 folds, and the only reordering
+  is the perceptron and logistic regression, the pair already declared
+  comparable. Table II keeps Recall@3, which was declared before any score was
+  seen, while PR-AUC was computed after; it is a check, not a criterion.
