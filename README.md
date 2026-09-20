@@ -310,8 +310,9 @@ figure (both need the feature cache built by step 04).
 | Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 18,405 |
 <!-- END esperados -->
 
-Every column here has been checked on three machines with three different
-processors rather than assumed. The sizes, the four classical rows and the
+The values printed here are the reference machine's, the Intel Core i5-13420H
+of section 1, and every column has been checked on three different processors
+rather than assumed. The sizes, the four classical rows and the
 frozen partition hash come back identical on all three. The two neural rows and
 the two agent rows are identical on any one machine and move by up to `0.003` on
 another, comfortably inside the `±` beside them, which is what that column is
