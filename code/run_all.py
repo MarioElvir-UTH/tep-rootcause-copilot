@@ -4,8 +4,12 @@ run_all.py - single-command reproducible pipeline (reproducibility rule, point 5
 Runs the whole study in dependency order, from the raw TEP .RData files to the
 results tables and the label-efficiency figure. One command, nothing to remember:
 
-    python run_all.py              the 23 steps, about 2 h
-    python run_all.py --tabla2     only what Table II needs, 8 steps, about 31 min
+    python run_all.py              every step, roughly 2 h
+    python run_all.py --tabla2     only what Table II needs, roughly 40 min
+
+No step count is written here on purpose: the banner prints it from the lists
+below, so it cannot drift from them. The times are wall-clock estimates for
+planning, not measurements the paper rests on.
 
 It stops at the first failing step and names it. Re-running is safe and yields the
 same numbers: fixed seeds, the partition saved to disk, and the feature caches make
@@ -177,8 +181,9 @@ def preflight():
 #
 # What it leaves out is the auxiliary analysis, not part of the table: the data
 # description, the domain features, the leakage audit, label efficiency, the
-# figures, the error tables, PR-AUC and the data checkpoint. About 31 min on the
-# reference machine against 118 for everything.
+# figures, the error tables, PR-AUC and the data checkpoint. Roughly 40 min on
+# the reference machine against roughly 2 h for everything, both wall-clock and
+# both only as good as the processor they were measured on.
 SOLO_TABLA2 = ["02_make_partition.py", "04_classics_cv.py", "11_train_dl.py",
                "12_agente_v1.py", "14_effect_sizes.py", "15_human_load.py",
                "17_cost_table.py", "19_tabla2_json.py", "resultados.py"]

@@ -909,24 +909,82 @@ The pipeline had only ever run on the machine that wrote it. It was rerun from
 the raw `.RData` on two Windows virtual machines with different processors, by
 cloning the repository and following the README with no help from this file. The
 first ran all 23 steps; the second ran `--tabla2` on a Python 3.14.7 install that
-already had other work on it, rather than a clean one.
+already had other work on it, rather than a clean one. Afterwards `--tabla2` was
+run once more on this laptop, as the control that had been missing.
 
-**Identical, to sixteen digits.** Every macro-averaged F1 and every Recall@3 of
-Table II, for all eight rows, including both networks and both agent arms. The
-per-fold file agrees column by column: `trivial`, `logistic`, `rf`, `hgb`,
-`mlp`, `cnn`, `ablation`, `lookup`, `proposed`. So does everything that depends
-only on scikit-learn: `classics_cv_comparison.csv`, `baseline_comparison.csv`,
-`cv_audit_single_vs_cv.csv`, the three domain-feature files, the best model's
-confusion matrix, and `splits/partition_meta.json`. The frozen partition rebuilt
-to `4cf7e020b0f2faa6` on the third platform, after this laptop and Linux CI.
+**Read the defect first, because an earlier version of this section got the
+answer wrong.** `14_effect_sizes.py` used to skip its work when
+`results/per_fold_f1.csv` already existed with the expected columns, and that
+file is committed. So a clone reused it and every macro-F1 came back identical
+**because nothing had recomputed them**, not because the machine reproduced
+them. This section was written from that file and claimed sixteen-digit
+agreement across three machines. It was wrong. The guard is gone; a clone now
+refits.
 
-PyTorch reproducing bitwise on different hardware was not assumed and is worth
-recording: the networks are small, trained on CPU with fixed seeds, and that was
-enough.
+### Same machine, repeated runs: identical
 
-**Different, and why.** Only the root-alarm and grounding columns, plus the
-wall-clock timings. Converted to fractions the differences are discrete, not
-rounding:
+`--tabla2` on this laptop, against the committed run of the day before, returned
+every metric of every row bit for bit, the two networks included:
+
+| | Committed | Rerun |
+|---|---|---|
+| `mlp` macro-F1 | 0.6523502980760862 | 0.6523502980760862 |
+| `cnn` macro-F1 | 0.696241131952885 | 0.696241131952885 |
+| `cnn` `epochs_median` | 44 | 44 |
+| `ablation` macro-F1 | 0.7520774827508462 | 0.7520774827508462 |
+
+Only wall-clock columns moved: `train_s_median_fold`, `s_per_decision` and the
+cost column of Table II. The seeds hold and there is no hidden randomness. This
+also validates the subset: the nine steps of `--tabla2` produce the same
+`paper/tabla2.tex` as the 23.
+
+### Another processor: the classics hold, the networks and the agent do not
+
+Unchanged across all three platforms: the frozen partition, which rebuilt to
+`4cf7e020b0f2faa6` on this laptop, on Linux CI and on the virtual machine, and
+everything that depends only on scikit-learn, which is
+`classics_cv_comparison.csv`, `baseline_comparison.csv`,
+`cv_audit_single_vs_cv.csv`, the three domain-feature files and the best model's
+confusion matrix.
+
+Changed:
+
+| | This laptop | The other machine | Table II, three decimals |
+|---|---|---|---|
+| `cnn` macro-F1 | 0.696241 | 0.695318 | 0.696 -> 0.695 |
+| `cnn` Recall@3 | 0.786127 | 0.783079 | 0.786 -> 0.783 |
+| `cnn` `epochs_median` | 44 | 42 | not reported |
+| `mlp` macro-F1 | 0.652350 | 0.652159 | 0.652, unchanged |
+| `ablation` macro-F1 | 0.752077 | 0.749400 | 0.752 -> 0.749 |
+| `proposed` macro-F1 | 0.740679 | 0.739700 | 0.741 -> 0.740 |
+
+**The `epochs_median` row is the explanation.** Early stopping reads a
+validation score that differs in its low bits, so it fires two epochs earlier,
+and from there the weights are different ones. Nothing is stochastic; the
+arithmetic simply associates differently.
+
+Four cells of Table II therefore change at the precision the paper prints. A
+reproducer will see them.
+
+### Why this does not threaten any conclusion
+
+Every one of those differences is smaller than the uncertainty the table already
+reports next to the number:
+
+| | Reported as | Moves by |
+|---|---|---|
+| `cnn` macro-F1 | 0.696 +- 0.006 | 0.0009 |
+| `cnn` Recall@3 | 0.786 +- 0.007 | 0.0031 |
+| `ablation` macro-F1 | 0.752 +- 0.009 | 0.0027 |
+
+Between a third and a seventh of the fold-to-fold deviation. The ranking of the
+eight rows, every sign and every conclusion are untouched. This is why the
+article states a tolerance rather than an equality: ACM and IEEE define
+reproducibility as agreement *within a stated precision*, and a declared
+tolerance is what that asks for. Claiming exactness would be both unusual and
+trivially falsifiable by the first reviewer with another processor.
+
+### The root-alarm counts, which move for a different reason
 
 | Column | This laptop | The other machine |
 |---|---|---|
@@ -935,35 +993,32 @@ rounding:
 
 The denominator moves by one. These are counts over the episodes whose cause the
 source documents, and an episode qualifies by crossing a hard `3 sigma` alarm
-limit. That limit comes from a mean and a standard deviation reduced over a
-large array, where the summation order depends on the processor, so an episode
-sitting on the threshold falls on either side. **One episode of 1365 moves a
-recall by 0.004 and Cohen's d by a whole unit**, because d divides by a standard
-deviation over three seeds and amplifies it.
+limit computed from a mean and a standard deviation reduced over a large array,
+where the summation order depends on the processor. An episode sitting on the
+threshold falls on either side. **One episode of 1365 moves a recall by 0.004
+and Cohen's d by a whole unit**, because d divides by a standard deviation over
+three seeds and amplifies it.
 
-**The two machines agree with each other, exactly.** `results/effect_sizes.csv`
-came out byte-identical on both, down to the same git blob hash `83642c2`, and
-both differ from this laptop in the same three rows. So this is not each machine
-drifting on its own: there are two deterministic outcomes, and which one you get
-is a property of the processor rather than of the run. The alternative
-reproduces as reliably as the original, which is a stronger statement than "the
-number is unstable" and the reason the article now says so.
+**The two virtual machines agree with each other, exactly.**
+`results/effect_sizes.csv` came out byte-identical on both, down to the same git
+blob hash `83642c2`, and both differ from this laptop in the same rows. So this
+is not each machine drifting on its own: there are two deterministic outcomes,
+and which one you get is a property of the processor rather than of the run.
 
-Worth separating the two halves, because the naive guess is backwards. **PyTorch
-reproduced bitwise on all three machines** and NumPy did not: the networks are
-small and their arithmetic is the same everywhere, while the alarm layer reduces
-an array of thousands of runs, and that is where pairwise summation blocks
-differently by SIMD width and thread count. The fragile step was not the
-learned one.
+**Retracted:** an earlier version of this section said PyTorch reproduced
+bitwise on all three machines while NumPy did not, and called the learned step
+the robust one. That rested on the cached file. The networks do not reproduce
+across processors either, and `epochs_median` is the proof.
 
-**What changed in the article.** Four figures were reported to a precision the
-hardware does not support and now are not: `d = 33.6` and `d = 41.0` became
-`d > 30` and `d > 40`, true on both machines; the grounding pair went from
-`1.612 against 0.910` to two decimals, and its gap from `+0.702 +- 0.005` to
-`+0.70 +- 0.01`. Nothing else moved: the root-alarm means still round to `0.619`
-and `0.349`, and every Table II number was already exact. One sentence in the
-Discussion states the finding, because a paper that measures its own
-reproducibility boundary is worth more than one that asserts it.
+### What changed in the article
+
+Four figures were reported to a precision the hardware does not support and now
+are not: `d = 33.6` and `d = 41.0` became `d > 30` and `d > 40`, true on both
+machines; the grounding pair went from `1.612 against 0.910` to two decimals,
+and its gap from `+0.702 +- 0.005` to `+0.70 +- 0.01`. One sentence in the
+Discussion now states what reproduces exactly, what reproduces within 0.003 and
+why, because a paper that measures its own reproducibility boundary is worth
+more than one that asserts it.
 
 **And the preflight was too weak.** It used `importlib.util.find_spec`, which
 asks whether a package can be found, not whether it imports. On that machine

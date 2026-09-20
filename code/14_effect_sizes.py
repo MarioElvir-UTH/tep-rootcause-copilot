@@ -126,12 +126,18 @@ print("arms in the log: %s" % ", ".join(ARMS))
 PF = os.path.join(RES, "per_fold_f1.csv")
 PR3 = os.path.join(RES, "per_fold_recall3.csv")
 NEED = {"seed", "fold", "trivial", "logistic", "rf", "hgb", "mlp", "cnn"} | set(ARMS)
-CACHED = (os.path.exists(PF) and os.path.exists(PR3)
-          and set(pd.read_csv(PF).columns) >= NEED
-          and set(pd.read_csv(PR3).columns) >= NEED)
-
+# This step refits every time, and must keep doing so. It used to skip the loop
+# below whenever results/per_fold_f1.csv already existed with the expected
+# columns. That looked like a harmless cache and was not: the file is committed,
+# so a fresh clone always hit it, and every macro-F1 of Table II came back
+# "identical" on another machine because nothing had recomputed it. The defect
+# was live until 2026-09-19 and it put a reproducibility claim into the paper
+# that the evidence did not support. The fifteen refits cost about twenty
+# minutes, which is the price of the table meaning what it says. If a fast path
+# is ever wanted it belongs behind an explicit flag whose name admits that the
+# numbers are being reused rather than reproduced.
 rows, rows3 = [], []
-for seed in ([] if CACHED else EST_SEEDS):
+for seed in EST_SEEDS:
     sgkf = StratifiedGroupKFold(n_splits=K, shuffle=True, random_state=seed)
     for fold, (tri, vai) in enumerate(sgkf.split(X, y, groups)):
         rec = {"seed": seed, "fold": fold}
@@ -158,15 +164,13 @@ for seed in ([] if CACHED else EST_SEEDS):
         print("  seed %2d fold %d  " % (seed, fold)
               + "  ".join("%s %.4f" % (k, rec[k]) for k in ("logistic", "cnn", "ablation", "proposed")))
 
-if CACHED:
-    per_fold = pd.read_csv(PF)
-    print("reusing results/per_fold_f1.csv (delete it to refit the classics from scratch)")
-else:
-    per_fold = pd.DataFrame(rows)
-    per_fold.to_csv(PF, index=False)
-    pd.DataFrame(rows3).to_csv(PR3, index=False)
-    print("\nwrote results/per_fold_f1.csv and results/per_fold_recall3.csv  (%d folds x %d models)"
-          % (len(per_fold), len(per_fold.columns) - 2))
+per_fold = pd.DataFrame(rows)
+falta = NEED - set(per_fold.columns)
+assert not falta, "per_fold_f1.csv would be missing columns: %s" % sorted(falta)
+per_fold.to_csv(PF, index=False)
+pd.DataFrame(rows3).to_csv(PR3, index=False)
+print("\nwrote results/per_fold_f1.csv and results/per_fold_recall3.csv  (%d folds x %d models)"
+      % (len(per_fold), len(per_fold.columns) - 2))
 
 
 # ---------------- explanation quality, per fold, from the same log ----------------

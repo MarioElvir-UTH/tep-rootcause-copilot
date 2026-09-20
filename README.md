@@ -80,10 +80,12 @@ Three claims carry the paper, and each can be checked from a clone:
   tell you anything**, because the run already overwrote the generated files with
   your own output and `--check` would be comparing them against themselves. What
   a reproducer wants is `git diff`, which compares your run against the committed
-  one. Expect the timings to differ and the metrics not to: see *What reproduces
-  on another machine* in `PROTOCOLO.md`, where reruns on two other machines with
-  different processors returned every macro-F1 and Recall@3 identical to sixteen
-  digits, and where the few figures that did move moved identically on both.
+  one. Expect the timings to differ. On the same machine no metric moves at all,
+  networks included. On a different processor the frozen partition and the four
+  classical rows still do not move, while the two networks and the two agent
+  arms move by up to `0.003`, which is less than the fold-to-fold deviation
+  printed beside them: see *What reproduces on another machine* in
+  `PROTOCOLO.md` for the measured table and the cause.
 - **The agent is rules, not a language model.** `results/agente_env.json` records
   `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
   the decision log in `results/logs/` shows the four actions with their guards.
@@ -242,26 +244,28 @@ result files produced. Re-running yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
 
-**How long to expect.** Measured end to end on 2026-09-18 on the reference
-machine (Intel Core i5-13420H, 12 threads, CPU only, no GPU):
+**How long to expect, roughly.** Wall-clock on the reference machine (Intel
+Core i5-13420H, 12 threads, CPU only, no GPU):
 
-| Command | Steps | Time |
+| Command | Steps | Rough time |
 |---|--:|--:|
-| `python code/run_all.py` | 23 | **118 min** |
-| `python code/run_all.py --tabla2` | 9 | **31 min** |
-| classics only, the four scripts below | 4 | **18 min** |
+| `python code/run_all.py` | 23 | **~2 h** |
+| `python code/run_all.py --tabla2` | 9 | **~40 min** |
+| classics only, the four scripts below | 4 | **~20 min** |
+
+**These are estimates, not numbers to match.** They move with the processor and
+the load, and a virtual machine with fewer cores can take two to four times
+longer: the same subset took fifty minutes on one. They are here to help you
+plan. `run_all.py` prints the per-step time of your own run when it finishes,
+and that is the only timing that describes your machine.
 
 Two steps carry most of the full run and neither is needed for Table II:
-`08_label_efficiency.py` at 28 min and `06_domain_features_nonlinear.py` at
-26 min. Inside `--tabla2` the weight is `04_classics_cv.py` at 16 min and
-`11_train_dl.py` at 11 min, which is 27 of its 31.
+`08_label_efficiency.py` at about 28 min and `06_domain_features_nonlinear.py`
+at about 26 min. Inside `--tabla2` the weight is `04_classics_cv.py` at about
+18 min and `11_train_dl.py` at about 11 min, with `14_effect_sizes.py` adding
+seven more.
 
-These are wall-clock: they move with the processor and the load, and a virtual
-machine with fewer cores can take two to four times longer. They are here to
-help you plan, not as a measurement the paper rests on. `run_all.py` prints the
-per-step time of your own run when it finishes.
-
-**Just Table II, one command (about 31 min on the reference machine):**
+**Just Table II, one command (roughly 40 min on the reference machine):**
 
 ```bash
 python code/run_all.py --tabla2
@@ -311,9 +315,13 @@ figure (both need the feature cache built by step 04).
 | Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 18,405 |
 <!-- END esperados -->
 
-Every column here is reproducible, which is what "frozen" means, and it has been
-checked rather than assumed: the two metrics and the size came back identical to
-sixteen digits on three machines with three different processors.
+Every column here has been checked on three machines with three different
+processors rather than assumed. The sizes, the four classical rows and the
+frozen partition hash are identical on all three. The two neural rows and the
+two agent rows are identical on any one machine and move by up to `0.003` on
+another, which is below the deviation printed beside them; `PROTOCOLO.md` gives
+the measured numbers and explains why early stopping lands on a different
+epoch.
 
 **The timings are not in this table on purpose.** Training seconds and inference
 milliseconds are wall-clock, they move with machine load even between two runs
