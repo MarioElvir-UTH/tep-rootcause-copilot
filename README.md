@@ -54,7 +54,7 @@ the paper, with a reason for each, rather than left for a reviewer to notice.
   classifier is still at 53% of its own. A plant can say which alarm started an
   upset long before it can say reliably which fault it was.
 - **The loop is worth more than the retrieval.** Letting the agent advance the
-  window and look again gains more than 0.05 macro-F1 (d > 6) over scoring the
+  window and look again gains more than 0.05 macro-F1 over scoring the
   same network once.
 - **And retrieval costs about 0.01 on the primary metric, which we report rather
   than bury.** The proposed method reaches 0.741 ± 0.008 against 0.752 ± 0.009 for its
