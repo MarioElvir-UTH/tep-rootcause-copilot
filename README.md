@@ -222,14 +222,10 @@ Core i5-13420H, 12 threads, CPU only, no GPU):
 | `python code/run_all.py --tabla2` | 9 | **~40 min** |
 | classics only, the four scripts below | 4 | **~20 min** |
 
-**These are estimates, not numbers to match,** and they move in both
-directions. A virtual machine with fewer cores took fifty minutes on the subset
-that takes forty here. A Ryzen 5 7600X desktop ran the whole of `run_all.py` in
-forty-one, against the two hours of this reference laptop: the reference is a
-thin laptop and it throttles under an hour of sustained load, where a desktop
-does not. Plan with these, do not match them. `run_all.py` prints the per-step
-time of your own run when it finishes, and that is the only timing that
-describes your machine.
+**These are estimates, not numbers to match.** They are wall-clock on the
+machine named above, and they move with the processor and with the load. They
+are here to help you plan. `run_all.py` prints the per-step time of your own run
+when it finishes, and that is the only timing that describes your machine.
 
 Two steps carry most of the full run and neither is needed for Table II:
 `08_label_efficiency.py` at about 28 min and `06_domain_features_nonlinear.py`
