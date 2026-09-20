@@ -380,6 +380,8 @@ code/                           every script; the project root is the folder abo
                                     the ranking -> results/pr_auc.csv
     resultados.py                   Table II and the Results paragraph, generated and
                                     spliced -> paper/tabla2.tex, paper/resultados.tex
+    siete.py                        the seven sentences of Section IV, generated from
+                                    the manuscript into PROTOCOLO.md (needs the .tex)
     checkpoint_datos.py             live data checkpoint (integrity evidence)
     run_all.py                      one-command reproducible pipeline (steps 01 to 21)
                                     ---- outside run_all.py, for the human rubric ----
