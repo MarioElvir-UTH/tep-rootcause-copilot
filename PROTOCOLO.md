@@ -215,7 +215,11 @@ shape, which the per-run mean and standard deviation discard by construction.
 - **Training evidence:** one loss figure per run (training and validation loss per
   epoch), saved in `results/curves/` with the model, the seed and the fold in the
   file name. It does not go in the article; it is the evidence that training
-  followed the protocol, and it is the first thing reviewed when grading. The
+  followed the protocol, and it is what a reader who will not run the pipeline
+  can open. All thirty are versioned, knowing they are binary and will therefore
+  differ on any other processor, since the networks land on different weights
+  there. They are the one thing in `results/` that cannot be compared within a
+  tolerance, and that is accepted rather than unnoticed. The
   "stop here" at the minimum of the validation loss is exactly what the early
   stopping declared above implements. Reading the curve is for diagnosis and for
   the discussion, never for re-tuning the number that gets reported: changing the
