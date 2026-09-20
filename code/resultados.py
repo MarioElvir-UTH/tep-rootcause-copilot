@@ -179,6 +179,16 @@ clears = abs(diff) > max(sa, sb)
 
 loop = E[("ablation", "cnn")]
 retr = E[("ablation", "proposed")]
+# [4] Neither gain is printed with the interval it had. "+0.056 +- 0.001" excluded
+# the 0.0541 a Ryzen 7600X returns, and an interval that excludes another machine
+# was too precise to begin with; the Cohen's d beside it fell from 7.00 to 4.45 on
+# that same machine, because d divides by a spread the networks do not reproduce.
+# So both gains are stated to the hundredth every processor agrees on, and the
+# claim rests on the sign of all fifteen folds, which is what reproduces.
+# PROTOCOLO.md records which effect sizes survived and why these two did not.
+PISO = lambda x: float(np.floor(abs(x) * 100) / 100)    # "more than", so it rounds down
+CERCA = lambda x: round(abs(x), 2)                      # "about", so it rounds to nearest
+loop_folds = int((pf["ablation"] - pf["cnn"] > 0).sum())
 c = pro["cost"]
 defer_pro, defer_abl = hl.loc["proposed", "defer_pct"], hl.loc["ablation", "defer_pct"]
 acc_pro, acc_abl = (hl.loc["proposed", "acc_when_generate"],
@@ -211,11 +221,11 @@ S = [
      best_classic["primary_std_over_folds"], diff, diff_sd,
      "larger" if clears else "smaller", int((pf["_d"] > 0).sum() if diff > 0 else (pf["_d"] < 0).sum()))),
  ("what the agent adds, read off the ablation",
-  "The ablation separates the two things the agent does: the loop is worth "
-  "$%+.3f \\pm %.3f$ with $d = %.1f$ over the same network scored once, while retrieval "
-  "costs $%.3f$ on the primary metric, so the proposed method does not beat its own "
-  "ablation there."
-  % (loop.paired_diff, loop.std_over_seeds, abs(loop.cohens_d), abs(retr.paired_diff))),
+  "The ablation separates the two things the agent does: the loop is worth more than "
+  "$%.2f$ macro-$F_1$ over the same network scored once, with the same sign in all %d "
+  "folds, while retrieval costs about $%.2f$ on the primary metric, so the proposed "
+  "method does not beat its own ablation there."
+  % (PISO(loop.paired_diff), loop_folds, CERCA(retr.paired_diff))),
  # The latency is wall-clock and moves with the processor: the same copilot
  # measured 0.197, 0.123 and 0.254 ms on three machines on 2026-09-19. Three
  # decimals in prose would be a number a reproducer cannot match, which is the
