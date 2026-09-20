@@ -213,4 +213,28 @@ for c in worst_faults:
     picked.append(ep)
     print("  %-10s F1 %.3f   primer episodio llamado normal: id %s, semilla %d, pliegue %d"
           % (NAME[c], p.loc[c, "F1"], list(ep.run), ep.seed, ep.fold))
-print("\nwrote results/errors/worst_errors.csv and results/errors/root_alarm_recall.csv")
+# ------------------------------------------- 5, does waiting predict difficulty
+# The article says the correlation between how often a class makes the copilot
+# wait and how well it is then identified is -0.54. That number had no source in
+# this repository and was computed by hand, which is the one thing the rest of
+# the pipeline exists to avoid. It is written here so a reviewer can check it.
+#
+# The scope matters and is the reason a hand computation is easy to get wrong:
+# over the twenty faults it is -0.54, over all twenty-one classes it is -0.56,
+# because normal operation waits in 99.7% of its episodes and is identified at
+# 0.207. The article says "over the twenty faults" and means it.
+esperar = p["moves_window"].to_numpy()
+acierto = p["F1"].to_numpy()
+filas = []
+for etiqueta, m in (("20 faults", p.index != 0), ("all 21 classes", p.index == p.index)):
+    x, y = esperar[m], acierto[m]
+    filas.append({"scope": etiqueta, "n": int(m.sum()),
+                  "pearson_wait_vs_f1": round(float(np.corrcoef(x, y)[0, 1]), 4)})
+pd.DataFrame(filas).to_csv(os.path.join(ERR, "wait_vs_f1.csv"), index=False)
+print("\nESPERAR PREDICE DIFICULTAD?")
+for f in filas:
+    print("  %-16s n=%2d   r = %+.4f" % (f["scope"], f["n"], f["pearson_wait_vs_f1"]))
+print("  (la del articulo es la de las 20 fallas; operacion normal espera en el")
+print("   99.7% de sus episodios y acierta 0.207, asi que incluirla la mueve)")
+
+print("\nwrote results/errors/worst_errors.csv, root_alarm_recall.csv and wait_vs_f1.csv")
