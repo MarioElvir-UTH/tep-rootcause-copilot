@@ -1014,8 +1014,7 @@ does not. On the Ryzen the difference is **larger** and d is smaller.
 
 The four that survive, on root alarm and grounding, survive because their
 dispersion over seeds is 0.0006 and 0.0009 against differences of 0.27 and 0.70,
-so the ratio is carried by the numerator. Two of them are thin: `d > 3` against
-a measured 3.04, and `d > 40` against 40.37.
+so the ratio is carried by the numerator.
 
 ### What the article says as a result
 
@@ -1029,8 +1028,12 @@ claiming a paired difference of `+0.000`, since that machine returns `+0.004`;
 it now says the difference is smaller than either dispersion, true everywhere.
 
 The effect sizes that remain are the four on root alarm and grounding, still as
-bounds, `d > 30`, `d > 3` and `d > 40`. They are reported because the protocol
+bounds: `d > 30`, `d > 2` and `d > 35`. They are reported because the protocol
 declares that an effect size is reported, and they are the ones that reproduce.
+The last two were `d > 3` and `d > 40` until 2026-09-20, against measurements of
+3.04 and 40.37: they held on all three processors by under 1.5 per cent, which
+is not a margin. A bound whose whole purpose is to survive a machine it has not
+met should not be set at the edge of the machines it has.
 
 Figures lowered earlier and still lowered: `+0.056 +- 0.001` became "more than
 0.05", because the stated interval excluded another machine's 0.0541;
