@@ -178,13 +178,20 @@ defer_pro, defer_abl = hl.loc["proposed", "defer_pct"], hl.loc["ablation", "defe
 acc_pro, acc_abl = (hl.loc["proposed", "acc_when_generate"],
                     hl.loc["ablation", "acc_when_generate"])
 
+# The article writes numbers below ten as words, and this paragraph is spliced
+# into it, so the generator follows the same rule. Ten and above stay in digits,
+# which is why the fold count on the next line is still %d.
+_PALABRAS = ["zero", "one", "two", "three", "four", "five",
+             "six", "seven", "eight", "nine"]
+EN_PALABRAS = lambda n: _PALABRAS[n] if 0 <= n < 10 else str(n)
+
 S = [
  ("what is compared, and on what partition",
   "Eight systems are compared on the Tennessee Eastman Process under one protocol: a "
   "trivial floor, three classical models, two networks, and the copilot with its "
   "ablation, all scored on validation folds of a partition frozen by simulation run "
-  "with the test set sealed, over %d folds from %d seeds."
-  % (d["_meta"]["folds_per_seed"] * len(d["_meta"]["seeds"]), len(d["_meta"]["seeds"]))),
+  "with the test set sealed, over %d folds from %s seeds."
+  % (d["_meta"]["folds_per_seed"] * len(d["_meta"]["seeds"]), EN_PALABRAS(len(d["_meta"]["seeds"])))),
  ("the proposed method, with its dispersion",
   "The proposed copilot reaches $%.3f \\pm %.3f$ macro-averaged $F_1$ and "
   "$%.3f \\pm %.3f$ Recall@3."
