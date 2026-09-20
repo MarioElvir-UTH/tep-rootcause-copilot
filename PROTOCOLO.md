@@ -906,9 +906,10 @@ Steps 1 and 2 in that order are the whole point.
 
 ## What reproduces on another machine, and what does not
 
-Measured on five environments: the laptop that wrote the pipeline, Linux
-continuous integration, two Windows virtual machines at different sites and a
-third one on which the 23 steps were run by hand, one at a time, on 2026-09-20.
+Measured on six environments: the laptop that wrote the pipeline, Linux
+continuous integration, three Windows virtual machines at different sites, one
+of them run by hand a step at a time, and a Ryzen 5 7600X desktop, the first
+machine here that is not Intel. The last two ran on 2026-09-20.
 
 **Read this first, because an earlier version of this section was wrong.**
 `14_effect_sizes.py` used to skip its refit whenever `results/per_fold_f1.csv`
@@ -966,40 +967,76 @@ everything that reproduces has none. That is the whole finding.
    either side. `rootchrono_ablation` reads 466 / 1365 here and 461 / 1366
    there; one episode of 1365 moves a recall by 0.004 and Cohen's d by a whole
    unit.
-3. **Suspected, not confirmed:** three of the thirty rows of
-   `label_efficiency_curve.csv` move, and that file is scikit-learn only. At one
-   or two labelled runs per class the models are degenerate by construction, so
-   `argmax` breaks ties that a last bit can invert. The rows that moved were not
-   inspected.
+3. **The solver's convergence tolerance.** Rows of
+   `label_efficiency_curve.csv` move although that file is scikit-learn only:
+   three of thirty on one machine, six on another. This was first guessed the
+   wrong way round, as ties broken by `argmax` where one or two labelled runs
+   per class leave the model degenerate. Inspecting which rows moved says the
+   opposite: **five of the six are logistic regression at the largest budgets**,
+   40, 50, 100, 200 and 400, and none at 1, 2 or 5. `LogisticRegression` runs
+   lbfgs, which stops when the gradient norm falls below `tol`, 1e-4 by default.
+   With little data it converges quickly and unambiguously; with a lot the
+   optimization is long and ends on a plateau where a last bit decides one
+   iteration more or less. The sixth row is `rf` at ten labelled runs per class,
+   where 210 samples leave many splits with identical impurity, which is the
+   tie-break the first guess described, at the small budget rather than the
+   large. The movement is in the fourth decimal, so `0.651` and the crossing
+   between 25 and 50 per cent, the two things the article draws from this
+   curve, both survive.
 
 Floating-point addition is not associative, and NumPy and PyTorch reduce arrays
 in blocks whose size follows the SIMD width and the thread count. That is the
 source of every last-bit difference. Alone it is harmless; it becomes visible
 only where a comparison turns it into a decision.
 
-### The effect sizes, verified on a second processor
+### The effect sizes: the difference reproduces, Cohen's d does not
 
-Run on 2026-09-20 with the cache removed, so these are genuine refits:
+Three processors, all with the cache removed, so all three are genuine refits.
+The third is a Ryzen 5 7600X, the first machine here that is not Intel:
 
-| Comparison | Here | There |
-|---|---|---|
-| cnn against the best classic | +0.0443, d 7.47 | +0.0434, d 7.20 |
-| mlp against the best classic | +0.0004, d 0.04 | +0.0002, d 0.02 |
-| the loop against the network | +0.0558, d 7.00 | +0.0541, d 7.30 |
-| retrieval removed | +0.0114, d 1.32 | +0.0097, d 1.14 |
-| root alarm, knowledge vs time | +0.2700, d 33.63 | +0.2704, d 33.32 |
-| root alarm, symptoms vs time | +0.0244, d 3.10 | +0.0240, d 3.10 |
-| grounding | +0.7020, d 41.04 | +0.6972, d 42.06 |
+| Comparison | i5-13420H | Intel VM | Ryzen 7600X |
+|---|---|---|---|
+| cnn against the best classic | +0.0443, d 7.47 | +0.0434, d 7.20 | +0.0452, **d 5.64** |
+| mlp against the best classic | +0.0004, d 0.04 | +0.0002, d 0.02 | +0.0038, **d 0.37** |
+| raw window against summaries | +0.0439, d 4.11 | +0.0432, d 4.11 | +0.0415, **d 3.46** |
+| the loop against the network | +0.0558, d 7.00 | +0.0541, d 7.30 | +0.0546, **d 4.45** |
+| retrieval removed | +0.0114, d 1.32 | +0.0097, d 1.14 | +0.0111, **d 0.81** |
+| root alarm, knowledge vs time | +0.2700, d 33.63 | +0.2704, d 33.32 | +0.2701, d 34.21 |
+| root alarm, symptoms vs time | +0.0244, d 3.10 | +0.0240, d 3.10 | +0.0240, d 3.04 |
+| grounding | +0.7020, d 41.04 | +0.6972, d 42.06 | +0.7013, d 40.37 |
+
+**Read the columns, not the rows.** Every paired difference holds across all
+three. Every macro-F1 effect size collapses on the third: 7.47 to 5.64, 7.00 to
+4.45, 0.04 to 0.37. The reason is the denominator. Cohen's d divides by a
+dispersion estimated over fifteen folds, and the networks land on different
+weights from machine to machine, so that spread moves even when the difference
+does not. On the Ryzen the difference is **larger** and d is smaller.
+
+The four that survive, on root alarm and grounding, survive because their
+dispersion over seeds is 0.0006 and 0.0009 against differences of 0.27 and 0.70,
+so the ratio is carried by the numerator. Two of them are thin: `d > 3` against
+a measured 3.04, and `d > 40` against 40.37.
 
 ### What the article says as a result
 
-Every effect size is a **bound** (`d > 6`, `d > 7`, `d < 0.1`, `d > 3`,
-`d > 30`, `d > 40`), and all of them hold on both processors. Four figures that
-did not survive were lowered: `+0.056 +- 0.001` became "more than 0.05", because
-the stated interval excluded the other machine's 0.0541; `d = 0.04` became
-`d < 0.1`; `+0.044 +- 0.004` became "more than 0.04"; and the per-class pair
-`0.27` and `0.08`, which come from a single seed and are the most fragile
-numbers in the paper, became "about 0.25" and "below 0.10".
+**The three macro-F1 comparisons report no effect size.** They report the
+paired difference and the fact that it keeps its sign in all fifteen folds,
+which is what the three processors agree on. Cohen's d was written as a bound
+first, `d > 7`, `d > 6` and `d < 0.1`, and the Ryzen broke all three within a
+day; a bound only moves the false precision one decimal to the left when the
+quantity itself does not reproduce. The perceptron's null result also stopped
+claiming a paired difference of `+0.000`, since that machine returns `+0.004`;
+it now says the difference is smaller than either dispersion, true everywhere.
+
+The effect sizes that remain are the four on root alarm and grounding, still as
+bounds, `d > 30`, `d > 3` and `d > 40`. They are reported because the protocol
+declares that an effect size is reported, and they are the ones that reproduce.
+
+Figures lowered earlier and still lowered: `+0.056 +- 0.001` became "more than
+0.05", because the stated interval excluded another machine's 0.0541;
+`+0.044 +- 0.004` became "more than 0.04"; and the per-class pair `0.27` and
+`0.08`, which come from a single seed and are the most fragile numbers in the
+paper, became "about 0.25" and "below 0.10".
 
 What was **not** lowered, deliberately: `+0.089 +- 0.004` and the cells of
 Table II. Their stated dispersion already contains what another machine returns,
