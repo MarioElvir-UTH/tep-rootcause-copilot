@@ -903,128 +903,119 @@ produce.
 
 Steps 1 and 2 in that order are the whole point.
 
-## What reproduces on another machine, and what does not (2026-09-19)
+## What reproduces on another machine, and what does not
 
-The pipeline had only ever run on the machine that wrote it. It was rerun from
-the raw `.RData` on two Windows virtual machines with different processors, by
-cloning the repository and following the README with no help from this file. The
-first ran all 23 steps; the second ran `--tabla2` on a Python 3.14.7 install that
-already had other work on it, rather than a clean one. Afterwards `--tabla2` was
-run once more on this laptop, as the control that had been missing.
+Measured on five environments: the laptop that wrote the pipeline, Linux
+continuous integration, two Windows virtual machines at different sites and a
+third one on which the 23 steps were run by hand, one at a time, on 2026-09-20.
 
-**Read the defect first, because an earlier version of this section got the
-answer wrong.** `14_effect_sizes.py` used to skip its work when
-`results/per_fold_f1.csv` already existed with the expected columns, and that
-file is committed. So a clone reused it and every macro-F1 came back identical
-**because nothing had recomputed them**, not because the machine reproduced
-them. This section was written from that file and claimed sixteen-digit
-agreement across three machines. It was wrong. The guard is gone; a clone now
-refits.
+**Read this first, because an earlier version of this section was wrong.**
+`14_effect_sizes.py` used to skip its refit whenever `results/per_fold_f1.csv`
+already existed with the expected columns, and that file is committed. A clone
+always hit the guard, so every macro-F1 came back identical **because nothing
+had recomputed it**, and this section claimed sixteen-digit agreement on the
+strength of it. The guard is gone.
 
-### Same machine, repeated runs: identical
+The test that settles it was run on 2026-09-20: a **fresh clone** on the
+reference machine, the dataset copied in, `run_all.py --tabla2`, nothing else.
+Five files differ and all five are wall-clock (`cost_table.csv`,
+`dl_comparison.csv`, `agente_comparison.csv`, `tabla2.json` and the cost column
+of `paper/tabla2.tex`). `per_fold_f1.csv` and `effect_sizes.csv` do **not**
+differ, which is the point: with no cache to fall back on, a clone refits from
+nothing and lands on the committed file. The published numbers were right all
+along; what was missing was the ability to show it.
 
-`--tabla2` on this laptop, against the committed run of the day before, returned
-every metric of every row bit for bit, the two networks included:
+### What reproduces exactly
 
-| | Committed | Rerun |
+The frozen partition, which rebuilds to `4cf7e020b0f2faa6` everywhere, and
+everything downstream of scikit-learn alone: `classics_cv_comparison.csv`,
+`baseline_comparison.csv`, `cv_audit_single_vs_cv.csv`, the three
+domain-feature files and the best model's confusion matrix. Byte for byte, and
+the **selected hyperparameters** with them (`C=10.0`, `max_depth=20`,
+`learning_rate=0.05`), so the search reproduces and not only the fit.
+
+### What does not, and by how much
+
+| | This laptop | Another processor |
 |---|---|---|
-| `mlp` macro-F1 | 0.6523502980760862 | 0.6523502980760862 |
-| `cnn` macro-F1 | 0.696241131952885 | 0.696241131952885 |
-| `cnn` `epochs_median` | 44 | 44 |
-| `ablation` macro-F1 | 0.7520774827508462 | 0.7520774827508462 |
+| `cnn` macro-F1 | 0.696241 | 0.695318 |
+| `cnn` Recall@3 | 0.786127 | 0.783079 |
+| `cnn` `epochs_median` | **44** | **42** |
+| `mlp` macro-F1 | 0.652350 | 0.652159 |
+| `ablation` macro-F1 | 0.752077 | 0.749400 |
+| `proposed` macro-F1 | 0.740679 | 0.739700 |
 
-Only wall-clock columns moved: `train_s_median_fold`, `s_per_decision` and the
-cost column of Table II. The seeds hold and there is no hidden randomness. This
-also validates the subset: the nine steps of `--tabla2` produce the same
-`paper/tabla2.tex` as the 23.
+Four cells of Table II change at the precision the paper prints. Every one of
+them moves by less than the fold-to-fold deviation printed beside it, between a
+third and a seventh of it, and no row reorders.
 
-### Another processor: the classics hold, the networks and the agent do not
+### The cause: thresholds, not arithmetic
 
-Unchanged across all three platforms: the frozen partition, which rebuilt to
-`4cf7e020b0f2faa6` on this laptop, on Linux CI and on the virtual machine, and
-everything that depends only on scikit-learn, which is
-`classics_cv_comparison.csv`, `baseline_comparison.csv`,
-`cv_audit_single_vs_cv.csv`, the three domain-feature files and the best model's
-confusion matrix.
+Everything that differs has a **discrete decision** somewhere in it, and
+everything that reproduces has none. That is the whole finding.
 
-Changed:
+1. **Early stopping.** `MAX_EPOCHS, PATIENCE = 60, 10`, and the rule is
+   `if Liv < best`. On a plateau the epoch-to-epoch improvement is minuscule, so
+   the last bits of a mean over thousands of values decide whether an epoch
+   counts as an improvement. The stop is "last improvement plus ten", so it
+   moves. **The perceptron is the control**: it hits the cap of 60 epochs on
+   every machine, never triggering the rule, and it moves by 0.0002 against the
+   convolutional network's 0.0009.
+2. **The three-sigma alarm limit.** An episode sitting on the threshold falls on
+   either side. `rootchrono_ablation` reads 466 / 1365 here and 461 / 1366
+   there; one episode of 1365 moves a recall by 0.004 and Cohen's d by a whole
+   unit.
+3. **Suspected, not confirmed:** three of the thirty rows of
+   `label_efficiency_curve.csv` move, and that file is scikit-learn only. At one
+   or two labelled runs per class the models are degenerate by construction, so
+   `argmax` breaks ties that a last bit can invert. The rows that moved were not
+   inspected.
 
-| | This laptop | The other machine | Table II, three decimals |
-|---|---|---|---|
-| `cnn` macro-F1 | 0.696241 | 0.695318 | 0.696 -> 0.695 |
-| `cnn` Recall@3 | 0.786127 | 0.783079 | 0.786 -> 0.783 |
-| `cnn` `epochs_median` | 44 | 42 | not reported |
-| `mlp` macro-F1 | 0.652350 | 0.652159 | 0.652, unchanged |
-| `ablation` macro-F1 | 0.752077 | 0.749400 | 0.752 -> 0.749 |
-| `proposed` macro-F1 | 0.740679 | 0.739700 | 0.741 -> 0.740 |
+Floating-point addition is not associative, and NumPy and PyTorch reduce arrays
+in blocks whose size follows the SIMD width and the thread count. That is the
+source of every last-bit difference. Alone it is harmless; it becomes visible
+only where a comparison turns it into a decision.
 
-**The `epochs_median` row is the explanation.** Early stopping reads a
-validation score that differs in its low bits, so it fires two epochs earlier,
-and from there the weights are different ones. Nothing is stochastic; the
-arithmetic simply associates differently.
+### The effect sizes, verified on a second processor
 
-Four cells of Table II therefore change at the precision the paper prints. A
-reproducer will see them.
+Run on 2026-09-20 with the cache removed, so these are genuine refits:
 
-### Why this does not threaten any conclusion
-
-Every one of those differences is smaller than the uncertainty the table already
-reports next to the number:
-
-| | Reported as | Moves by |
+| Comparison | Here | There |
 |---|---|---|
-| `cnn` macro-F1 | 0.696 +- 0.006 | 0.0009 |
-| `cnn` Recall@3 | 0.786 +- 0.007 | 0.0031 |
-| `ablation` macro-F1 | 0.752 +- 0.009 | 0.0027 |
+| cnn against the best classic | +0.0443, d 7.47 | +0.0434, d 7.20 |
+| mlp against the best classic | +0.0004, d 0.04 | +0.0002, d 0.02 |
+| the loop against the network | +0.0558, d 7.00 | +0.0541, d 7.30 |
+| retrieval removed | +0.0114, d 1.32 | +0.0097, d 1.14 |
+| root alarm, knowledge vs time | +0.2700, d 33.63 | +0.2704, d 33.32 |
+| root alarm, symptoms vs time | +0.0244, d 3.10 | +0.0240, d 3.10 |
+| grounding | +0.7020, d 41.04 | +0.6972, d 42.06 |
 
-Between a third and a seventh of the fold-to-fold deviation. The ranking of the
-eight rows, every sign and every conclusion are untouched. This is why the
-article states a tolerance rather than an equality: ACM and IEEE define
-reproducibility as agreement *within a stated precision*, and a declared
-tolerance is what that asks for. Claiming exactness would be both unusual and
-trivially falsifiable by the first reviewer with another processor.
+### What the article says as a result
 
-### The root-alarm counts, which move for a different reason
+Every effect size is a **bound** (`d > 6`, `d > 7`, `d < 0.1`, `d > 3`,
+`d > 30`, `d > 40`), and all of them hold on both processors. Four figures that
+did not survive were lowered: `+0.056 +- 0.001` became "more than 0.05", because
+the stated interval excluded the other machine's 0.0541; `d = 0.04` became
+`d < 0.1`; `+0.044 +- 0.004` became "more than 0.04"; and the per-class pair
+`0.27` and `0.08`, which come from a single seed and are the most fragile
+numbers in the paper, became "about 0.25" and "below 0.10".
 
-| Column | This laptop | The other machine |
-|---|---|---|
-| `rootchrono_ablation` | **466 / 1365** | **461 / 1366** |
-| `rootkb_lookup` | 847 / 1365 | 848 / 1366 |
+What was **not** lowered, deliberately: `+0.089 +- 0.004` and the cells of
+Table II. Their stated dispersion already contains what another machine returns,
+and the Discussion declares the boundary in words. The test applied throughout
+was: **does the printed uncertainty exclude what another processor obtains?** If
+it does, the number was too precise. If it does not, it stays.
 
-The denominator moves by one. These are counts over the episodes whose cause the
-source documents, and an episode qualifies by crossing a hard `3 sigma` alarm
-limit computed from a mean and a standard deviation reduced over a large array,
-where the summation order depends on the processor. An episode sitting on the
-threshold falls on either side. **One episode of 1365 moves a recall by 0.004
-and Cohen's d by a whole unit**, because d divides by a standard deviation over
-three seeds and amplifies it.
+### Two practical notes
 
-**The two virtual machines agree with each other, exactly.**
-`results/effect_sizes.csv` came out byte-identical on both, down to the same git
-blob hash `83642c2`, and both differ from this laptop in the same rows. So this
-is not each machine drifting on its own: there are two deterministic outcomes,
-and which one you get is a property of the processor rather than of the run.
+`git status` over-reports on Windows: a rewritten file is flagged for line
+endings alone, and only `git diff` compares content. Seventy files appeared
+modified on 2026-09-20 and almost none had changed.
 
-**Retracted:** an earlier version of this section said PyTorch reproduced
-bitwise on all three machines while NumPy did not, and called the learned step
-the robust one. That rested on the cached file. The networks do not reproduce
-across processors either, and `epochs_median` is the proof.
-
-### What changed in the article
-
-Four figures were reported to a precision the hardware does not support and now
-are not: `d = 33.6` and `d = 41.0` became `d > 30` and `d > 40`, true on both
-machines; the grounding pair went from `1.612 against 0.910` to two decimals,
-and its gap from `+0.702 +- 0.005` to `+0.70 +- 0.01`. One sentence in the
-Discussion now states what reproduces exactly, what reproduces within 0.003 and
-why, because a paper that measures its own reproducibility boundary is worth
-more than one that asserts it.
-
-**And the preflight was too weak.** It used `importlib.util.find_spec`, which
-asks whether a package can be found, not whether it imports. On that machine
-torch was found and then failed to load its DLLs, so the run died at step 11
-after eighty-four minutes, which is exactly what the preflight exists to
-prevent. It now imports every dependency.
+The preflight used to call `importlib.util.find_spec`, which asks whether a
+package can be found, not whether it imports. On one machine torch was found and
+then failed to load its DLLs, so the run died at step 11 after eighty-four
+minutes. It now imports every dependency.
 
 ## Consistency check (paragraph vs. code vs. table)
 

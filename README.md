@@ -72,20 +72,16 @@ Three claims carry the paper, and each can be checked from a clone:
 - **The split is frozen.** Delete `splits/`, run `python code/02_make_partition.py`,
   and the manifest must hash to `4cf7e020b0f2faa6`. Continuous integration does exactly this on
   every push, on Linux.
-- **No number in the paper was typed by hand.** `python code/resultados.py --check`
-  regenerates Table II, the results paragraph and this README's expected-results
-  table from `results/tabla2.json` and fails if any of them drifted. Note what
-  that command is for: it compares the manuscript against the data, which is the
-  check the authors need. **If you have just run the pipeline yourself, it cannot
-  tell you anything**, because the run already overwrote the generated files with
-  your own output and `--check` would be comparing them against themselves. What
-  a reproducer wants is `git diff`, which compares your run against the committed
-  one. Expect the timings to differ. On the same machine no metric moves at all,
-  networks included. On a different processor the frozen partition and the four
-  classical rows still do not move, while the two networks and the two agent
-  arms move by up to `0.003`, which is less than the fold-to-fold deviation
-  printed beside them: see *What reproduces on another machine* in
-  `PROTOCOLO.md` for the measured table and the cause.
+- **No number in the paper was typed by hand.** `results/tabla2.json` holds every
+  cell of Table II, and `code/resultados.py` renders the table and the Results
+  paragraph from it.
+- **What to compare after a run: Table II and Figure 2.** Those are the claim, and
+  the `±` printed beside every cell is the tolerance. It is the spread over the
+  fifteen folds, and it is wider than anything a change of machine does. On one
+  computer no metric moves at all. On a different processor the two neural rows
+  and the two agent rows move by up to `0.003`, which *What reproduces on another
+  machine* in `PROTOCOLO.md` measures and explains. The timings are wall-clock and
+  differ on every run, including two on the same computer.
 - **The agent is rules, not a language model.** `results/agente_env.json` records
   `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
   the decision log in `results/logs/` shows the four actions with their guards.
@@ -130,8 +126,7 @@ in that order (see the [Fast path](#3-reproduce) below).
 - **Table II itself**: `results/tabla2.json` holds every number of the table, one row
   per model, with the primary and secondary metric given per seed rather than already
   averaged. `resultados.py` turns that file into the LaTeX table and splices it into
-  the manuscript, so no value in Table II is ever typed by hand; `python
-  code/resultados.py --check` compares the two and fails if they have drifted apart.
+  the manuscript, so no value in Table II is ever typed by hand.
 - **The cost column of Table II**: size, training seconds and inference milliseconds
   for all eight rows, measured in one run so they are comparable
   (`results/cost_table.csv`). Size counts what each model stores to make a decision;
@@ -317,11 +312,10 @@ figure (both need the feature cache built by step 04).
 
 Every column here has been checked on three machines with three different
 processors rather than assumed. The sizes, the four classical rows and the
-frozen partition hash are identical on all three. The two neural rows and the
-two agent rows are identical on any one machine and move by up to `0.003` on
-another, which is below the deviation printed beside them; `PROTOCOLO.md` gives
-the measured numbers and explains why early stopping lands on a different
-epoch.
+frozen partition hash come back identical on all three. The two neural rows and
+the two agent rows are identical on any one machine and move by up to `0.003` on
+another, comfortably inside the `±` beside them, which is what that column is
+for. `PROTOCOLO.md` gives the measured numbers.
 
 **The timings are not in this table on purpose.** Training seconds and inference
 milliseconds are wall-clock, they move with machine load even between two runs
