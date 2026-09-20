@@ -248,7 +248,7 @@ machine (Intel Core i5-13420H, 12 threads, CPU only, no GPU):
 | Command | Steps | Time |
 |---|--:|--:|
 | `python code/run_all.py` | 23 | **118 min** |
-| `python code/run_all.py --tabla2` | 8 | **31 min** |
+| `python code/run_all.py --tabla2` | 9 | **31 min** |
 | classics only, the four scripts below | 4 | **18 min** |
 
 Two steps carry most of the full run and neither is needed for Table II:
@@ -267,10 +267,10 @@ per-step time of your own run when it finishes.
 python code/run_all.py --tabla2
 ```
 
-Runs the eight steps the table depends on and stops: the frozen split, the
+Runs the nine steps the table depends on and stops: the frozen split, the
 classics, the two networks, the agent with its ablation, the per-fold metrics,
-every cost cell, the JSON that collects them, and the renderer that writes
-`paper/tabla2.tex`. All eight rows, not four.
+the operator load, every cost cell, the JSON that collects them, and the
+renderer that writes `paper/tabla2.tex`. All eight rows, not four.
 
 It leaves out what the table does not need: the data description, the
 domain-feature analyses, the leakage audit, label efficiency, both figures, the

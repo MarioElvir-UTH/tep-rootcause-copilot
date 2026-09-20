@@ -166,16 +166,22 @@ def preflight():
 #
 #   02 freezes the split          04 classics + the feature cache 17 and 14 need
 #   11 the two networks           12 the agent and its ablation
-#   14 per_fold_f1 / per_fold_recall3      17 every cost cell
-#   19 collects it into tabla2.json        resultados.py renders and splices it
+#   14 per_fold_f1 / per_fold_recall3      15 human_load, which resultados reads
+#   17 every cost cell                     19 collects it into tabla2.json
+#   resultados.py renders and splices the table and the Results paragraph
+#
+# 15 is here because resultados.py reads results/human_load.csv for the last
+# sentence of that paragraph. Without it the subset would regenerate the
+# paragraph from a mix of this run and the committed one, which is exactly the
+# kind of quiet mismatch the pipeline exists to prevent.
 #
 # What it leaves out is the auxiliary analysis, not part of the table: the data
 # description, the domain features, the leakage audit, label efficiency, the
 # figures, the error tables, PR-AUC and the data checkpoint. About 31 min on the
 # reference machine against 118 for everything.
 SOLO_TABLA2 = ["02_make_partition.py", "04_classics_cv.py", "11_train_dl.py",
-               "12_agente_v1.py", "14_effect_sizes.py", "17_cost_table.py",
-               "19_tabla2_json.py", "resultados.py"]
+               "12_agente_v1.py", "14_effect_sizes.py", "15_human_load.py",
+               "17_cost_table.py", "19_tabla2_json.py", "resultados.py"]
 
 
 def elegir_pasos(argv):
