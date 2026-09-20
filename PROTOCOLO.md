@@ -330,7 +330,11 @@ cannot be reproduced by a reviewer running one command.
 - +1 if the true root cause appears among the 3 retrieved documents shown.
 
 Reported as the mean over episodes, with mean +- standard deviation over the 15
-folds, and with the same breakdown for the ablation arm.
+folds. **Superseded, before running, by *Three arms, and a rubric that is not
+allowed to flatter us* below**: the three points are reported one by one and
+never pooled, and for an arm that cites nothing the last two are not applicable
+rather than zero. Pooling them would turn the absence of a citation into a
+defeat and inflate the gain.
 
 ### Confidence signal
 
@@ -345,7 +349,7 @@ Same frozen partition and the same 15 folds (StratifiedGroupKFold by run, k = 5,
 seeds 5, 17, 42), macro-F1 primary and Recall@3 secondary, mean +- standard
 deviation, every statistic fitted inside the fold, test sealed. Cost reported on
 the same run and the same machine: index size, retrieval milliseconds per episode,
-and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
+and the end-to-end copilot latency. Script: `12_agente_v1.py`, added to
 `run_all.py`, so one command still reproduces everything.
 
 > **What this became.** Two details of the paragraph above aged and are corrected
