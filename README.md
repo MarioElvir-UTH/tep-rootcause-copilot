@@ -54,10 +54,10 @@ the paper, with a reason for each, rather than left for a reviewer to notice.
   classifier is still at 53% of its own. A plant can say which alarm started an
   upset long before it can say reliably which fault it was.
 - **The loop is worth more than the retrieval.** Letting the agent advance the
-  window and look again gains +0.056 ± 0.001 macro-F1 (d = 7.0) over scoring the
+  window and look again gains more than 0.05 macro-F1 (d > 6) over scoring the
   same network once.
-- **And retrieval costs 0.011 on the primary metric, which we report rather than
-  bury.** The proposed method reaches 0.741 ± 0.008 against 0.752 ± 0.009 for its
+- **And retrieval costs about 0.01 on the primary metric, which we report rather
+  than bury.** The proposed method reaches 0.741 ± 0.008 against 0.752 ± 0.009 for its
   own ablation. What it buys is not accuracy but independence: classifier and
   retrieval agree on 42.7% of episodes and are then right 94.0% of the time,
   against 60.4% when they disagree, so the copilot can tell the operator when
@@ -86,32 +86,6 @@ Three claims carry the paper, and each can be checked from a clone:
   `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
   the decision log in `results/logs/` shows the four actions with their guards.
   That is why the cost column reports zero tokens.
-
----
-
-## Reproducible baseline: the graded core
-
-Everything here is produced by code in this repository. **What does not run does
-not count.** After placing the data (Section 2), a fresh clone reproduces the
-baseline with a single command:
-
-```bash
-python code/run_all.py
-```
-
-The reproducible baseline is four checkable pieces, each traceable to a script and
-a number:
-
-| Requirement | Where in the repo | Reproduced by | Number |
-|---|---|---|---|
-| Script that **loads and describes** the data | `01_explore_data.py` | step 1 of `run_all.py` | schema, 21 classes, quality checks |
-| **Frozen partition**, committed to the repo | `splits/partition_manifest.csv`, `splits/partition_meta.json` | `02_make_partition.py` (seed 42) | sha256 `4cf7e020b0f2faa6` |
-| **Trivial** baseline, with its number | `results/classics_cv_comparison.csv` | `03_baselines.py`, `04_classics_cv.py` | F1-macro **0.004 ± 0.000** |
-| **Simple model**, with its number | `results/classics_cv_comparison.csv` | `04_classics_cv.py` | Logistic regression **0.652 ± 0.005**; Random forest **0.638 ± 0.005**; Gradient boosting **0.640 ± 0.005** (F1-macro) |
-
-Baseline only, skipping the auxiliary domain-feature analyses (about 18 min): run
-`02_make_partition.py`, `03_baselines.py`, `04_classics_cv.py`, `10_inference_time.py`
-in that order (see the [Fast path](#3-reproduce) below).
 
 ---
 
@@ -275,7 +249,7 @@ It leaves out what the table does not need: the data description, the
 domain-feature analyses, the leakage audit, label efficiency, both figures, the
 error tables, PR-AUC and the data checkpoint. Those need the full run.
 
-**Classics only, no PyTorch (about 18 min):** the four classical rows and their
+**Classics only, no PyTorch (roughly 20 min):** the four classical rows and their
 cost, without the networks or the agent:
 
 ```bash
@@ -325,17 +299,18 @@ worse than no table at all. All three cost values live in Table II of the paper 
 `results/cost_table.csv`, where the header says what they are.
 
 The MLP sees the same 104 features as the classics and ties logistic regression;
-the 1D-CNN sees the raw `20 x 52` window and beats it by 0.044 macro-F1, about
+the 1D-CNN sees the raw `20 x 52` window and beats it by more than 0.04, about
 seven times the fold-to-fold standard deviation. The gain comes from the
 representation, not from the architecture.
 
 The last two rows are the same 1D-CNN placed inside the agent loop, which gains
-0.056 macro-F1 over scoring it once in the ablation and 0.044 in the proposed arm,
+more than 0.05 macro-F1 over scoring it once in the ablation and more than 0.04
+in the proposed arm,
 because the observe action moves the window forward and a later window
 classifies better. The two arms do not move it equally: the ablation moves in
 35% of decisions and the proposed arm in 66%. That gain belongs to the loop and is present
 in both arms, so the ablation does not measure it; what the ablation isolates is
-retrieval, and retrieval costs 0.011 macro-F1. **The proposed method does not beat
+retrieval, and retrieval costs about 0.01 macro-F1. **The proposed method does not beat
 its own ablation on the primary metric.** What retrieval does buy is measured
 separately and reported in the paper. Ordering alarms chronologically identifies
 the root alarm in 0.349 of the episodes whose cause the source documents;
