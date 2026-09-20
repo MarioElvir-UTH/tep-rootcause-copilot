@@ -1080,10 +1080,20 @@ The third is a Ryzen 5 7600X, the first machine here that is not Intel:
 
 **Read the columns, not the rows.** Every paired difference holds across all
 three. Every macro-F1 effect size collapses on the third: 7.47 to 5.64, 7.00 to
-4.45, 0.04 to 0.37. The reason is the denominator. Cohen's d divides by a
-dispersion estimated over fifteen folds, and the networks land on different
-weights from machine to machine, so that spread moves even when the difference
-does not. On the Ryzen the difference is **larger** and d is smaller.
+4.45, 0.04 to 0.37. On the Ryzen the difference is **larger** and d is smaller,
+so the cause is the denominator, and it was measured rather than argued:
+
+| | This laptop | Ryzen 7600X |
+|---|---|---|
+| `ablation` macro-F1 | 0.752 +- **0.0088** | 0.751 +- **0.014** |
+| `proposed` macro-F1 | 0.741 +- **0.0079** | 0.740 +- **0.013** |
+
+The means agree to 0.001. **The dispersion grows by 60 and 64 per cent**, and
+that accounts for the whole collapse: `d` for the loop falls from 7.00 to 4.45,
+a ratio of 0.64, against 1/1.60 = 0.62 predicted by the dispersion alone.
+Cohen's d here divides by a spread estimated from fifteen folds of three seeds,
+the networks land on different weights from machine to machine, and that spread
+is the least portable quantity in the table.
 
 The four that survive, on root alarm and grounding, survive because their
 dispersion over seeds is 0.0006 and 0.0009 against differences of 0.27 and 0.70,
