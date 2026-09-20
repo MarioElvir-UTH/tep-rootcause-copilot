@@ -1,9 +1,9 @@
 row,size,size_is,train_s,inference_ms,source
-Trivial,21,class priors,0.00034600001526996493,6.297143131849312e-05,17_cost_table.py
-Logistic reg.,2205,coefficients and intercepts,6.7933708999771625,0.0011865238137986687,17_cost_table.py
-Random forest,98684,decision nodes over 300 trees,6.192204500024673,0.05411325714417866,17_cost_table.py
-Gradient boost.,67499,decision nodes over 1113 boosted predictors,8.840016299975105,0.03303718095135298,17_cost_table.py
-v1a MLP,9493,trainable parameters,8.165334400022402,0.0003694095205338228,17_cost_table.py
-v1b 1D-CNN,16117,trainable parameters,16.402259800001048,0.006663742857719106,17_cost_table.py
-No agent (abl.),16221,"network and alarm limits, no retrieval",0.0,0.10475693016109999,size here; latency from 12_agente_v1.py
-Copilot v1,18405,"network, alarm limits, document-variable matrix and class signatures",0.0,0.1971079587311,size here; latency from 12_agente_v1.py
+Trivial,21,class priors,0.0003383999573998153,6.0809521181952386e-05,17_cost_table.py
+Logistic reg.,2205,coefficients and intercepts,2.983004899986554,0.0011976476193272642,17_cost_table.py
+Random forest,98684,decision nodes over 300 trees,6.041128100012429,0.05233869523674782,17_cost_table.py
+Gradient boost.,67499,decision nodes over 1113 boosted predictors,8.540899200015701,0.032326609522680794,17_cost_table.py
+v1a MLP,9493,trainable parameters,7.676390199980233,0.0003719428565264458,17_cost_table.py
+v1b 1D-CNN,16117,trainable parameters,15.573058000009041,0.006618904764764011,17_cost_table.py
+No agent (abl.),16221,"network and alarm limits, no retrieval",0.0,0.0975137015930303,size here; latency from 12_agente_v1.py
+Copilot v1,18405,"network, alarm limits, document-variable matrix and class signatures",0.0,0.18995806984119998,size here; latency from 12_agente_v1.py
