@@ -32,7 +32,8 @@ into the `.tex` between two markers. The caption stays in the manuscript, becaus
 the prose belongs to the authors and the numbers belong to the run.
 
 ```
-python code/resultados.py      write the table and the paragraph, splice them
+python code/resultados.py      write the table, the Results paragraph and the
+                               rubric sentence, and splice all three in
 python code/resultados.py --check   compare only, non-zero if the paper has drifted
 ```
 
@@ -369,6 +370,17 @@ and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
 > can be compared: stored numbers, training seconds and inference milliseconds
 > per episode, which for this row are 18,405, 0 and 0.184. The retrieval time is
 > inside that last figure rather than beside it.
+
+> **And that third figure aged too, noted 2026-09-21.** `0.184` was the
+> measurement when the note above was written. The committed table now reads
+> `0.190`, and the same row returned 0.197, 0.123 and 0.254 ms on three other
+> machines on 2026-09-19. It is not corrected in place, by this file's own rule,
+> and it is not restated with a fresher value either, because a fresher value
+> would age the same way: **inference latency is wall-clock and belongs in
+> `results/cost_table.csv` and in Table II, not in prose.** That is why Section IV
+> of the article stopped quoting training seconds on 2026-09-18, and the top-level
+> README dropped this same figure on 2026-09-21. The two numbers beside it,
+> 18,405 stored and 0 training seconds, do reproduce.
 
 > **A Week 3 note, checked against what was built. Recorded 2026-09-17.** The
 > note was never sent at the time. It came from a list titled "what gets
@@ -969,6 +981,65 @@ produce.
 > **H1's mechanical part is machine-enforced before rating**, so a high H1 is not
 > evidence about the copilot, and what H1 still measures is the part no script can
 > settle, one cause and two alternatives in that order.
+
+> **What the sheets showed, recorded on 2026-09-21, after both came back.**
+> **No item reaches agreement beyond chance**, and every 95% interval on kappa
+> contains zero. The point estimates are in `acuerdo.csv` and are not copied
+> here, so this file cannot drift from them.
+>
+> **One thing this section anticipated did not happen.** The "Agreement" note
+> above expected kappa to be UNDEFINED on H2, because both raters would answer
+> yes to every text. Only one did. The other varied, so expected agreement is not
+> 1 and kappa is **defined and exactly zero** on H2 and on H3. That is the worse
+> of the two readings: undefined means it cannot be computed, zero means it was
+> computed and it is chance. Their `[0, 0]` interval is an **artifact, not
+> precision**: one rater is constant in every resample, so kappa is zero in all
+> ten thousand. The article therefore states that every interval contains zero
+> and prints no interval of its own.
+>
+> **Part of the disagreement is structural, and part is not.** On H1, H2 and H3
+> it concentrates on the twelve episodes where the copilot defers or reports a
+> flood: one rater marked all twelve yes on both H1 and H2, the other five of
+> twelve on each. The cleanest case is H3. The draw note above says classifier and retrieval
+> disagree on twelve of the thirty, "so H3 has something to measure on twelve",
+> and that is how one rater read it, marking it on eight of those nine deferrals
+> and on four of the fourteen correct `generate` texts. The other read the
+> conditional as satisfied wherever nothing was hidden, and marked all thirty.
+> **This section never said which of the two readings it meant**, and that is the
+> defect: both follow from the sentence as written.
+>
+> On H4 the effect is different and worth naming. One rater's H4 matches the
+> copilot's own action in 29 of the 30 texts, which lands near the trap "The trap
+> this design avoids" describes, an item that re-measures something already in
+> Table II. His answer is not wrong, since the right response to a text that
+> declines to commit is not to act on it. The item simply has almost no variance
+> left beyond the stratum, and the strata were fixed at 14, 4, 9 and 3 on purpose.
+>
+> **Inside the eighteen episodes the copilot does commit to, no rule was found.**
+> `texto_04` and `texto_14` carry the same sentence word for word, down to "la
+> segunda hipotesis del clasificador", and one rater marked them 1 and 0. The
+> pair `texto_13` and `texto_10` is nearly as close and splits the same way. Four
+> textual markers over the eighteen divide 2-2, 5-5 and 3-3, and a runs count of
+> 17 against 16 expected rules out a criterion drifting between sessions. So the
+> stratum story explains part of this and not all of it, and the article claims
+> only what is measured.
+>
+> **One conversation, held after the results were seen, and declared as such.**
+> Asked what he understood H3 to mean, without being shown any sheet or number,
+> one rater described a rule that matches his own column in 9 of 30 texts; its
+> inverse matches in 21. Shown `texto_04` and `texto_14` again, he marked both 1,
+> reproducing one of his two original marks. This is evidence about the
+> instrument, not about the texts, and it is recorded rather than acted on.
+>
+> **What was NOT done, and will not be.** The sheets are not rescored and the
+> items are not reissued with the vacuous case defined. Both would be fixing the
+> instrument after seeing the results, which is the failure this file exists to
+> prevent. The contrast is the H5 correction recorded above: that one is
+> legitimate precisely because it happened before anyone rated, and it says so
+> and gives up the claim it costs. The consequence is that **the rubric is
+> reported as an instrument that did not hold**, not as a measurement of
+> explanation quality, and the operator study it was meant to prepare stays
+> declared and unmeasured.
 
 ### Order of operations
 

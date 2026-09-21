@@ -72,9 +72,10 @@ Three claims carry the paper, and each can be checked from a clone:
 - **The split is frozen.** Delete `splits/`, run `python code/02_make_partition.py`,
   and the manifest must hash to `4cf7e020b0f2faa6`. Continuous integration does exactly this on
   every push, on Linux.
-- **No number in the paper was typed by hand.** `results/tabla2.json` holds every
-  cell of Table II, and `code/resultados.py` renders the table and the Results
-  paragraph from it.
+- **No number in the paper was typed by hand.** `code/resultados.py` writes three
+  regions of the manuscript and splices them in: Table II and the Results
+  paragraph, both from `results/tabla2.json`, and the human-rubric sentence, from
+  `results/rubrica_humana/acuerdo.csv`.
 - **What to compare after a run: Table II and Figure 2.** Those are the claim, and
   the `±` printed beside every cell is the tolerance. It is the spread over the
   fifteen folds, and it is wider than anything a change of machine does. On one
@@ -220,7 +221,6 @@ Core i5-13420H, 12 threads, CPU only, no GPU):
 |---|--:|--:|
 | `python code/run_all.py` | 23 | **~2 h** |
 | `python code/run_all.py --tabla2` | 9 | **~40 min** |
-| classics only, the four scripts below | 4 | **~20 min** |
 
 **These are estimates, not numbers to match.** They are wall-clock on the
 machine named above, and they move with the processor and with the load. They
@@ -242,25 +242,12 @@ python code/run_all.py --tabla2
 Runs the nine steps the table depends on and stops: the frozen split, the
 classics, the two networks, the agent with its ablation, the per-fold metrics,
 the operator load, every cost cell, the JSON that collects them, and the
-renderer that writes `paper/tabla2.tex`. All eight rows, not four.
+renderer that writes `paper/tabla2.tex`. All eight rows of the table, not only
+the classical ones.
 
 It leaves out what the table does not need: the data description, the
 domain-feature analyses, the leakage audit, label efficiency, both figures, the
 error tables, PR-AUC and the data checkpoint. Those need the full run.
-
-**Classics only, no PyTorch (roughly 20 min):** the four classical rows and their
-cost, without the networks or the agent:
-
-```bash
-python code/02_make_partition.py   # freeze the by-run split (seed 42)
-python code/03_baselines.py        # trivial + RF on the frozen split
-python code/04_classics_cv.py      # logistic + RF + gradient boosting, grouped CV
-python code/10_inference_time.py   # training time + inference latency
-```
-
-This produces `results/classics_cv_comparison.csv`, which is where the first four
-rows of Table II come from, but it does not build the table: that needs the
-networks and the agent, so use `--tabla2` above.
 
 Add `08_label_efficiency.py` then `09_plot_label_efficiency.py` to regenerate the
 figure (both need the feature cache built by step 04).
@@ -358,12 +345,15 @@ code/                           every script; the project root is the folder abo
                                     normal -> results/errors/case_separation.csv
     21_pr_auc.py                    PR-AUC for every row of Table II, as a check on
                                     the ranking -> results/pr_auc.csv
-    resultados.py                   Table II and the Results paragraph, generated and
-                                    spliced -> paper/tabla2.tex, paper/resultados.tex
+    resultados.py                   Table II, the Results paragraph and the rubric
+                                    sentence, generated and spliced -> paper/tabla2.tex,
+                                    paper/resultados.tex, paper/rubrica.tex
     siete.py                        the seven sentences of Section IV, generated from
-                                    the manuscript into PROTOCOLO.md (needs the .tex)
+                                    the manuscript into PROTOCOLO.md; needs the .tex,
+                                    so it is not one of the 23 steps either
     checkpoint_datos.py             live data checkpoint (integrity evidence)
-    run_all.py                      one-command reproducible pipeline (steps 01 to 21)
+    run_all.py                      one-command reproducible pipeline: all 23 steps,
+                                    which includes resultados.py and the checkpoint
                                     ---- outside run_all.py, for the human rubric ----
     22_muestra_rubrica.py           draw the 30 episodes under the pre-registered rule
                                     -> results/rubrica_humana/
@@ -380,7 +370,8 @@ prompts/                        fixed reasoning prompt, declared and not execute
 splits/                         frozen partition manifest + metadata (committed)
 results/                        result tables (CSV), env stamps (JSON), figure (PDF/PNG)
 results/rubrica_humana/         the human rubric: sample, the 30 texts, the package
-                                each rater receives, and the blank scoring sheets
+                                each rater received, both filled sheets, and the
+                                agreement computed from them
 ```
 
 The scripts live in `code/` and the data does not: each one derives the project
@@ -416,6 +407,7 @@ than positional, so this is the map:
 | Table II, as a table you can open | `paper/tabla2.csv`, full precision | `resultados.py` |
 | Section V, the Results paragraph | `paper/resultados.tex`, spliced into the manuscript | `resultados.py` |
 | The same paragraph, sentence by sentence | `paper/resultados.md` | `resultados.py` |
+| Section V, the human-rubric sentence | `paper/rubrica.tex`, spliced into the manuscript | `resultados.py` |
 | Figure 1, the architecture | `results/architecture_loop.pdf` | `13_plot_architecture.py` |
 | Figure 2, the main figure | `results/label_efficiency_curve.pdf` | `09_plot_label_efficiency.py` |
 | The curve behind Figure 2, classics | `results/label_efficiency_curve.csv` | `08_label_efficiency.py` |
@@ -430,11 +422,17 @@ than positional, so this is the map:
 | How far apart the costly cases are | `results/errors/case_separation.csv` | `20_case_separation.py` |
 | PR-AUC for every row, as a check | `results/pr_auc.csv`, `results/pr_auc_per_fold.csv` | `21_pr_auc.py` |
 | The agent's score vector per episode | `results/agent_scores.npz` | `12_agente_v1.py` |
+| Human rubric, agreement per item | `results/rubrica_humana/acuerdo.csv` | `24_acuerdo_rubrica.py` |
+| Human rubric, the same per stratum | `results/rubrica_humana/acuerdo_por_estrato.csv` | `24_acuerdo_rubrica.py` |
+| Human rubric, what each rater marked | `results/rubrica_humana/hoja_josue.csv`, `hoja_christian.csv` | two people, by hand |
 
-`python code/resultados.py --check` compares both the table and the Results paragraph in
-the manuscript against what the data generates, and exits non-zero if either differs. It exists because they did
-drift once: seven of the eight cost cells had stopped matching their sources, and
-the cause was that the table lived in the manuscript as text.
+`python code/resultados.py --check` compares eight things against what the data
+generates, and exits non-zero if any of them differs: the three regions spliced
+into the manuscript, which are Table II, the Results paragraph and the
+human-rubric sentence, the four generated files beside them, and the
+expected-results table of this README. It exists because they did drift once:
+seven of the eight cost cells had stopped matching their sources, and the cause
+was that the table lived in the manuscript as text.
 
 The band of Figure 2 is one standard deviation over the three seed means, not
 over the 15 folds pooled: the folds of one seed share a partition, so pooling
@@ -442,25 +440,35 @@ them mixes the spread of the split with the spread that matters, and every
 comparison elsewhere in the paper averages by seed first. Both are recorded,
 `F1macro_std` and `F1macro_std_over_seeds`, so either can be read.
 
-Two things sit outside the measured path, for different reasons.
+Two things sit outside the one-command path, for different reasons.
 
-The **human rubric**, 30 episodes scored by two raters with their agreement
-reported, is under way rather than pending. The sampling rule was committed
-before the draw, the sample is drawn, the thirty texts are written and the
-package each rater receives is in `results/rubrica_humana/`, which has its own
-README. What is missing is the scoring, which two people do by hand and no
-command can reproduce. The paper still says the rubric and an operator study of
-trust and acceptance "remain declared and unmeasured", and that stays true until
-both sheets come back. Either way it evaluates what the copilot already
-produces, so running it changes no number in Table II.
+The **human rubric** is scored, and the result is negative. Both sheets came
+back, 30 episodes and five binary items each, and they are committed in
+`results/rubrica_humana/` beside the package the raters received, which has its
+own README. `24_acuerdo_rubrica.py` turns the two sheets into `acuerdo.csv` and
+`acuerdo_por_estrato.csv`; it is outside `run_all.py` because the scoring itself
+is two people marking 150 cells by hand, which no command reproduces, while
+everything downstream of the sheets does.
+
+**No item reaches agreement beyond chance.** Every 95% interval on Cohen's kappa
+contains zero, so the rubric is reported as an instrument that did not hold
+rather than as a measurement of explanation quality, and the paper says so in one
+generated sentence. The per-item numbers are in `acuerdo.csv` and are not
+repeated here, because a number typed into this file is exactly what drifted
+before. `PROTOCOLO.md` holds the sampling rule, committed before the draw, and a
+dated note on what the sheets showed. The rubric evaluates what the copilot
+already produces, so none of this changes a number in Table II.
 
 **`prompts/razona.txt`** is deliberate, not pending. It is the prompt a
 language-model variant of the reasoning step would use, and it is never executed:
 the reasoning step is a rule-based template over the retrieved documents, which is
 why the copilot calls no language model and its token count is zero. Executing it
 would not close a gap, it would measure a different system, one with a non-zero
-token count and a latency in seconds rather than the 0.184 ms of the row measured
-here. That belongs in a new row, not in this one.
+token count and a latency in seconds rather than the well under a millisecond
+this row answers in. That belongs in a new row, not in this one. The measured
+figure is in Table II and in `results/cost_table.csv`, and it is not repeated
+here because it is wall-clock: it moves between two runs on one machine and
+further on another.
 
 ## 7. AI assistance declaration
 

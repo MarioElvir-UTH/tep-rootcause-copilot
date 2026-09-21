@@ -12,13 +12,15 @@ steps: the draw is deterministic, the scoring by two people is not.
 
 | File | What it is | Who may open it |
 |---|---|---|
-| `muestra.csv` | the key: which text is which episode, with the true label | **nobody** until both sheets are back |
+| `muestra.csv` | the key: which text is which episode, with the true label | **nobody** until both sheets are back, which they are since 2026-09-21 |
 | `entradas_redaccion.jsonl` | the three inputs `prompts/razona.txt` declares, per episode, with the ground truth removed | whoever drafts, **and the raters** |
-| `redaccion.md` | the drafting brief for step 3, to be run in a separate session | whoever drafts |
+| `redaccion.md` | the drafting brief for step 3, run in a separate session on 2026-09-17 | whoever drafts |
 | `textos/texto_NN.md` | the thirty texts | the raters |
 | `paquete_evaluador.md` | **what a rater is handed**: the thirty texts, what the copilot had in front of it, and the three retrieved documents in full | the raters |
-| `hoja_josue.csv` | blank scoring sheet, shuffled order | Josué Rivera |
-| `hoja_christian.csv` | the same sheet, same order | Christian Barahona |
+| `hoja_josue.csv` | scoring sheet, shuffled order, filled and returned | Josué Rivera |
+| `hoja_christian.csv` | the same sheet, same order, filled and returned | Christian Barahona |
+| `acuerdo.csv` | kappa, raw agreement and both marginals, per item | anyone |
+| `acuerdo_por_estrato.csv` | the rater means and raw agreement per stratum, no kappa | anyone |
 
 The sheets carry a text number and nothing else: no label, no probability, no
 episode id, no indication of whether the copilot was right.
@@ -96,11 +98,30 @@ rule after seeing the result is what the pre-registration exists to prevent:
    project's memory was in scope. All thirty pass `23_verifica_textos.py`, and
    the only thing that session changed in the repository is `textos/`.
 4. Build the package with `python code/25_paquete_evaluador.py`, hand each rater
-   that document and their own sheet, and rate blind. **Pending.** Shuffling is
-   already in the text numbers: they do not follow the strata.
+   that document and their own sheet, and rate blind. **Done**, both sheets
+   returned on 2026-09-21. Shuffling is already in the text numbers: they do not
+   follow the strata.
 5. Run `python code/24_acuerdo_rubrica.py`. It reports Cohen's kappa, raw percent
    agreement and both raters' marginals per item, plus a bootstrap interval, and
    the means per stratum. **It was written before either sheet was filled in**,
    for the same reason the sampling rule was committed before the draw.
    Disagreements are reported as disagreements: there is no third adjudicator,
-   no pooled score and no rubric total.
+   no pooled score and no rubric total. **Run on 2026-09-21** into `acuerdo.csv`
+   and `acuerdo_por_estrato.csv`.
+
+## What came back
+
+**No item reaches agreement beyond chance**, and every 95% interval on kappa
+contains zero. The per-item numbers are in `acuerdo.csv` and are not copied here,
+so this file cannot drift from them.
+
+The rubric is therefore reported as **an instrument that did not hold**, not as a
+measurement of explanation quality, and the article says so in one generated
+sentence. `PROTOCOLO.md` carries the dated note on what the sheets showed: where
+the disagreement is structural, where no rule accounts for it, and the
+conversation with one rater held after the results were seen and declared as
+such.
+
+**The sheets are not rescored and the items are not reissued.** Both would be
+fixing the instrument after seeing the result, which is what the pre-registration
+exists to prevent. What is on record is what the two people marked.

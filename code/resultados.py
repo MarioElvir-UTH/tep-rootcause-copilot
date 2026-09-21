@@ -102,8 +102,8 @@ tabla_csv = "\n".join(csv_rows)
 
 # The manuscript is not in the repository: it lives in Overleaf and is
 # gitignored. A clone therefore has the generated files but not the .tex, so the
-# two spliced regions are skipped there instead of crashing, and --check reports
-# on what it could actually compare.
+# three spliced regions are skipped there instead of crashing, and --check
+# reports on what it could actually compare.
 HAS_TEX = os.path.isfile(TEX)
 if not HAS_TEX:
     print("nota: %s no esta aqui (vive en Overleaf y esta gitignoreado);"
