@@ -1,0 +1,6 @@
+item,pregunta,n,marginal_josue,marginal_christian,acuerdo_crudo,kappa,ic95_bajo,ic95_alto,remuestreos_indefinidos,invertido
+H1,"una causa y dos alternativas, en ese orden, en seis frases o menos",30,0.7333,0.6333,0.5,-0.1421,-0.4286,0.2029,0,False
+H2,el documento citado existe y dice lo que el texto le atribuye,30,1.0,0.6667,0.6667,0.0,0.0,0.0,0,False
+H3,"donde hay discrepancia, el texto la declara en vez de esconderla",30,1.0,0.5,0.5,0.0,0.0,0.0,0,False
+H4,actuarias con esto a las tres de la manana sin otra pregunta,30,0.5667,0.5333,0.6333,0.2601,-0.1039,0.5928,0,False
+H5,el texto afirma algo que la evidencia recuperada no sostiene,30,0.0667,0.4667,0.6,0.1509,0.0,0.3776,0,True
