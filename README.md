@@ -39,8 +39,9 @@ the paper, with a reason for each, rather than left for a reviewer to notice.
 <p align="center">
   <img src="results/label_efficiency_curve.png" width="70%"
        alt="Two panels: macro-F1 against the fraction of labeled runs for three
-            classical models and the copilot, and root-alarm identification on
-            the same budgets for the chronological ordering and two grounded arms">
+            classical models and the label-anchored arm of the copilot, and
+            root-alarm identification on the same budgets for the chronological
+            ordering and two grounded arms">
 </p>
 
 ## What we found
@@ -80,8 +81,8 @@ Three claims carry the paper, and each can be checked from a clone:
   the `±` printed beside every cell is the tolerance. It is the spread over the
   fifteen folds, and it is wider than anything a change of machine does. On one
   computer no metric moves at all. On a different processor the two neural rows
-  and the two agent rows move by up to `0.003`, which *What reproduces on another
-  machine* in `PROTOCOLO.md` measures and explains. The timings are wall-clock and
+  and the two agent rows move by less than the `±` beside them, which *What
+  reproduces on another machine* in `PROTOCOLO.md` measures and explains. The timings are wall-clock and
   differ on every run, including two on the same computer.
 - **The agent is rules, not a language model.** `results/agente_env.json` records
   `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
@@ -117,8 +118,8 @@ Three claims carry the paper, and each can be checked from a clone:
   root-alarm identification on the same budgets, with everything retrained at each
   budget (`results/label_efficiency_curve.{csv,pdf,png}`,
   `results/label_efficiency_agent.csv`). The two panels answer different questions:
-  the rubric saturates with 2.5% of the labels, where the classifier is still at 53%
-  of its own ceiling.
+  root-alarm identification saturates with 2.5% of the labels, where the classifier
+  is still at 53% of its own ceiling.
 - **The architecture figure**: drawn by `13_plot_architecture.py` from
   `results/agente_env.json`, so the diagram cannot drift away from the constants
   the agent actually ran with (`results/architecture_loop.{pdf,png}`).
@@ -277,9 +278,8 @@ The values printed here are the reference machine's, the Intel Core i5-13420H
 of section 1, and every column has been checked on three different processors
 rather than assumed. The sizes, the four classical rows and the
 frozen partition hash come back identical on all three. The two neural rows and
-the two agent rows are identical on any one machine and move by up to `0.003` on
-another, comfortably inside the `±` beside them, which is what that column is
-for. `PROTOCOLO.md` gives the measured numbers.
+the two agent rows are identical on any one machine and move by less than the
+`±` beside them on another, which is what that column is for. `PROTOCOLO.md` gives the measured numbers.
 
 **The timings are not in this table on purpose.** Training seconds and inference
 milliseconds are wall-clock, they move with machine load even between two runs
@@ -348,7 +348,7 @@ code/                           every script; the project root is the folder abo
     resultados.py                   Table II, the Results paragraph and the rubric
                                     sentence, generated and spliced -> paper/tabla2.tex,
                                     paper/resultados.tex, paper/rubrica.tex
-    siete.py                        the seven sentences of Section IV, generated from
+    siete.py                        the seven sentences of Section III-D, generated from
                                     the manuscript into PROTOCOLO.md; needs the .tex,
                                     so it is not one of the 23 steps either
     checkpoint_datos.py             live data checkpoint (integrity evidence)
@@ -405,9 +405,9 @@ than positional, so this is the map:
 | Table II, the numbers | `results/tabla2.json` | `19_tabla2_json.py` |
 | Table II, the LaTeX | `paper/tabla2.tex`, spliced into the manuscript | `resultados.py` |
 | Table II, as a table you can open | `paper/tabla2.csv`, full precision | `resultados.py` |
-| Section V, the Results paragraph | `paper/resultados.tex`, spliced into the manuscript | `resultados.py` |
+| Section IV, the Results paragraph | `paper/resultados.tex`, spliced into the manuscript | `resultados.py` |
 | The same paragraph, sentence by sentence | `paper/resultados.md` | `resultados.py` |
-| Section V, the human-rubric sentence | `paper/rubrica.tex`, spliced into the manuscript | `resultados.py` |
+| Section IV, the human-rubric sentence | `paper/rubrica.tex`, spliced into the manuscript | `resultados.py` |
 | Figure 1, the architecture | `results/architecture_loop.pdf` | `13_plot_architecture.py` |
 | Figure 2, the main figure | `results/label_efficiency_curve.pdf` | `09_plot_label_efficiency.py` |
 | The curve behind Figure 2, classics | `results/label_efficiency_curve.csv` | `08_label_efficiency.py` |

@@ -1,5 +1,5 @@
 """
-The seven sentences of Section IV, copied from the manuscript into PROTOCOLO.md.
+The seven sentences of Section III-D, copied from the manuscript into PROTOCOLO.md.
 
 The direction matters and is the whole point: the .tex is the source, because it
 is the wording that gets reviewed and submitted, and PROTOCOLO receives. Copying
@@ -29,16 +29,17 @@ END = "<!-- END siete -->"
 CHECK = "--check" in sys.argv
 
 # "et al." ends in a period and is not the end of a sentence. Without this the
-# first sentence splits in two and Section IV looks like it has eight.
+# first sentence splits in two and the section looks like it has eight.
 ABREV = ("et al.", "Fig.", "Eq.", "cf.", "e.g.", "i.e.", "vs.", "approx.")
 MARCA = "\x00"
 
 
 def seccion_cuatro(tex):
-    """The body of Section IV, with the LaTeX taken out and nothing else changed."""
+    """The body of Section III-D, with the LaTeX taken out and nothing else changed."""
     L = tex.splitlines()
-    i = next(k for k, l in enumerate(L) if l.startswith("\\section{Experimental Configuration}"))
-    j = next(k for k, l in enumerate(L[i + 1:], i + 1) if l.startswith("\\section{"))
+    i = next(k for k, l in enumerate(L)
+             if l.startswith("\\subsection{Experimental Configuration}"))
+    j = next(k for k, l in enumerate(L[i + 1:], i + 1) if re.match(r"\\(sub)?section\{", l))
     t = " ".join(l for l in L[i + 1:j] if not l.strip().startswith("%"))
 
     t = re.sub(r"\\cite\{[^}]*\}", "", t)          # the protocol copy carries no citations
@@ -100,7 +101,7 @@ def main():
 
     if CHECK:
         ok = tenia == copia.strip()
-        print("las siete frases de PROTOCOLO %s la Seccion IV del manuscrito"
+        print("las siete frases de PROTOCOLO %s la Seccion III-D del manuscrito"
               % ("COINCIDEN con" if ok else "NO coinciden con"))
         if not ok:
             for a, b in zip(tenia.splitlines(), copia.splitlines()):

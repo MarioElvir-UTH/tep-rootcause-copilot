@@ -61,7 +61,7 @@ out = {
         "seeds": SEEDS,
         "folds_per_seed": int(f1.groupby("seed").size().iloc[0]),
         "unit_of_repetition": "seed; each value is the mean over that seed's folds",
-        "dispersion_in_table": "std_over_folds, the convention Section IV declares",
+        "dispersion_in_table": "std_over_folds, the convention Section III-D declares",
         "partition": "frozen by simulation run, test set sealed",
         "reads": ["per_fold_f1.csv", "per_fold_recall3.csv", "cost_table.csv",
                   "agente_comparison.csv"],

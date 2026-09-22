@@ -2,7 +2,8 @@ r"""
 The main figure, in two panels.
 
 Panel A  macro-F1 against the percentage of labeled runs, for the three classical
-         models and for the copilot.
+         models and for the label-anchored arm of the copilot, which scores as
+         the ablation does.
 Panel B  root-alarm identification on the same budgets: ordering alarms by time,
          and ordering them by retrieved evidence in each of the two grounded arms.
 
@@ -39,7 +40,7 @@ STYLE = {
     "logistic": dict(color="#0072B2", marker="^", ls="-",             label="Logistic regression"),
     "rf":       dict(color="#D55E00", marker="s", ls=(0, (4, 2)),     label="Random forest"),
     "hgb":      dict(color="#009E73", marker="o", ls=(0, (1, 2)),     label="Gradient boosting"),
-    "copilot":  dict(color="#000000", marker="D", ls=(0, (6, 2, 1, 2)), label="Copilot"),
+    "copilot":  dict(color="#000000", marker="D", ls=(0, (6, 2, 1, 2)), label="Copilot, label-anchored"),
 }
 STYLE_B = {
     "chrono":   dict(color="#666666", marker="v", ls=(0, (1, 2)),     label="By time"),
