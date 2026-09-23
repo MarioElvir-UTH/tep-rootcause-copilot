@@ -229,7 +229,7 @@ S = [
  # The latency is wall-clock and moves with the processor: the same copilot
  # measured 0.197, 0.123 and 0.254 ms on three machines on 2026-09-19. Three
  # decimals in prose would be a number a reproducer cannot match, which is the
- # reason Section III-D stopped quoting training seconds two days earlier. The
+ # reason Section IV stopped quoting training seconds two days earlier. The
  # exact value for this run stays in Table II and in cost_table.csv; the
  # sentence claims only what survives the move, and the point it carries is
  # that the loop costs nothing perceivable.

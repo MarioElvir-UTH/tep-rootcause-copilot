@@ -348,7 +348,7 @@ code/                           every script; the project root is the folder abo
     resultados.py                   Table II, the Results paragraph and the rubric
                                     sentence, generated and spliced -> paper/tabla2.tex,
                                     paper/resultados.tex, paper/rubrica.tex
-    siete.py                        the seven sentences of Section III-D, generated from
+    siete.py                        the seven sentences of Section IV, generated from
                                     the manuscript into PROTOCOLO.md; needs the .tex,
                                     so it is not one of the 23 steps either
     checkpoint_datos.py             live data checkpoint (integrity evidence)
@@ -405,9 +405,9 @@ than positional, so this is the map:
 | Table II, the numbers | `results/tabla2.json` | `19_tabla2_json.py` |
 | Table II, the LaTeX | `paper/tabla2.tex`, spliced into the manuscript | `resultados.py` |
 | Table II, as a table you can open | `paper/tabla2.csv`, full precision | `resultados.py` |
-| Section IV, the Results paragraph | `paper/resultados.tex`, spliced into the manuscript | `resultados.py` |
+| Section V, the Results paragraph | `paper/resultados.tex`, spliced into the manuscript | `resultados.py` |
 | The same paragraph, sentence by sentence | `paper/resultados.md` | `resultados.py` |
-| Section IV, the human-rubric sentence | `paper/rubrica.tex`, spliced into the manuscript | `resultados.py` |
+| Section V, the human-rubric sentence | `paper/rubrica.tex`, spliced into the manuscript | `resultados.py` |
 | Figure 1, the architecture | `results/architecture_loop.pdf` | `13_plot_architecture.py` |
 | Figure 2, the main figure | `results/label_efficiency_curve.pdf` | `09_plot_label_efficiency.py` |
 | The curve behind Figure 2, classics | `results/label_efficiency_curve.csv` | `08_label_efficiency.py` |
