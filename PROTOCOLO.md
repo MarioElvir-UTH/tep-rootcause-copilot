@@ -130,12 +130,12 @@ model selection on the primary metric and on a seed (0) separate from the
 estimation seeds. (6) Performance is estimated by repeated stratified group
 k-fold cross-validation by run (k = 5; three seeds: 5, 17, 42), reporting the
 mean and standard deviation over the 15 resulting folds; the primary metric is
-the macro-averaged F_1 score, with top-k accuracy reported as Recall@1 and
-Recall@3 and mean reciprocal rank as secondary metrics, and per-episode
-inference latency (in milliseconds) as a cost measure. (7) All experiments run
-on a single machine on CPU (Intel Core i5-13420H, 12 threads) with Python
-3.14.2 and fixed seeds throughout; the code, the frozen partition, and the
-pinned environment (requirements.txt) are available in the project repository
+the macro-averaged F_1 score, with top-k accuracy, reported as Recall@3, as
+the secondary metric, and per-episode inference latency (in milliseconds) as a
+cost measure. (7) All experiments run on a single machine on CPU (Intel Core
+i5-13420H, 12 threads) with Python 3.14.2 and fixed seeds throughout; the
+code, the frozen partition, and the pinned environment (requirements.txt) are
+available in the project repository
 https://github.com/MarioElvir-UTH/tep-rootcause-copilot, and per-model
 training time, seconds rather than hours, is reported per row in Table II.
 <!-- END siete -->
