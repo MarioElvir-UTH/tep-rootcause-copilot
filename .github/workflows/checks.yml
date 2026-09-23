@@ -2,7 +2,7 @@
 #
 # The four TEP .RData files are 1.34 GB and are not redistributed here, so no CI
 # run can execute the pipeline end to end: that needs the download described in
-# section 2 of the README. What CI can do is catch the failures that would waste
+# section 1 of the README. What CI can do is catch the failures that would waste
 # a reader's download, and it does that on every push.
 #
 # The load-bearing check is the partition. 02_make_partition.py derives the run

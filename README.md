@@ -141,36 +141,7 @@ operational validity (latency measurable, real-time faithful).
 
 ---
 
-## 1. Environment
-
-Tested on **Python 3.14.2 (Windows 11)**. `requirements.txt` cannot pin the
-interpreter itself, so use that version (or a virtual environment created from it):
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-Core dependencies: `numpy`, `pandas`, `scikit-learn`, `pyreadr` (reads the `.RData`
-files), `pyarrow` (parquet caches), `matplotlib` (figure). See `requirements.txt`
-for exact pinned versions.
-
-**PyTorch is a second install, and seven of the 23 steps need it.** It is not in
-`requirements.txt` because the CPU build is served from PyTorch's own index
-rather than from PyPI:
-
-```bash
-python -m pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
-```
-
-`run_all.py` checks for it before running anything, so a missing install costs a
-second rather than the hour it takes to reach the first step that imports it.
-
-**Reference machine** for every runtime quoted in this README: Intel Core
-i5-13420H (8 cores / 12 threads), 32 GB RAM, Windows 11, **CPU only, no GPU
-required**. The scripts use all available cores (`N_JOBS = -1`), so wall-clock
-times scale with core count. Results do not: the seeds fix every number.
-
-## 2. Get the data (not stored in this repo)
+## 1. Get the data (not stored in this repo)
 
 The raw TEP simulation data is **not redistributed here**: it is large (~1.34 GB)
 and publicly hosted at its canonical source. Download the four `.RData` files from:
@@ -196,11 +167,37 @@ dataverse_files/
 └── TEP_Faulty_Testing.RData
 ```
 
+## 2. Environment
+
+Tested on **Python 3.14.2 (Windows 11)**. `requirements.txt` cannot pin the
+interpreter itself, so use that version (or a virtual environment created from it).
+The install commands are the first two lines of the block in section 3, so the
+environment and the run are copied together.
+
+Core dependencies: `numpy`, `pandas`, `scikit-learn`, `pyreadr` (reads the `.RData`
+files), `pyarrow` (parquet caches), `matplotlib` (figure). See `requirements.txt`
+for exact pinned versions.
+
+**PyTorch is a second install, and seven of the 23 steps need it.** It is not in
+`requirements.txt` because the CPU build is served from PyTorch's own index
+rather than from PyPI, which is why it is its own line in section 3.
+`run_all.py` checks for it before running anything, so a missing install costs a
+second rather than the hour it takes to reach the first step that imports it.
+
+**Reference machine** for every runtime quoted in this README: Intel Core
+i5-13420H (8 cores / 12 threads), 32 GB RAM, Windows 11, **CPU only, no GPU
+required**. The scripts use all available cores (`N_JOBS = -1`), so wall-clock
+times scale with core count. Results do not: the seeds fix every number.
+
 ## 3. Reproduce
 
-**Everything (one command, 12 CPU threads, no GPU):**
+**Everything, from a clean environment.** Copy the whole block: it installs
+the environment of section 2 and then runs the pipeline, in sequence (12 CPU
+threads, no GPU). The data of section 1 must already be in `dataverse_files/`.
 
 ```bash
+python -m pip install -r requirements.txt
+python -m pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
 python code/run_all.py
 ```
 
@@ -208,10 +205,10 @@ Every push runs `.github/workflows/checks.yml`, which checks what a clone can
 check without the 1.34 GB of raw data: that every script compiles, that the
 pipeline finds all 23 of its steps, that the frozen partition rebuilds to the
 same `4cf7e020b0f2faa6` the paper cites, and that the generated files still
-match `results/tabla2.json`. The full pipeline needs the download in section 2.
+match `results/tabla2.json`. The full pipeline needs the download in section 1.
 
 Runs the 23 steps in dependency order, stops at the first failure, and lists the
-result files produced. Re-running yields identical numbers (fixed seeds + the
+result files produced. Re-running on the same machine yields identical numbers (fixed seeds + the
 frozen partition on disk). The **test set stays sealed throughout**: no
 `*_Testing` file is opened for scoring.
 
@@ -275,7 +272,7 @@ the one place to look. The per-model files it consolidates are
 <!-- END esperados -->
 
 The values printed here are the reference machine's, the Intel Core i5-13420H
-of section 1, and every column has been checked on three different processors
+of section 2, and every column has been checked on three different processors
 rather than assumed. The sizes, the four classical rows and the
 frozen partition hash come back identical on all three. The two neural rows and
 the two agent rows are identical on any one machine and move by less than the

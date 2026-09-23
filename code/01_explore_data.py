@@ -110,5 +110,5 @@ if __name__ == "__main__":
         # and then fail three steps later on a missing cache. Fail here instead.
         print(f"\n!! No data file could be read. Expected them in:\n   {DATA}\n"
               "   Download the four .RData files from the Harvard Dataverse link\n"
-              "   in the README (section 2) and place them there.")
+              "   in the README (section 1) and place them there.")
         sys.exit(1)
