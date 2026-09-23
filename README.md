@@ -187,7 +187,8 @@ second rather than the hour it takes to reach the first step that imports it.
 **Reference machine** for every runtime quoted in this README: Intel Core
 i5-13420H (8 cores / 12 threads), 32 GB RAM, Windows 11, **CPU only, no GPU
 required**. The scripts use all available cores (`N_JOBS = -1`), so wall-clock
-times scale with core count. Results do not: the seeds fix every number.
+times scale with core count. Results do not: on one machine the seeds fix every
+number (section 4 says what moves on another).
 
 ## 3. Reproduce
 
