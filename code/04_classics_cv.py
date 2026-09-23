@@ -13,7 +13,8 @@ Protocol:
     3 seeds (5,17,42) -> mean +/- std. Test not touched.
 Primary metric: macro-F1 (the frozen protocol metric; hyperparameter selection and
 the best-model choice both use it, so what is tuned is what is reported).
-Secondary: Recall@1, Recall@3, MRR. Plus per-class F1 / confusion matrix of the
+Secondary: Recall@3, the one Table II reports; Recall@1 and MRR are computed
+but not reported. Plus per-class F1 / confusion matrix of the
 best model (out-of-fold, seed 42).
 """
 import os, json, platform

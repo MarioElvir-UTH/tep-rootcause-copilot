@@ -95,7 +95,7 @@ Three claims carry the paper, and each can be checked from a clone:
 
 - **Table II**: trivial floor, three classical baselines, two networks (MLP, 1D-CNN),
   and the copilot agent with its ablation
-  (F1-macro primary; Recall@1/Recall@3/MRR secondary; per-episode inference latency as cost).
+  (F1-macro primary; Recall@3 secondary; size, training seconds and per-episode inference latency as cost).
 - **The agent measurements**: root-alarm identification with and without knowledge,
   the decomposed grounding rubric over three arms, and the action distribution
   (`results/agente_comparison.csv`, `results/logs/decisiones_muestra.jsonl`).
