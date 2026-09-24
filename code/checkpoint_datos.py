@@ -11,7 +11,7 @@ Shows, live:
 The simulator is not run here. These are the pre-generated Tennessee Eastman runs
 of Rieth et al. (2017), which ship with their ground truth.
 """
-import os, gc, json, hashlib
+import os, gc, json, hashlib, sys
 import pyreadr
 import pandas as pd
 
@@ -72,19 +72,25 @@ man_path = os.path.join(SPLITS, "partition_manifest.csv")
 meta_path = os.path.join(SPLITS, "partition_meta.json")
 print(f"  file exists: {man_path}  -> {os.path.exists(man_path)}")
 print(f"  file exists: {meta_path}  -> {os.path.exists(meta_path)}")
+integrity = False
 if os.path.exists(man_path) and os.path.exists(meta_path):
     sha = hashlib.sha256(open(man_path, "rb").read()).hexdigest()[:16]
     meta = json.load(open(meta_path, encoding="utf-8"))
+    integrity = sha == meta["manifest_sha256_16"]
     man = pd.read_csv(man_path)
     print(f"  manifest sha256[:16] recomputed = {sha}  |  stored in meta = {meta['manifest_sha256_16']}  "
-          f"-> integrity {'MATCH' if sha == meta['manifest_sha256_16'] else 'MISMATCH'}")
+          f"-> integrity {'MATCH' if integrity else 'MISMATCH'}")
     print(f"  seed = {meta['seed']}  |  split by run (grouping) = {meta['grouping'][:60]}...")
     counts = man.groupby('split').size()
     print(f"  run assignments: total={len(man):,}  train={counts.get('train',0):,}  "
-          f"val={counts.get('val',0):,}  test={counts.get('test',0):,}  (test SEALED, opened once at the end)")
+          f"val={counts.get('val',0):,}  test={counts.get('test',0):,}  (test SEALED: counted above, never scored)")
 
 print("\n" + "=" * 90)
+if not integrity:
+    print("CHECKPOINT STATUS: FAILED  -  the frozen partition is missing or its hash does not")
+    print("match partition_meta.json. Rebuild it with code/02_make_partition.py.")
+    print("=" * 90)
+    sys.exit(1)
 print("CHECKPOINT STATUS: PASSED  -  data loads, samples/classes counted, 5 examples shown,")
-print("frozen partition present and integrity-checked. (We are past this checkpoint: baselines")
-print("and a cross-validation audit already run on this same frozen partition.)")
+print("frozen partition present and integrity-checked.")
 print("=" * 90)

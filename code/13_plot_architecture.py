@@ -38,11 +38,11 @@ TAU = env["tau"]                       # confidence guard on generate
 MOVE = env["move"]                     # samples the observe action advances
 FLOOD = env["flood_n"]                 # variables in alarm that trigger alert
 NDOC = env["kb_documents"]             # documents in the knowledge base
-NVAR = 52                              # process variables of the TEP
 W0 = env["read_samples"][0]
 W1 = W0 + env["scored_steps"]
 MIN_PER_SAMPLE = 3                     # TEP samples every 3 minutes
 assert "rules" in env["razona"], "the figure says rule-based; agente_env.json disagrees"
+assert env["max_moves"] == 1, "the figure says observe runs at most once; agente_env.json disagrees"
 
 plt.rcParams.update({
     "font.family": "serif",
@@ -76,9 +76,9 @@ BOXES = [
         ("symptom similarity", "n"),
         ("rules, not an LLM", "i")]),
     dict(key="decide", kind="stage", n="4", title="Decide", lines=[
-        (r"answer if conf $\geq %.2f$" % TAU, "n"),
-        ("else observe, escalate", "n"),
-        ("or defer to the operator", "n")]),
+        ("answer if 2 and 3 agree", "n"),
+        (r"and conf $\geq %.2f$; else" % TAU, "n"),
+        ("observe, escalate, defer", "n")]),
     dict(key="operator", kind="op", n="", title="Operator", lines=[
         ("approves", "n"),
         ("or rejects", "n")]),

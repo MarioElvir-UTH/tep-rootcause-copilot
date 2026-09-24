@@ -46,14 +46,18 @@ the paper, with a reason for each, rather than left for a reviewer to notice.
 
 ## What we found
 
-- **Naming the alarm that started it is where retrieval pays.** Ordering alarms
-  by retrieved evidence identifies the root alarm in 0.619 of the episodes whose
-  cause the source documents, against 0.349 by time alone: a paired gain of
-  +0.270 ± 0.001 with d > 30, and it does not touch the classifier.
-- **The explanation needs far fewer labels than the number does.** It reaches
-  94% of its full-supervision value with 2.5% of the labels, where the
-  classifier is still at 53% of its own. A plant can say which alarm started an
-  upset long before it can say reliably which fault it was.
+- **Naming the alarm that started it is where the documents pay.** Ordering
+  alarms by the retrieved documents that name their variables identifies the
+  root alarm in 0.383 of the episodes with a documented cause, against
+  0.359 by time alone: a paired gain of +0.024 ± 0.001 with d > 2. Citing the
+  documents of the predicted class instead (the label-anchored arm) raises that
+  to 0.619 against 0.349, +0.270 ± 0.001 with d > 30, without changing its
+  macro-F1. Both gains are positive in all 15 folds.
+- **The explanation needs far fewer labels than the number does.** Ordering by
+  the documents of the predicted class reaches 94% of its full-supervision value
+  with 2.5% of the labels, where the classifier is still at 53% of its own. A
+  plant can say which alarm started an upset long before it can say reliably
+  which fault it was.
 - **The loop is worth more than the retrieval.** Letting the agent advance the
   window and look again gains more than 0.05 macro-F1 over scoring the
   same network once.
@@ -72,7 +76,9 @@ Three claims carry the paper, and each can be checked from a clone:
 
 - **The split is frozen.** Delete `splits/`, run `python code/02_make_partition.py`,
   and the manifest must hash to `4cf7e020b0f2faa6`. Continuous integration does exactly this on
-  every push, on Linux.
+  every push, on Linux. The manifest fixes the sealed test set; the
+  cross-validation folds are not in it, they are regenerated from fixed seeds,
+  the same in every script.
 - **No number in the paper was typed by hand.** `code/resultados.py` writes three
   regions of the manuscript and splices them in: Table II and the Results
   paragraph, both from `results/tabla2.json`, and the human-rubric sentence, from
@@ -86,8 +92,10 @@ Three claims carry the paper, and each can be checked from a clone:
   differ on every run, including two on the same computer.
 - **The agent is rules, not a language model.** `results/agente_env.json` records
   `razona: rules (symptom retrieval); prompts/razona.txt is NOT executed`, and
-  the decision log in `results/logs/` shows the four actions with their guards.
-  That is why the cost column reports zero tokens.
+  that is why the cost column reports zero tokens. The decision log in
+  `results/logs/` records the final action of every episode with its guard:
+  generate, defer or alert. Observe is never final; an episode that took it
+  shows `"iteraciones": 2` in its `costo` field, the window moved once.
 
 ---
 
@@ -118,8 +126,9 @@ Three claims carry the paper, and each can be checked from a clone:
   root-alarm identification on the same budgets, with everything retrained at each
   budget (`results/label_efficiency_curve.{csv,pdf,png}`,
   `results/label_efficiency_agent.csv`). The two panels answer different questions:
-  root-alarm identification saturates with 2.5% of the labels, where the classifier
-  is still at 53% of its own ceiling.
+  root-alarm identification with the documents of the predicted class reaches 94%
+  of its ceiling with 2.5% of the labels, where the classifier is still at 53% of
+  its own.
 - **The architecture figure**: drawn by `13_plot_architecture.py` from
   `results/agente_env.json`, so the diagram cannot drift away from the constants
   the agent actually ran with (`results/architecture_loop.{pdf,png}`).
@@ -135,9 +144,10 @@ rule gave an awkward answer and it was reported rather than adjusted.
 **Task definition (deliberately harder than typical TEP benchmarks):** one label
 per simulation run, an early **causal window `[21, 41)`** (decision made with data
 available at the moment, never the future), and **21 root-cause classes**
-(1 normal + 20 faults). This is why F1-macro ≈ 0.65 is expected and is *not*
-comparable to the 90%+ figures reported by full-trajectory TEP studies: it buys
-operational validity (latency measurable, real-time faithful).
+(1 normal + 20 faults). This is why F1-macro ≈ 0.65 is expected of the classical
+baselines, with the network inside the agent loop near 0.75 (section 4), and why
+neither is *comparable* to the 90%+ figures reported by full-trajectory TEP
+studies: it buys operational validity (latency measurable, real-time faithful).
 
 ---
 
@@ -188,7 +198,8 @@ second rather than the hour it takes to reach the first step that imports it.
 i5-13420H (8 cores / 12 threads), 32 GB RAM, Windows 11, **CPU only, no GPU
 required**. The scripts use all available cores (`N_JOBS = -1`), so wall-clock
 times scale with core count. Results do not: on one machine the seeds fix every
-number (section 4 says what moves on another).
+metric (section 4 says what moves on another), and only the wall-clock timings
+of the cost column change between runs.
 
 ## 3. Reproduce
 
@@ -209,9 +220,10 @@ same `4cf7e020b0f2faa6` the paper cites, and that the generated files still
 match `results/tabla2.json`. The full pipeline needs the download in section 1.
 
 Runs the 23 steps in dependency order, stops at the first failure, and lists the
-result files produced. Re-running on the same machine yields identical numbers (fixed seeds + the
-frozen partition on disk). The **test set stays sealed throughout**: no
-`*_Testing` file is opened for scoring.
+result files produced. Re-running on the same machine yields identical metrics
+(fixed seeds + the frozen partition on disk); the training and inference timings
+of the cost column are wall-clock and change on every run. The **test set stays
+sealed throughout**: no `*_Testing` file is opened for scoring.
 
 **How long to expect, roughly.** Wall-clock on the reference machine (Intel
 Core i5-13420H, 12 threads, CPU only, no GPU):
@@ -248,8 +260,11 @@ It leaves out what the table does not need: the data description, the
 domain-feature analyses, the leakage audit, label efficiency, both figures, the
 error tables, PR-AUC and the data checkpoint. Those need the full run.
 
-Add `08_label_efficiency.py` then `09_plot_label_efficiency.py` to regenerate the
-figure (both need the feature cache built by step 04).
+Add `08_label_efficiency.py`, `16_label_efficiency_agent.py` and then
+`09_plot_label_efficiency.py` to regenerate the main figure. Panel A reads the
+curve of 08, which needs the feature cache built by step 04; panel B reads
+`results/label_efficiency_agent.csv` from 16, which needs the run stamps and the
+window cache of steps 11 and 12. Without 16, step 09 draws panel A only.
 
 ## 4. Expected results (frozen)
 
@@ -268,8 +283,8 @@ the one place to look. The per-model files it consolidates are
 | Gradient boosting | 0.640 ± 0.005 | 0.654 ± 0.007 | 67,499 |
 | Neural net v1a (MLP) | 0.652 ± 0.013 | 0.754 ± 0.017 | 9,493 |
 | Neural net v1b (1D-CNN) | 0.696 ± 0.006 | 0.786 ± 0.007 | 16,117 |
-| **No agent (ablation)** | **0.752 ± 0.009** | **0.852 ± 0.010** | 16,221 |
-| Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 18,405 |
+| **No agent (ablation)** | **0.752 ± 0.009** | **0.852 ± 0.010** | 16,325 |
+| Copilot v1 (proposed) | 0.741 ± 0.008 | 0.845 ± 0.009 | 19,601 |
 <!-- END esperados -->
 
 The values printed here are the reference machine's, the Intel Core i5-13420H
@@ -300,7 +315,7 @@ in both arms, so the ablation does not measure it; what the ablation isolates is
 retrieval, and retrieval costs about 0.01 macro-F1. **The proposed method does not beat
 its own ablation on the primary metric.** What retrieval does buy is measured
 separately and reported in the paper. Ordering alarms chronologically identifies
-the root alarm in 0.349 of the episodes whose cause the source documents;
+the root alarm in 0.349 to 0.359 of the episodes with a documented cause;
 weighting each alarm by retrieved evidence raises that to 0.619 for the
 label-anchored arm (`lookup`, the third arm produced by `12_agente_v1.py`) and to
 0.383 for the proposed symptom-based arm, while the same prioritization with no
@@ -328,7 +343,8 @@ code/                           every script; the project root is the folder abo
     07_cv_audit.py                  cross-validation leakage audit (4 checks)
     08_label_efficiency.py          label-efficiency curve (the measurable contribution)
     09_plot_label_efficiency.py     render the main figure, both panels (runs after step 16)
-    10_inference_time.py            training time + inference latency (Table II cost)
+    10_inference_time.py            training time + inference latency of the classics,
+                                    auxiliary -> inference_time.csv (Table II cost is 17)
     11_train_dl.py                  deep learning v1: MLP + 1D-CNN, curves -> results/curves/
     12_agente_v1.py                 copilot agent v1: alarm layer, loop, three arms -> Table II
     13_plot_architecture.py         render the architecture figure (Figure 1) from the run stamp
@@ -340,7 +356,9 @@ code/                           every script; the project root is the folder abo
                                     results/errors/
     19_tabla2_json.py               every number of Table II in one file -> results/tabla2.json
     20_case_separation.py           how far apart the costly cases are, in sigmas of
-                                    normal -> results/errors/case_separation.csv
+                                    normal -> results/errors/case_separation.csv, and
+                                    the twin runs no window can separate ->
+                                    results/errors/twin_runs{,_summary}.csv
     21_pr_auc.py                    PR-AUC for every row of Table II, as a check on
                                     the ranking -> results/pr_auc.csv
     resultados.py                   Table II, the Results paragraph and the rubric
@@ -364,7 +382,7 @@ PROTOCOLO.md                    canonical experimental protocol
 references.bib                  bibliography
 kb/                             reproducible TEP knowledge base (21 documents, JSON)
 results/samples/                qualitative sample, drafted outside the pipeline
-prompts/                        fixed reasoning prompt, declared and not executed (see below)
+prompts/                        fixed reasoning prompt, not executed by the pipeline (see below)
 splits/                         frozen partition manifest + metadata (committed)
 results/                        result tables (CSV), env stamps (JSON), figure (PDF/PNG)
 results/rubrica_humana/         the human rubric: sample, the 30 texts, the package
@@ -385,11 +403,11 @@ above. A 1,000-line sample of the decision log is committed as
 `results/logs/decisiones_muestra.jsonl`.
 
 **The reasoning step is rule-based, not a language model.** `12_agente_v1.py`
-produces the recommendation from a fixed template over the retrieved documents, so
-the pipeline runs offline, with no API key, and nothing in it depends on a
-sampled response.
-`prompts/razona.txt` is the prompt that a language-model version would use; it is
-**declared and not executed**, and no number in this repository depends on it.
+writes no prose: its recommendation is a structured record in the decision log,
+the action, the ranked causes and the cited document, so the pipeline runs
+offline, with no API key, and nothing in it depends on a sampled response.
+`prompts/razona.txt` is the prompt that a language-model version would use; the
+pipeline **does not execute it**, and no number in this repository depends on it.
 `results/agente_env.json` records this.
 
 ## 6. Where each artifact of the paper comes from
@@ -416,19 +434,21 @@ than positional, so this is the map:
 | Confusion matrix, best classic | `results/errors/best_model_confusion_matrix.csv` | `04_classics_cv.py` |
 | Confusion matrix, the 1D-CNN | `results/errors/dl_confusion_matrix.csv` | `11_train_dl.py` |
 | Root-alarm recall at N | `results/errors/root_alarm_recall.csv` | `18_worst_errors.py` |
-| Worst cases, with their episode id | `results/errors/costly_errors.md` | selected by `18_worst_errors.py` |
+| Worst cases, with their episode id | `results/errors/costly_errors.md` | episodes selected and printed by `18_worst_errors.py`, text written by hand |
 | How far apart the costly cases are | `results/errors/case_separation.csv` | `20_case_separation.py` |
+| Twin runs, identical to a normal run, and the Recall@1 ceiling they set | `results/errors/twin_runs.csv`, `twin_runs_summary.csv` | `20_case_separation.py` |
 | PR-AUC for every row, as a check | `results/pr_auc.csv`, `results/pr_auc_per_fold.csv` | `21_pr_auc.py` |
 | The agent's score vector per episode | `results/agent_scores.npz` | `12_agente_v1.py` |
 | Human rubric, agreement per item | `results/rubrica_humana/acuerdo.csv` | `24_acuerdo_rubrica.py` |
 | Human rubric, the same per stratum | `results/rubrica_humana/acuerdo_por_estrato.csv` | `24_acuerdo_rubrica.py` |
 | Human rubric, what each rater marked | `results/rubrica_humana/hoja_josue.csv`, `hoja_christian.csv` | two people, by hand |
 
-`python code/resultados.py --check` compares eight things against what the data
-generates, and exits non-zero if any of them differs: the three regions spliced
-into the manuscript, which are Table II, the Results paragraph and the
-human-rubric sentence, the four generated files beside them, and the
-expected-results table of this README. It exists because they did drift once:
+`python code/resultados.py --check` compares nine things against what the data
+generates, writes none of them, and exits non-zero if any of them differs: the
+three regions spliced into the manuscript, which are Table II, the Results
+paragraph and the human-rubric sentence, the five generated files beside them
+(`paper/tabla2.tex`, `tabla2.csv`, `resultados.md`, `resultados.tex` and
+`rubrica.tex`), and the expected-results table of this README. It exists because they did drift once:
 seven of the eight cost cells had stopped matching their sources, and the cause
 was that the table lived in the manuscript as text.
 
@@ -446,7 +466,12 @@ back, 30 episodes and five binary items each, and they are committed in
 own README. `24_acuerdo_rubrica.py` turns the two sheets into `acuerdo.csv` and
 `acuerdo_por_estrato.csv`; it is outside `run_all.py` because the scoring itself
 is two people marking 150 cells by hand, which no command reproduces, while
-everything downstream of the sheets does.
+everything downstream of the sheets does. The other four rubric scripts are
+outside for the same reason, since they serve that manual step and produce no
+reported number: 22 draws the 30 episodes and writes the blank sheets, 23 checks
+only the form of the 30 texts before the raters see them, 25 builds the package
+each rater was handed, and 26 simulates what n = 30 buys for kappa and writes
+nothing.
 
 **No item reaches agreement beyond chance.** Every 95% interval on Cohen's kappa
 contains zero, so the rubric is reported as an instrument that did not hold

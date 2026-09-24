@@ -1,0 +1,15 @@
+scope,measure,value
+"scored [21,41)",runs in twin groups,1756
+"scored [21,41)",twin groups,488
+"scored [21,41)",ceiling on Recall@1 for any model,0.8792
+"moved [31,51)",runs in twin groups,1300
+"moved [31,51)",twin groups,454
+"moved [31,51)",ceiling on Recall@1 for any model,0.9194
+"proposed arm, twin episodes",episodes (three seeds),5268
+"proposed arm, twin episodes",share deferred,0.9721
+"proposed arm, twin episodes",share that moved the window,0.997
+"proposed arm, twin episodes",top-1 correct,0.1631
+"proposed arm, other episodes",episodes (three seeds),26232
+"proposed arm, other episodes",share deferred,0.513
+"proposed arm, other episodes",share that moved the window,0.5937
+"proposed arm, other episodes",top-1 correct,0.8651

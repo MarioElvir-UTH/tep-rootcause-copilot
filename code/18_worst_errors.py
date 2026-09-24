@@ -1,7 +1,7 @@
 r"""
 The error that costs most: what the macro average hides.
 
-Opens the average four ways:
+Opens the average five ways:
 
   1. the per-class confusion, and the five worst classes with what they are taken for
   2. the split that matters on the floor: a fault read as normal operation, which is
@@ -12,6 +12,8 @@ Opens the average four ways:
   4. the three episodes of the discussion, picked by the rule PROTOCOLO.md declares:
      the first episode in decision-log order, for each of the three worst-classified
      faults the copilot called normal operation
+  5. whether waiting predicts difficulty: the correlation, per class, between how
+     often the copilot moves the window and the F1 it then reaches
 
 Recall@N cannot come from the decision log, which keeps only the first three alarms
 and the single root pick, so the alarm ordering is recomputed here from the saved
@@ -22,6 +24,7 @@ and the same knowledge-driven priority.
 Outputs:
   results/errors/worst_errors.csv      per class: F1, recall, what it is taken for
   results/errors/root_alarm_recall.csv root-alarm recall at N = 1 to 5, per arm
+  results/errors/wait_vs_f1.csv        correlation of waiting with F1, two scopes
 """
 import os
 import json
@@ -185,7 +188,11 @@ for seed in EST_SEEDS:
                 order_c = on[np.lexsort((-pk[i, on], fi[i, on]))]
                 for n in range(1, N_MAX + 1):
                     hits[(arm, n)].append(any(VARS[v] in VAR_OF[c] for v in order_k[:n]))
-                    if arm == "proposed":                       # chronology is the same for both
+                    # the chronological order is taken on the windows the proposed
+                    # arm ends on. The arms move in different episodes, so on the
+                    # lookup arm's windows it comes out slightly different; only
+                    # this one is recorded.
+                    if arm == "proposed":
                         hits[("chrono", n)].append(any(VARS[v] in VAR_OF[c] for v in order_c[:n]))
     print("  semilla %d lista" % seed, flush=True)
 
@@ -210,15 +217,15 @@ for c in worst_faults:
     print("  %-10s F1 %.3f   primer episodio llamado normal: id %s, semilla %d, pliegue %d"
           % (NAME[c], p.loc[c, "F1"], list(ep.run), ep.seed, ep.fold))
 # ------------------------------------------- 5, does waiting predict difficulty
-# The article says the correlation between how often a class makes the copilot
-# wait and how well it is then identified is -0.54. That number had no source in
-# this repository and was computed by hand, which is the one thing the rest of
-# the pipeline exists to avoid. It is written here so a reviewer can check it.
+# The correlation between how often a class makes the copilot wait and how well
+# it is then identified. It was once quoted from a hand computation with no source
+# in this repository, which is the one thing the rest of the pipeline exists to
+# avoid, so it is computed here where a reviewer can check it.
 #
 # The scope matters and is the reason a hand computation is easy to get wrong:
 # over the twenty faults it is -0.54, over all twenty-one classes it is -0.56,
 # because normal operation waits in 99.7% of its episodes and is identified at
-# 0.207. The article says "over the twenty faults" and means it.
+# 0.207. The reference figure is the one over the twenty faults.
 esperar = p["moves_window"].to_numpy()
 acierto = p["F1"].to_numpy()
 filas = []
@@ -230,7 +237,7 @@ pd.DataFrame(filas).to_csv(os.path.join(ERR, "wait_vs_f1.csv"), index=False)
 print("\nESPERAR PREDICE DIFICULTAD?")
 for f in filas:
     print("  %-16s n=%2d   r = %+.4f" % (f["scope"], f["n"], f["pearson_wait_vs_f1"]))
-print("  (la del articulo es la de las 20 fallas; operacion normal espera en el")
+print("  (la de referencia es la de las 20 fallas; operacion normal espera en el")
 print("   99.7% de sus episodios y acierta 0.207, asi que incluirla la mueve)")
 
 print("\nwrote results/errors/worst_errors.csv, root_alarm_recall.csv and wait_vs_f1.csv")

@@ -8,7 +8,10 @@
 # The load-bearing check is the partition. 02_make_partition.py derives the run
 # indices arithmetically from a fixed seed, so it needs no raw data, and the
 # sha256 it produces is the one the paper and PROTOCOLO.md name. If that hash
-# ever changes, every number downstream belongs to a different split.
+# ever changes, the sealed test set is no longer the one the paper names, and
+# neither is the single split that 03 and 07 read. The cross-validation folds
+# behind Table II are not in the manifest: they are drawn from fixed seeds, the
+# same in every script (PROTOCOLO.md, "Where the partition lives").
 name: checks
 
 on:

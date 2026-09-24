@@ -164,9 +164,6 @@ for ext in ("pdf", "png"):
     # whose content did not move: seven bytes of noise in a repository whose
     # claim is that re-running reproduces the results. 13_plot_architecture.py
     # has done this since it was written; this figure was missed.
-    # no bbox_inches="tight": it changes the width and rescales every label,
-    # which is what fixing the font size at 8 pt is for. CreationDate is
-    # dropped so the PDF does not change byte for byte on every run.
     fig.savefig(out, metadata={"CreationDate": None} if ext == "pdf" else None)
     print("wrote", out)
 plt.close(fig)

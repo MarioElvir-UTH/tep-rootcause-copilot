@@ -72,8 +72,9 @@ is the part no script can settle, one cause and two alternatives in that order.
 
 It is **stratified**, not random: fourteen correct answers, four wrong ones, nine
 deferrals and three alerts. The four wrong answers are forced on purpose, because
-the copilot answers correctly on 96.9% of what it answers and a uniform draw would
-have shown the raters almost no errors.
+the copilot answers correctly on 96.9% of what it answers on seed 42, the seed
+the sample is drawn from (97.1% over the three seeds, the figure the paper
+gives), and a uniform draw would have shown the raters almost no errors.
 
 So **the rubric mean is not an estimate of anything about the population of
 episodes**, and neither the article nor the top-level README may present it as

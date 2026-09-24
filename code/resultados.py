@@ -190,6 +190,9 @@ PISO = lambda x: float(np.floor(abs(x) * 100) / 100)    # "more than", so it rou
 CERCA = lambda x: round(abs(x), 2)                      # "about", so it rounds to nearest
 loop_folds = int((pf["ablation"] - pf["cnn"] > 0).sum())
 c = pro["cost"]
+# the cost sentence says "under a millisecond" and "trains nothing" in words, so the
+# words are checked against the run instead of trusted
+assert c["inference_ms_per_episode"] < 1.0 and c["training_seconds"] == 0, c
 defer_pro, defer_abl = hl.loc["proposed", "defer_pct"], hl.loc["ablation", "defer_pct"]
 acc_pro, acc_abl = (hl.loc["proposed", "acc_when_generate"],
                     hl.loc["ablation", "acc_when_generate"])
@@ -257,7 +260,9 @@ for i, (lab, t) in enumerate(S, 1):
     md += ["**%d. %s**" % (i, lab), "", t.replace("\\\\", "\\"), ""]
 
 OUTMD = os.path.join(BASE, "paper", "resultados.md")
-if not CHECK:
+if CHECK:
+    FILES_OK.append(compare(OUTMD, "\n".join(md), "paper/resultados.md"))
+else:
     io.open(OUTMD, "w", encoding="utf-8", newline="\n").write("\n".join(md) + "\n")
     print("wrote paper/resultados.md  (%d sentences)" % len(S))
 
@@ -266,10 +271,12 @@ if not CHECK:
 para = " ".join(t for _, t in S)
 body = "\n".join(textwrap.wrap(para, 78, break_long_words=False, break_on_hyphens=False))
 OUTTEX = os.path.join(BASE, "paper", "resultados.tex")
-io.open(OUTTEX, "w", encoding="utf-8", newline="\n").write(body + "\n")
-
+# --check only compares: writing first and then comparing the file with itself
+# would pass whatever the file held
 if CHECK:
     FILES_OK.append(compare(OUTTEX, body, "paper/resultados.tex"))
+else:
+    io.open(OUTTEX, "w", encoding="utf-8", newline="\n").write(body + "\n")
 
 tex = io.open(TEX, encoding="utf-8").read() if HAS_TEX else ""
 i, j = (tex.find(PBEGIN), tex.find(PEND)) if HAS_TEX else (-1, -1)
@@ -315,9 +322,10 @@ else:
     rub = "\n".join(textwrap.wrap(" ".join(R), 78, break_long_words=False,
                                   break_on_hyphens=False))
     OUTRUB = os.path.join(BASE, "paper", "rubrica.tex")
-    io.open(OUTRUB, "w", encoding="utf-8", newline="\n").write(rub + "\n")
     if CHECK:
         FILES_OK.append(compare(OUTRUB, rub, "paper/rubrica.tex"))
+    else:
+        io.open(OUTRUB, "w", encoding="utf-8", newline="\n").write(rub + "\n")
     tex = io.open(TEX, encoding="utf-8").read() if HAS_TEX else ""
     i, j = (tex.find(RBEGIN), tex.find(REND)) if HAS_TEX else (-1, -1)
     assert (i >= 0 and j > i) or not HAS_TEX, "faltan los marcadores de la rubrica en el manuscrito"

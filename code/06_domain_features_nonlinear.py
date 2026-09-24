@@ -9,10 +9,11 @@ that a linear model cannot, so the domain features (variability, drift, excursio
 deviation-from-normal, control effort) might add value here. This script tests exactly
 that, on the SAME folds, and reports family-level permutation importance per model.
 
-Same contract: partition by run, StratifiedGroupKFold-by-run k=5 (seed 42), the
-normal-baseline (deviation feature) fit INSIDE each fold, test SEALED. Reuses the cached
-base features from 05 (results/dev_domain_features.parquet). Models use the Prompt-1
-winning configs: RF max_depth=20 / n_estimators=300; HistGB learning_rate=0.05.
+Same contract: partition by run, StratifiedGroupKFold-by-run k=5 over seeds 5, 17, 42,
+the normal-baseline (deviation feature) fit INSIDE each fold, test SEALED. Reuses the cached
+base features from 05 (results/dev_domain_features.parquet). Models use the configurations
+04_classics_cv.py selected on seed 0: RF max_depth=20 / n_estimators=300; HistGB
+learning_rate=0.05.
 """
 import os, json, platform
 N_JOBS = -1  # all cores; no thermal cap (laptop holds ~60-65 C under full load)

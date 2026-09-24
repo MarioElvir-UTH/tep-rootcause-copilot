@@ -2,9 +2,10 @@
 How far apart the costly cases are, in sigmas of normal operation.
 
 For each pair of the three episodes, reports the largest difference in any of the
-52 variables in sigmas of normal operation, using the alarm limits of the fold
-each episode was decided in, and the same distance restricted to the variables
-that crossed the band, which is what the copilot acted on.
+52 variables in sigmas of normal operation, using the alarm limits of seed 5,
+fold 0, which is where all three episodes were decided, and the same distance
+restricted to the variables that crossed the band, which is what the copilot
+acted on.
 
 Two control rows put those distances on a scale: 300 random pairs drawn on the
 same simulation run, and 300 drawn from two runs of one fault. Their columns hold
@@ -14,10 +15,18 @@ A figure of the three windows was built and dropped: two of its three panels cam
 out visually identical, because two of the episodes really are almost the same
 data. The number says it better.
 
-Reads:  results/dev_features.parquet, results/dev_windows_ext.npy
-Writes: results/errors/case_separation.csv
+The last section takes the same question to its limit: runs whose window is
+byte-identical to the normal run with the same number, how many there are per
+fault, the ceiling they put on Recall@1, and what the proposed copilot did with
+them.
+
+Reads:  results/dev_features.parquet, results/dev_windows_ext.npy,
+        results/logs/decisiones.jsonl
+Writes: results/errors/case_separation.csv, results/errors/twin_runs.csv,
+        results/errors/twin_runs_summary.csv
 """
 import os
+import json
 
 import numpy as np
 import pandas as pd
@@ -114,3 +123,61 @@ print()
 print("For the control rows the three sigma columns are median, p10 and p90,")
 print("not a maximum: they describe a distribution, not one pair.")
 print("\nwrote results/errors/case_separation.csv")
+
+
+# ---------------- twin runs: separation exactly zero ----------------
+# Rieth et al. seed each simulation run by its number, the same in every class, so
+# a fault that has not yet reached any of the 52 variables leaves its run
+# byte-identical to the normal run with the same number. Those episodes cannot be
+# told apart by any model that reads the window, which puts a ceiling on Recall@1.
+# Measured on the raw windows, in the window that is scored and in the one the
+# observe action moves to.
+def twin_groups(A):
+    """Group runs whose window is byte-identical; keep only groups of two or more."""
+    keys = pd.Series([np.ascontiguousarray(A[i]).tobytes() for i in range(len(A))])
+    size = keys.map(keys.value_counts()).to_numpy()
+    return keys, size > 1
+
+
+windows = {"scored [21,41)": X[:, :, :W], "moved [31,51)": X[:, :, MOVE:MOVE + W]}
+twin_of, summary = {}, []
+for name, A in windows.items():
+    keys, tw = twin_groups(A)
+    n_groups = int((keys[tw].value_counts() > 1).sum())
+    lost = int(tw.sum()) - n_groups             # one run per group can be right
+    twin_of[name] = tw
+    summary += [(name, "runs in twin groups", int(tw.sum())),
+                (name, "twin groups", n_groups),
+                (name, "ceiling on Recall@1 for any model", round(1 - lost / len(y), 4))]
+
+per_fault = []
+for f in sorted(set(y[twin_of["scored [21,41)"]]) - {0}):
+    sel = y == f
+    per_fault.append({"fault": int(f), "runs": int(sel.sum()),
+                      "twin_scored_window": int(twin_of["scored [21,41)"][sel].sum()),
+                      "twin_moved_window": int(twin_of["moved [31,51)"][sel].sum())})
+pd.DataFrame(per_fault).to_csv(os.path.join(ERR, "twin_runs.csv"), index=False)
+
+# what the proposed copilot did with them, from the decision log of step 12
+TWIN = {tuple(k) for k in rid[twin_of["scored [21,41)"]].tolist()}
+cnt = {True: np.zeros(4), False: np.zeros(4)}  # episodes, deferred, window moved, top-1 right
+with open(os.path.join(RES, "logs", "decisiones.jsonl"), encoding="utf-8") as fh:
+    for line in fh:
+        z = json.loads(line)
+        if z["arm"] != "proposed":
+            continue
+        cnt[tuple(z["id"]) in TWIN] += [1, z["decide"]["accion"] == "defer",
+                                        z["costo"]["iteraciones"] == 2,
+                                        z["decide"]["top3"][0] == z["label"]]
+for twin, label in ((True, "twin episodes"), (False, "other episodes")):
+    n, dfr, mov, ok = cnt[twin]
+    summary += [("proposed arm, " + label, "episodes (three seeds)", int(n)),
+                ("proposed arm, " + label, "share deferred", round(dfr / n, 4)),
+                ("proposed arm, " + label, "share that moved the window", round(mov / n, 4)),
+                ("proposed arm, " + label, "top-1 correct", round(ok / n, 4))]
+summ = pd.DataFrame(summary, columns=["scope", "measure", "value"], dtype=object)  # counts stay integers
+summ.to_csv(os.path.join(ERR, "twin_runs_summary.csv"), index=False)
+
+print("\n" + pd.DataFrame(per_fault).to_string(index=False))
+print("\n" + summ.to_string(index=False))
+print("\nwrote results/errors/twin_runs.csv and results/errors/twin_runs_summary.csv")

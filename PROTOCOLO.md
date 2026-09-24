@@ -161,8 +161,23 @@ below instead.
 **Where the partition lives.** The indices are in `splits/partition_manifest.csv`,
 one row per run with its split, and `splits/partition_meta.json` carries the
 sha256 of that manifest (`4cf7e020b0f2faa6`). Both are written by
-`02_make_partition.py` and versioned in the repository; every later script reads
-the manifest and none draws its own split.
+`02_make_partition.py` and versioned in the repository. What the manifest fixes
+is which runs are development and which are the sealed test: the 10,500
+`*_Training` runs against the 10,500 `*_Testing` runs, the same boundary the files
+already draw. Inside the development pool it also holds an 80/20 train/validation
+split, and that split is read only by `03_baselines.py` (the single-split
+baseline), `07_cv_audit.py` (which compares it with cross-validation) and
+`checkpoint_datos.py`. The cross-validation behind Table II and Figure 2 does not
+read it: each script draws its folds with `StratifiedGroupKFold(n_splits=5,
+shuffle=True)`, grouped by run, over all 10,500 development runs, with seeds 5, 17
+and 42 for estimation and 0 for selection. Those folds are not written to disk.
+They are regenerated from the seed, the same in every script under the pinned
+scikit-learn 1.9.1, which is what lets the comparisons be paired fold by fold.
+
+> **Corrected on 2026-09-23.** This paragraph used to end "every later script
+> reads the manifest and none draws its own split", which was false: a review of
+> `code/` found the cross-validation scripts drawing their own folds, as described
+> above. No number changes; only the sentence did.
 
 **Why these metrics, in terms of what an error costs in the plant.**
 
@@ -190,11 +205,17 @@ of the real-DCS extension, not of this protocol.
 
 **The test set: when it opens and what is published.**
 
-- *Status.* **Sealed as of 2026-09-22.** No script loads the `*_Testing` runs,
-  and every number in the paper, Table II and Figure 2 included, is on
-  validation folds. The submitted version says so. Opening it is deferred to
-  the final thesis defense, and so is the choice of procedure below; the
-  course submission reports validation only.
+- *Status.* **Sealed as of 2026-09-22.** No script uses the `*_Testing` runs to
+  train, select or score anything, and every number in the paper, Table II and
+  Figure 2 included, is on validation folds. Two scripts do open those files,
+  only to describe them: `01_explore_data.py` counts their rows, classes, runs,
+  missing values and duplicates, and `checkpoint_datos.py` counts rows, classes
+  and runs per file. Neither computes anything else from the test runs. The
+  submitted version says so. It has not been opened, and the procedure that
+  will produce its numbers has not been chosen yet; both follow the rule below.
+
+  > **Corrected on 2026-09-23.** This item used to say "No script loads the
+  > `*_Testing` runs", which was false for the two scripts named above.
 - *When it opens.* Once, and only after everything that could be tuned is
   frozen in a tagged commit: the eight rows of Table II, their grids and the
   selected configurations, the agent constants ($\tau = 0.50$, fusion weight
@@ -276,6 +297,19 @@ shape, which the per-run mean and standard deviation discard by construction.
   estimation seeds.
 - Estimation: the same 15 folds (StratifiedGroupKFold by run, k = 5, seeds 5, 17,
   42), reported as mean +- std. Test stays sealed.
+
+> **Note added on 2026-09-23, the rules above left as they were written.** Two
+> edges of this contract show in the results, and a reviewer may point at both.
+> The perceptron uses all 60 epochs in the median (`epochs_median` in
+> `results/dl_comparison.csv`, against 44 for the convolutional network), so its
+> early stopping never fired and it may still have been improving when it
+> stopped. And both networks select 0.01, the largest learning rate of the grid,
+> so the grid does not bracket the optimum from above. Neither is changed after
+> seeing the results, by the rule of this section. What it means for the claims:
+> "at equal input the network family buys nothing" holds under this contract; a
+> longer budget or a wider grid for the perceptron is not measured, could move it
+> above the classics, and would be a new pre-registered row rather than a
+> correction of this one.
 - **The seed also fixes the weight initialization**, not only the fold split.
   Each of the seeds 5, 17 and 42 seeds the network's initial weights and the
   training shuffling, so the reported std carries the initialization variance the
@@ -459,6 +493,21 @@ and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
 > README dropped this same figure on 2026-09-21. The two numbers beside it,
 > 18,405 stored and 0 training seconds, do reproduce.
 
+> **Both agent rows were re-measured on 2026-09-23, the notes above left as they
+> were written.** A review of the code found two things the cost column did not
+> count the way the other rows do. The size counted one set of alarm limits and
+> class signatures, but the agent fits both for each of its two windows, the
+> scored one and the one observe moves to, so the ablation stores 16,325 numbers
+> and the proposed arm 19,601; the correlation that groups the alarms shown to the
+> operator is still not counted, because it changes what is displayed, not what is
+> decided. And the latency started after the network had scored the episodes and
+> included writing the decision log, so it measured the loop alone; it now covers
+> perceiving and scoring the episode in both windows plus the loop, without the
+> log, and is the median of the 15 folds rather than their mean. Nothing else
+> moved: the decision log came back byte-identical. The training cell stays 0,
+> since the network is the one trained in its own row. Current values are in
+> `results/cost_table.csv` and Table II, and are not restated here.
+
 > **A Week 3 note, checked against what was built. Recorded 2026-09-17.** The
 > note was never sent at the time. It came from a list titled "what gets
 > implemented tonight, and the minimum version that produces the number", and on
@@ -481,6 +530,10 @@ and the end-to-end copilot latency. Script: `12_copilot_rag.py`, added to
 > are separate on purpose" above is about. If the index came only from the
 > documents, their scarcity would be the binding constraint. It is not, and that
 > is a design decision rather than an accident.
+>
+> *Since 2026-09-23* the cost column counts the signatures of both windows, so
+> retrieval stores 3,276 numbers, recoverable as 19,601 minus 16,325: the same
+> 1,092 from the documents and 2,184 of signatures, 1,092 per window.
 >
 > **"Se declara su tamano" was met by another route.** The corpus size is declared
 > in five places including the article and Figure 1. The index size has no cost
@@ -638,6 +691,14 @@ configured limits. It is declared here and implemented now.
 - **Grouping**: alarms whose variables correlate above **0.8** on normal
   operation, correlation computed **inside the fold**, are reported as one group.
 
+> **Note added on 2026-09-23, the list above left as it was written.** Two of
+> its "used by" clauses did not hold in the code. `12_agente_v1.py` logs the
+> alarm rate (`tasa`, under `percibe`) but computes nothing from it: `puntua` is
+> the network on the window, and the alert guard counts alarming variables
+> against the flood threshold. And `razona` does not use the first three alarms:
+> its query is the deviation profile restricted to every variable that alarmed.
+> The first three are logged (`primeras`), not used to retrieve.
+
 ### What is claimed about alarms, and what is not
 
 - **Root alarm, evaluated on 15 of the 20 faults.** A root alarm counts as correct
@@ -672,6 +733,20 @@ configured limits. It is declared here and implemented now.
   - Reported as `RootAlarmChrono` and `RootAlarmKB`. The alarm reduction metric
     keeps using the chronological order, because grouping is about which alarms
     collapse together and not about which one leads.
+
+  > **Note added on 2026-09-23, the list above left as it was written.** The
+  > knowledge-driven order did not stay in the proposed arm. When the third arm
+  > (`lookup`, below) was added the same day, `12_agente_v1.py` gave it the
+  > knowledge-driven order too, weighting each alarm by the documents of the
+  > predicted class, that is, by the classifier's own class probabilities
+  > (`pr = pc`). That arm reaches 0.619 against 0.349 by time; the proposed arm,
+  > with symptom retrieval, reaches 0.383 against 0.359. Both gains are positive
+  > in all 15 folds. The Results section of the paper always reported the two
+  > apart; since 2026-09-23 the abstract and the conclusions do too, and no
+  > longer credit 0.619 to the proposed arm. One dependency is declared here as
+  > well: the order and the ground truth it is scored against both come from
+  > `variables_documentadas` in `kb/tep_kb.json`, so a ranking that puts its mass
+  > on the true class lifts a documented variable by construction.
 - The mapping rule itself is declared in `kb/tep_kb.json`: only the measured or
   manipulated variables that correspond directly to the stream or equipment the
   source names, never downstream effects, because those would be our inference
@@ -686,6 +761,14 @@ configured limits. It is declared here and implemented now.
 | They disagree, or the top probability is below `tau`, and the window has not been moved yet | **observe**: advance the window by 10 samples and run the loop once more | suggests only |
 | They still disagree after one move | **defer**: hand the operator the 3 hypotheses flagged as uncertain | suggests only |
 | The top hypothesis is normal but the alarm rate is above the flood threshold | **alert**: report that alarms are firing without a diagnosis | suggests only |
+
+> **Note added on 2026-09-23, the table above left as it was written.** In
+> `decide()` of `12_agente_v1.py`, defer is simply "not ready after one move":
+> in the proposed arm ready means agree **and** top probability at least `tau`,
+> so an episode that agrees but stays below 0.50 after the move is also
+> deferred. The ablation and lookup arms have no agreement, and ready is the
+> probability test alone. Alert is checked first, at 10 or more alarming
+> variables.
 
 - `tau` is pre-declared at **0.50**.
 - **The flood threshold is pre-declared at 10 variables in alarm** inside the
@@ -780,6 +863,17 @@ document finder; it is that it is an **independent** opinion, and independence i
 what produces the confidence signal and the answer to RQ1, neither of which a
 lookup keyed by the classifier can give.
 
+> **Note added on 2026-09-23, the two paragraphs above left as they were
+> written.** Two of their statements did not hold in the code. The lookup arm
+> does share the ablation's ranking and actions, so its macro-F1 and Recall@3
+> are identical in every fold, but the citation is not the only thing that
+> changes: it also orders alarms by knowledge, as the note in the RQ1 section
+> explains. And the last sentence predicted that a lookup keyed by the
+> classifier could not answer RQ1; it answers it better than symptom retrieval
+> does, 0.619 against 0.383. The part of the prediction that held is the
+> confidence signal: agreement between classifier and retrieval exists only in
+> the proposed arm.
+
 ### The qualitative sample, drafted outside the pipeline
 
 The reasoning piece is rules, so nothing in the measured path writes prose. To
@@ -824,6 +918,44 @@ The three also share a mechanism, which is what makes them worth a discussion:
 all three ended in `defer` and all three read as a healthy plant. IDV(20) and
 IDV(13) defer in 75% and 94% of their episodes and would repeat the finding
 without adding one.
+
+## Twin runs: episodes no window can separate (found 2026-09-23, after the results)
+
+Not pre-registered: found by a review of the code on 2026-09-23, after every
+number in the paper existed, and reported here because it explains some of them
+rather than changing any. Computed by the last section of `20_case_separation.py`
+into `results/errors/twin_runs.csv` and `twin_runs_summary.csv`.
+
+**What they are.** The dataset of Rieth et al. seeds each simulation run by its
+number, the same in every class. A fault that has not yet reached any of the 52
+variables therefore leaves its run **byte-identical** to the normal run with the
+same number. In the scored window [21,41), 1,756 of the 10,500 development runs
+fall in 488 such groups, always the normal run with one or more of IDV(10),
+IDV(13), IDV(17), IDV(18) and IDV(20): 79, 176, 329, 382 and 302 of their 500
+runs respectively. So the runs are independent within a class, as
+`partition_meta.json` says, but not across classes.
+
+**What it costs.** Within a group any model that reads the window gives one
+answer, so at most one run per group can be right. That caps Recall@1 at 0.879
+for **every** model in Table II, before any modelling choice. In the window the
+observe action moves to, [31,51), the groups shrink to 1,300 runs and the cap
+rises to 0.919: part of what the loop gains is simply half an hour more for
+these faults to show.
+
+**What it does not do.** It inflates nothing. The grouping key is (class, run),
+so twins can sit on both sides of a fold, but they carry different labels, which
+can only add error. The per-class F1 of the five faults, and the low recall of
+normal operation, are partly this floor rather than a failure of the model.
+
+**What the copilot did with them.** In the proposed arm, over the three seeds,
+the twin episodes are deferred to the operator in 97.2% of cases against 51.3%
+for the rest, and move the window in 99.7% against 59.4%. Their top-1 is right
+in 16.3%, about what guessing within a group allows. The copilot hands the
+operator the episodes the data cannot resolve, which is what deferring is for.
+
+**For the test set.** Whether the `*_Testing` runs reuse the same seeds by run
+number is not known yet, and checking it needs only the run ids and the raw
+windows, not a score. It goes on the list for when the test opens.
 
 ## Human rubric: the sampling rule, the raters and the items (written BEFORE drawing the sample)
 
@@ -1074,6 +1206,16 @@ produce.
 > ten thousand. The article therefore states that every interval contains zero
 > and prints no interval of its own.
 >
+> **Note added on 2026-09-23: H5 contains zero only at its edge.** Its interval
+> is `[0.000, 0.378]` around a kappa of 0.151. One rater marked yes on 2 of the 30
+> texts, and 12.9% of the ten thousand resamples happen to leave out both, which
+> makes that rater constant and kappa exactly 0; none of the resamples goes
+> below zero and 87.1% land above it. So "every interval contains zero" is true of
+> H5 through that point mass, not through resamples that disagree in the other
+> direction. It is the weakest of the five nulls, and with two yes answers from
+> one rater it is also the one thirty texts can least settle. Replicated with the
+> seed and resampling of `24_acuerdo_rubrica.py`.
+>
 > **Part of the disagreement is structural, and part is not.** On H1, H2 and H3
 > it concentrates on the twelve episodes where the copilot defers or reports a
 > flood: one rater marked all twelve yes on both H1 and H2, the other five of
@@ -1269,6 +1411,20 @@ The last two were `d > 3` and `d > 40` until 2026-09-20, against measurements of
 3.04 and 40.37: they held on all three processors by under 1.5 per cent, which
 is not a margin. A bound whose whole purpose is to survive a machine it has not
 met should not be set at the edge of the machines it has.
+
+> **Corrected on 2026-09-23, the paragraphs above left as they were written.**
+> Two statements in them do not match `results/effect_sizes.csv`. There are
+> three effect sizes left, not four: root alarm by knowledge against time, by
+> symptoms against time, and grounding. And the reason they survive is not a
+> dispersion over seeds of 0.0006 and 0.0009: `cohens_d` divides the paired
+> difference by the pooled standard deviation of the two arms over the 15
+> folds, which is about 0.008, 0.008 and 0.017 for the three, against
+> differences of 0.270, 0.024 and 0.702. The dispersion over seeds, 0.0005,
+> 0.0007 and 0.0050, is what the `±` after each paired difference in the
+> Discussion reports; since 2026-09-23 the article says so, and it names the
+> denominator of `d`, because a paired `d` (the difference over the deviation
+> of the fold-by-fold differences) would give about 28 for grounding and break
+> `d > 35`.
 
 Figures lowered earlier and still lowered: `+0.056 +- 0.001` became "more than
 0.05", because the stated interval excluded another machine's 0.0541;

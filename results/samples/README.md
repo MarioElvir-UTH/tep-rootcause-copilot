@@ -57,8 +57,7 @@ six sentences, no bullets, the most likely cause and two alternatives in that
 order, the retrieved document cited by name, any disagreement between classifier
 and retrieval stated explicitly rather than hidden, no corrective procedures
 (the TEP corpus contains none), and a closing reminder that the decision belongs
-to the operator. Drafted with an AI assistant, as declared in the README of the
-repository and in the article.
+to the operator. Drafted with an AI assistant, outside the pipeline.
 
 Nothing in these texts asserts anything absent from the log line and the cited
 document in `kb/tep_kb.json`.

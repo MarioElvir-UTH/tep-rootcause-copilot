@@ -1,5 +1,5 @@
 """
-run_all.py - single-command reproducible pipeline (reproducibility rule, point 5).
+run_all.py - single-command reproducible pipeline.
 
 Runs the whole study in dependency order, from the raw TEP .RData files to the
 results tables and the label-efficiency figure. One command, nothing to remember:
@@ -11,24 +11,39 @@ No step count is written here on purpose: the banner prints it from the lists
 below, so it cannot drift from them. The times are wall-clock estimates for
 planning, not measurements the paper rests on.
 
-It stops at the first failing step and names it. Re-running is safe and yields the
-same numbers: fixed seeds, the partition saved to disk, and the feature caches make
-every step deterministic. The test set stays SEALED throughout (no step opens the
-*_Testing files for scoring).
+It stops at the first failing step and names it. Re-running is safe and, on the
+same machine, yields the same metrics: fixed seeds, the partition saved to disk,
+and the feature caches make them deterministic. Wall-clock timings (the cost
+columns) are the exception: they are measured again on every run and change
+with it. The test set stays SEALED throughout (no step opens the *_Testing
+files for scoring).
 
-Dependency order (why this order):
-  01 explore            (standalone; understands the raw data)
-  02 make_partition     -> writes splits/ (needed by 03, 07, checkpoint)
-  03 baselines          (needs the frozen partition)
-  04 classics_cv        -> builds results/dev_features.parquet (needed by 07, 08)
-  05 domain_features    -> builds results/dev_domain_features.parquet (needed by 06)
-  06 domain_nonlinear   (needs 05's cache)
-  07 cv_audit           (needs 04's cache + 02's partition)
-  08 label_efficiency   (needs 04's cache)
-  09 plot               (needs 08's CSV)
-  11 train_dl           (needs 04's cache; extracts + caches the raw windows)
-  12 agente_v1          (needs 11's saved models + kb/; runs the loop and its ablation)
-  checkpoint_datos      (needs 02's partition; live data-checkpoint evidence)
+Dependency order (the order of STEPS, and what each step reads from earlier ones):
+  01 explore            standalone; understands the raw data
+  02 make_partition     -> splits/ (read by 03, 07, checkpoint_datos)
+  03 baselines          splits/
+  04 classics_cv        -> results/dev_features.parquet, the feature cache read by
+                           07, 08, 10, 11, 12, 14, 16, 17, 18, 20, 21
+  05 domain_features    -> results/dev_domain_features.parquet (read by 06)
+  06 domain_nonlinear   05's cache
+  07 cv_audit           04's cache + splits/
+  08 label_efficiency   04's cache
+  10 inference_time     04's cache (auxiliary timing)
+  11 train_dl           04's cache; -> results/models/*.pt, dev_windows.npy, dl_env.json
+  12 agente_v1          04's cache, 11's models, kb/; -> logs/decisiones.jsonl,
+                           agente_comparison.csv, agent_scores.npz, dev_windows_ext.npy
+  13 plot_architecture  12's agente_env.json
+  14 effect_sizes       04's cache, 11's models + windows, 12's log, kb/
+  15 human_load         11's dl_comparison, 12's log + comparison, 14's per_fold_f1
+  16 label_eff_agent    04's cache, 11's dl_env, 12's extended windows + env, kb/
+  17 cost_table         04's cache, 11's windows + env, 12's env + comparison
+  18 worst_errors       04's cache, 11's models, 12's log + windows + env, kb/
+  19 tabla2_json        12's comparison, 14's per-fold files, 17's cost_table.csv
+  20 case_separation    04's cache, 12's extended windows + log
+  21 pr_auc             04's cache, 11's models + windows, 12's agent_scores.npz
+  resultados            19's tabla2.json, 14's effect sizes, 15's human_load.csv
+  09 plot               08's and 16's CSVs, so it runs after 16
+  checkpoint_datos      splits/ (live data-checkpoint evidence)
 """
 import os
 import sys
@@ -50,7 +65,7 @@ STEPS = [
     ("06_domain_features_nonlinear.py", "Do domain features help nonlinear models? (RF/HistGB)"),
     ("07_cv_audit.py",                 "Cross-validation leakage audit (4 checks)"),
     ("08_label_efficiency.py",         "Label-efficiency curve (the measurable contribution)"),
-    ("10_inference_time.py",           "Training time + inference latency (Table II cost)"),
+    ("10_inference_time.py",           "Auxiliary timing of the classics (Table II cost is step 17)"),
     ("11_train_dl.py",                 "Deep learning v1: MLP + 1D-CNN under the pre-registered contract"),
     ("12_agente_v1.py",                "Copilot agent v1 + its ablation (Table II proposed row)"),
     ("13_plot_architecture.py",        "Render the architecture figure (Figure 1) from the run stamp"),
@@ -60,7 +75,7 @@ STEPS = [
     ("17_cost_table.py",               "Every cost cell of Table II, measured in one run"),
     ("18_worst_errors.py",             "The error that costs most: per class, and root-alarm recall at N"),
     ("19_tabla2_json.py",              "Consolidate every number of Table II into results/tabla2.json"),
-    ("20_case_separation.py",          "How far apart the costly cases are, in sigmas of normal"),
+    ("20_case_separation.py",          "How far apart the costly cases are, and the twin runs no window separates"),
     ("21_pr_auc.py",                   "PR-AUC for every row of Table II, as a check on the ranking"),
     ("resultados.py",                  "Generate Table II from that JSON and splice it into the paper"),
     # 09 draws both panels of the main figure, so it runs once 16 has produced the second one.
@@ -73,7 +88,10 @@ RESULT_FILES = [
     "domain_feature_importance.csv", "domain_nonlinear_comparison.csv", "cv_audit_single_vs_cv.csv",
     "label_efficiency_curve.csv", "label_efficiency_curve.pdf", "inference_time.csv",
     "dl_comparison.csv", "errors/dl_confusion_matrix.csv",
-    "agente_comparison.csv", "logs/decisiones.jsonl",
+    "agente_comparison.csv", "logs/decisiones.jsonl", "architecture_loop.pdf",
+    "per_fold_f1.csv", "effect_sizes.csv", "human_load.csv", "label_efficiency_agent.csv",
+    "cost_table.csv", "errors/worst_errors.csv", "tabla2.json", "errors/case_separation.csv", "errors/twin_runs.csv",
+    "pr_auc.csv",
 ]
 
 
@@ -166,10 +184,13 @@ def preflight():
 
 # The shortest path to the whole of Table II: every one of its eight rows, the
 # cost column, and the rendered table, with nothing else. Derived from what the
-# files actually read, not from taste:
+# files actually read, not from taste, with one exception: 02. No later step of
+# the subset reads splits/; 02 is there to rebuild the frozen partition and print
+# its sha256 first, so a partition that moved shows before anything else runs.
 #
-#   02 freezes the split          04 classics + the feature cache 17 and 14 need
-#   11 the two networks           12 the agent and its ablation
+#   02 rebuilds the split, prints its hash
+#   04 classics + the feature cache 17 and 14 need
+#   11 the two networks                    12 the agent and its ablation
 #   14 per_fold_f1 / per_fold_recall3      15 human_load, which resultados reads
 #   17 every cost cell                     19 collects it into tabla2.json
 #   resultados.py renders and splices the table and the Results paragraph

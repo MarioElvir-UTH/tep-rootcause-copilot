@@ -9,19 +9,27 @@ What "size" counts, per row, is what the model stores to make a decision:
   random forest      decision nodes over the 300 trees
   gradient boosting  decision nodes over all boosted predictors
   networks           trainable parameters
-  agent arms         the network, plus the per-variable alarm limits, plus the
-                     retrieval structures that arm actually uses. The ablation has
-                     no retrieval, so it carries neither the document-variable
-                     matrix nor the class signatures; the proposed arm carries both.
+  agent arms         the network, plus what the arm fits for each of its two
+                     windows (the scored one and the one observe moves to): the
+                     per-variable alarm limits, and in the proposed arm the class
+                     signatures too, plus the document-variable matrix, which it
+                     reads once. The ablation has no retrieval, so it carries
+                     neither signatures nor the matrix. The correlation used to
+                     group the alarms shown to the operator is not counted: it
+                     changes what is displayed, not what is decided.
 
 Timing follows 10_inference_time.py so the numbers stay comparable with it:
-  train_s        median wall-clock seconds to fit one model on the whole dev pool
+  train_s        wall-clock seconds to fit one model on the whole dev pool: the
+                 median of 3 fits for the classics (5 for the trivial floor), a
+                 single fit for each network (reps=1), so no median there
   inference_ms   median batch-predict time divided by the batch, which removes the
                  single-call Python overhead and is what actually reproduces
 
 The two agent rows train nothing: they load the network saved for each fold. Their
-per-decision latency is measured by 12_agente_v1.py, which owns the loop, and is
-carried here with its source named rather than measured twice.
+per-episode latency is measured by 12_agente_v1.py, which owns the loop, and is
+carried here with its source named rather than measured twice. It covers what the
+other rows cover, perceiving the episode and scoring it with the network, both
+windows, plus the loop itself; it leaves out writing the decision log.
 
 Run it on an idle machine: wall-clock times move with load.
 
@@ -216,14 +224,15 @@ for kind, label in (("mlp", "v1a MLP"), ("cnn", "v1b 1D-CNN")):
 # They load the network saved for each fold, so nothing is trained. Their latency is
 # measured where the loop lives, in step 12, and is carried here with its source.
 cnn_params = int(sum(p.numel() for p in nets["cnn"][0].parameters()))
-limits = 2 * NVAR                                   # one mean and one sd per variable
+WINDOWS = 2                                         # the scored window and the moved one
+limits = WINDOWS * 2 * NVAR                         # one mean and one sd per variable, per window
 docvar = 21 * NVAR                                  # which document names which variable
-signatures = 21 * NVAR                              # one deviation profile per class
+signatures = WINDOWS * 21 * NVAR                    # one deviation profile per class, per window
 ag = pd.read_csv(os.path.join(RES, "agente_comparison.csv")).set_index("arm")
 for arm, label, extra, what in (
-        ("ablation", "No agent (abl.)", 0, "network and alarm limits, no retrieval"),
+        ("ablation", "No agent (abl.)", 0, "network and alarm limits of both windows, no retrieval"),
         ("proposed", "Copilot v1", docvar + signatures,
-         "network, alarm limits, document-variable matrix and class signatures")):
+         "network, alarm limits and class signatures of both windows, document-variable matrix")):
     rows.append(dict(row=label, size=cnn_params + limits + extra, size_is=what,
                      train_s=0.0, inference_ms=float(ag.loc[arm, "s_per_decision"]) * 1000.0,
                      source="size here; latency from 12_agente_v1.py"))

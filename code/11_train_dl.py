@@ -18,6 +18,8 @@ THE SIX RULES (each one is marked [R#] where it is enforced in the code):
 
 Outputs: results/dl_comparison.csv, results/errors/dl_confusion_matrix.csv,
          results/dl_env.json,
+the trained networks as results/models/{mlp,cnn}_seed<S>_fold<F>.pt (read by 12,
+14, 18 and 21), the raw-window cache results/dev_windows.npy,
 and one loss curve per estimation run in results/curves/.
 """
 import os, json, time, platform, copy

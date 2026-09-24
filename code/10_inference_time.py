@@ -1,14 +1,20 @@
 """
-S2: model cost - training time (seconds) + inference latency (ms) for Table II.
+S2: model cost - training time (seconds) + inference latency (ms) of the classics.
 
-Both are REPRODUCIBLE measures (rule 2):
+AUXILIARY: nothing downstream reads results/inference_time.csv. The cost column
+of Table II is measured by 17_cost_table.py, which follows this timing method.
+
+Both are wall-clock measures, so they depend on the machine and move a little
+from run to run; medians over repetitions keep them stable on one machine:
   - train_s: median wall-clock seconds to fit one model on the development pool.
   - inference_ms: median time to score ONE episode, AMORTIZED over a full batch
     (median batch-predict time / batch size). Amortizing removes the single-call
-    Python overhead that made a one-episode timing jump run-to-run, so this number
-    reproduces; it is the model's per-episode inference compute.
+    Python overhead that made a one-episode timing jump run-to-run; it is the
+    model's per-episode inference compute.
 Models: logistic regression, random forest, and gradient boosting; plus the trivial
-floor. Fit on the mean+std features from 04's cache; test untouched.
+floor, which scores every episode with the class frequencies of the pool, so
+its top-1 is the majority class its CSV label names (on the balanced folds all
+classes tie and argmax takes class 0), and its top-3 is the frequency ranking. Fit on the mean+std features from 04's cache; test untouched.
 """
 import os, json, time, platform
 import numpy as np

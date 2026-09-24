@@ -76,7 +76,7 @@ print(f"  proof no overlap in any fold: {all_ok}")
 print(f"  unique runs total = {uniq_total} ; runs validated exactly once = {int((val_counts == 1).sum())} "
       f"; validated >1 = {int((val_counts > 1).sum())}  -> val folds {'PARTITION the runs' if (val_counts==1).all() and len(val_counts)==uniq_total else 'DO NOT partition'}")
 print("  NOTE: one window per run -> each group has 1 row, so the group split is exact by construction;")
-print("        this check becomes substantive once we use MULTIPLE windows per run (open decision).")
+print("        it would become substantive only with MULTIPLE windows per run, which PROTOCOLO.md rules out.")
 
 # ============================================================ CHECK 2
 print("\n" + "=" * 92)

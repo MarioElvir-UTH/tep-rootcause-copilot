@@ -6,7 +6,9 @@ alarms, actions and the loop") BEFORE this script was written or run.
 
 THE FOUR PIECES OF THE LOOP (each marked [P1]..[P4] where it is implemented):
   [P1] PERCEIVES  the alarm flow and the process variables of the run
-  [P2] SCORES     the saved 1D-CNN of that fold, never retrained, plus the alarm rate
+  [P2] SCORES     the saved 1D-CNN of that fold, never retrained. The alarm rate is
+                  logged beside it but no decision uses it; decide only reads the
+                  alarm count, for the flood guard
   [P3] REASONS    retrieval by symptoms over kb/tep_kb.json. RULES, not a language
                   model. The fixed prompt sits in prompts/razona.txt, unused here.
   [P4] DECIDES    one action from the declared list, each with the same guard
@@ -20,8 +22,10 @@ THE FOUR PIECES OF THE LOOP (each marked [P1]..[P4] where it is implemented):
 
 THE ABLATION: the same loop with [P3] removed, so decide sees only the classifier.
 
-Outputs: results/logs/decisiones.jsonl, results/agente_comparison.csv,
-results/agente_env.json.
+Outputs: results/logs/decisiones.jsonl, results/logs/decisiones_muestra.jsonl
+(the committed sample), results/agente_comparison.csv, results/agente_env.json,
+results/agent_scores.npz (the score vectors 21 reads) and the extended-window
+cache results/dev_windows_ext.npy.
 """
 import os, json, time, platform
 import numpy as np
@@ -246,7 +250,7 @@ SCORES = []
 
 def run_fold(seed, fold, tri, vai, arm, w, fh=None):
     net, mean, std = load_fold_model(seed, fold)
-    pack = {}
+    pack, t_inf = {}, 0.0
     for moved in (False, True):
         Xw = slice_window(moved)
         m, s = fit_alarm_limits(Xw, tri)                       # [R2] inside the fold
@@ -254,11 +258,22 @@ def run_fold(seed, fold, tri, vai, arm, w, fh=None):
         sig = fit_signatures(dev, tri)
         corr = np.corrcoef(dev[tri[y[tri] == 0]].T)
         corr = np.nan_to_num(corr)
+        # The per-episode latency starts here. The fit above needs every training
+        # run perceived, so the episodes are perceived again on their own, under the
+        # clock, together with the network that scores them; perceive works run by
+        # run, so their rows come out the same and are written back.
+        t = time.perf_counter()
+        for full, part in zip((alarming, first, peak, dev), perceive(Xw[vai], m, s)):
+            full[vai] = part
         p_cls = classifier_proba(net, mean, std, Xw[vai])
+        t_inf += time.perf_counter() - t
         pack[moved] = (alarming, first, peak, dev, sig, corr, p_cls)
 
-    rows, t0 = [], time.perf_counter()
+    # the loop is timed episode by episode, leaving out what only bookkeeping needs:
+    # the score vector kept for 21_pr_auc.py and the line written to the log
+    rows, t_loop = [], 0.0
     for j, i in enumerate(vai):
+        t = time.perf_counter()
         moved, iters = False, 0
         while True:
             iters += 1
@@ -280,7 +295,6 @@ def run_fold(seed, fold, tri, vai, arm, w, fh=None):
         order_kb = (priority_knowledge(alarming[i], first[i], pr)  # RQ1 proposal
                     if pr is not None else order)
         shown = group_alarms(order, corr)
-        SCORES.append((seed, fold, arm, int(i), int(y[i]), score.astype(np.float32)))
         top3 = np.argsort(-score)[:3]
         rows.append({
             "y": int(y[i]), "top3": top3, "n_alarm": n_alarm,
@@ -290,6 +304,8 @@ def run_fold(seed, fold, tri, vai, arm, w, fh=None):
             "ret3": (np.argsort(-pr)[:3] if pr is not None else None),
             "action": action, "iters": iters, "agree": agree,
         })
+        t_loop += time.perf_counter() - t
+        SCORES.append((seed, fold, arm, int(i), int(y[i]), score.astype(np.float32)))
         if fh is not None:
             fh.write(json.dumps({
                 "id": [int(run_id[i][0]), int(run_id[i][1])], "seed": seed, "fold": fold,
@@ -311,7 +327,7 @@ def run_fold(seed, fold, tri, vai, arm, w, fh=None):
                 "costo": {"segundos": None, "iteraciones": iters, "tokens": 0},
                 "label": int(y[i]),
             }, ensure_ascii=False) + "\n")
-    return rows, time.perf_counter() - t0
+    return rows, t_inf + t_loop
 
 
 # ---------------- metrics, computed FROM the log rows and the labels [MEAS] ----------------
@@ -321,7 +337,7 @@ def score_rows(rows):
     hit3 = np.array([r["y"] in list(r["top3"]) for r in rows])
     out = {"F1macro": float(f1_score(yt, top1, average="macro")),
            "Recall@1": float(np.mean(top1 == yt)), "Recall@3": float(np.mean(hit3))}
-    # root alarm: only on faults whose cause the source documents.
+    # root alarm: only on faults with a documented cause.
     # Chronological is the RQ1 baseline, knowledge-driven is the RQ1 proposal.
     for key, name in (("root_chrono", "RootAlarmChrono"), ("root_kb", "RootAlarmKB")):
         ev = [r for r in rows if r["y"] in DOCUMENTED and r[key]]
@@ -397,7 +413,11 @@ with open(os.path.join(LOGS, "decisiones.jsonl"), "w", encoding="utf-8") as fh:
             allsec += sec
             print(f"    [{arm}] seed {s}: macro-F1 "
                   f"{np.mean([d['F1macro'] for d in pf]):.4f}", flush=True)
-        r = {"arm": arm, "w": w, "s_per_decision": float(np.mean(allsec))}
+        # median over the 15 folds, not the mean: each fold is timed once, and one
+        # fold slowed by something else on the machine should not move the row
+        r = {"arm": arm, "w": w, "s_per_decision": float(np.median(allsec))}
+        print(f"    [{arm}] ms per episode over the 15 folds: min {1000 * min(allsec):.3f}, "
+              f"median {1000 * np.median(allsec):.3f}, max {1000 * max(allsec):.3f}", flush=True)
         for m in list(allf[0].keys()):
             vals = [d[m] for d in allf if not np.isnan(d[m])]
             r[m + "_mean"] = float(np.mean(vals)) if vals else float("nan")
@@ -483,7 +503,10 @@ else:
 _p = os.path.join(LOGS, "decisiones.jsonl")
 _lines = open(_p, encoding="utf-8").readlines()
 with open(os.path.join(LOGS, "decisiones_muestra.jsonl"), "w", encoding="utf-8") as f:
-    f.writelines(_lines[:500] + _lines[-500:])     # both arms represented
+    # first and last 500 lines: in the order the log is written that is the
+    # ablation (seed 5, fold 0) and the proposed arm (seed 42, fold 4); the lookup
+    # arm and the other seeds are not in the sample
+    f.writelines(_lines[:500] + _lines[-500:])
 print(f"\ndecision log: {len(_lines)} lines; a 1000-line sample is committed as evidence")
 
 env = {"python": platform.python_version(), "torch": torch.__version__,

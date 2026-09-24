@@ -2,9 +2,9 @@
 What n = 30 buys, and what it does not.
 
 Simulates two raters who agree on a fixed share of items and asks how precisely
-kappa can be recovered at several sample sizes. Uses no real sheets, which are
-blank: this is a property of the estimator and the sample size, so it can be run
-before anyone scores anything.
+kappa can be recovered at several sample sizes. Uses no real sheets, even now
+that they are filled in: this is a property of the estimator and the sample
+size, so it does not depend on anyone's scores and could be run before them.
 
 Reports raw agreement alongside kappa, which at this sample size is the statistic
 carrying the weight.

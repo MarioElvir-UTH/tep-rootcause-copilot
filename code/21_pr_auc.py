@@ -18,7 +18,7 @@ Where each score vector comes from:
 
 Reads:  results/dev_features.parquet, results/dev_windows.npy,
         results/models/*.pt, results/agent_scores.npz
-Writes: results/pr_auc.csv
+Writes: results/pr_auc.csv, results/pr_auc_per_fold.csv
 """
 import os
 import json
@@ -48,6 +48,8 @@ CFG = {"logistic": {"C": 10.0}, "rf": {"max_depth": 20}, "hgb": {"learning_rate"
 feat = pd.read_parquet(os.path.join(RES, "dev_features.parquet"))
 y = feat["faultNumber"].to_numpy()
 groups = y * 1000 + feat["simulationRun"].to_numpy()
+# float32, where 04 and 14 fit the classics in float64: the refits here differ in
+# the last digits, so their f1_mean_here matches Table II to about the third decimal
 Xtab = feat[[c for c in feat.columns if c.endswith(("_mean", "_std"))]].to_numpy(np.float32)
 Xwin = np.load(os.path.join(RES, "dev_windows.npy"))
 Z = np.load(os.path.join(RES, "agent_scores.npz"), allow_pickle=True)
@@ -160,5 +162,7 @@ print(res.to_string(index=False))
 print()
 print("wrote results/pr_auc.csv and results/pr_auc_per_fold.csv")
 print("Chance level for 21 balanced classes is 1/21 = %.4f." % (1 / 21))
-print("f1_mean_here is a control: it should match the macro-F1 of Table II for")
-print("every row, and it is what says the score vectors are the right ones.")
+print("f1_mean_here is a control: it should match the macro-F1 of Table II to")
+print("about the third decimal for every row (the classics are refitted here on")
+print("float32 features, which moves the last digits), and it is what says the")
+print("score vectors are the right ones.")

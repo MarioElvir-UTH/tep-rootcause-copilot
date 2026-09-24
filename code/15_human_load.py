@@ -8,7 +8,9 @@ how often each arm answers, how often it hands the episode to the operator, how
 right it is when it does answer, and how many alarms the operator is shown.
 
 Nothing is recomputed from the models. Every number comes from
-results/logs/decisiones.jsonl and results/agente_comparison.csv.
+results/logs/decisiones.jsonl, results/agente_comparison.csv and
+results/per_fold_f1.csv (the 1D-CNN mean the loop gain is measured against).
+results/dl_comparison.csv is loaded too, but no number here comes from it.
 
 Output:
   results/human_load.csv
@@ -85,7 +87,7 @@ for a in ["ablation", "lookup", "proposed"]:
 print()
 print("LECTURA:")
 ab, pr = d.loc["ablation"], d.loc["proposed"]
-print("  la ablacion mueve la ventana en %.0f%% de las decisiones, no en %.0f%%: el 66%% es del propuesto"
+print("  la ablacion mueve la ventana en %.0f%% de las decisiones, no en %.0f%%: esa cifra es del propuesto"
       % (ab.move_pct, pr.move_pct))
 print("  el propuesto difiere %.0f%% contra %.0f%% de la ablacion: %.1f veces mas carga para el operador"
       % (pr.defer_pct, ab.defer_pct, pr.defer_pct / ab.defer_pct))

@@ -153,7 +153,7 @@ for tri, vai in folds_all:
     dev_all = (Xbase[:, mean_idx] - nm) / ns
     Xfull = np.hstack([Xbase, dev_all])
 
-    # (b) domain features (all 325)
+    # (b) domain features (all 273)
     sc, clf = fit_logreg(Xfull[tri], y[tri])
     proba = clf.predict_proba(sc.transform(Xfull[vai]))
     dom_folds.append(metrics(y[vai], proba, clf.classes_))
@@ -199,13 +199,13 @@ print("\n---- leakage audit (future / label information) ----")
 print("SAFE (built only from the causal window [21,41) and/or training-fold normal runs):")
 print("  level, fluctuation, range, trend, control effort, feed/flow ratios -> all within-window, no future used.")
 print("  deviation vs normal -> baseline (nm, ns) computed ONLY from training-fold NORMAL runs, inside each fold.")
-print("  StandardScaler fit on the training fold only (inside the pipeline).")
+print("  StandardScaler fit on the training fold only (inside fit_logreg, per fold).")
 print("RISKS AVOIDED (would leak if done differently):")
 print("  - full-run statistics (would import post-decision future) -> NOT used; window ends at sample 40.")
 print("  - baseline/scaling computed on all data incl. val/test -> NOT done; recomputed per fold from train.")
 print("  - known fault onset (1h/8h) as a feature -> NOT used; onset only places the window, same for all runs.")
 print("NOT COMPUTED at this sampling/resolution (declared, not faked): frequency-domain features,")
-print("  fast valve-stiction limit-cycle metrics, lead-lag cross-correlation (see module docstring).")
+print("  fast valve-stiction limit-cycle metrics, lead-lag cross-correlation (see PROTOCOLO.md).")
 
 env = {"python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__,
        "scikit-learn": sklearn.__version__, "cv": f"StratifiedGroupKFold k={K}", "seeds": SEEDS,

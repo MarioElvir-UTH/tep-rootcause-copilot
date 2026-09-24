@@ -238,5 +238,5 @@ env = {"python": platform.python_version(), "numpy": np.__version__, "pandas": p
 with open(os.path.join(RES, "label_efficiency_env.json"), "w", encoding="utf-8") as f:
     json.dump(env, f, indent=2)
 print(f"\nsaved: results/label_efficiency_curve.csv, label_efficiency_curve.svg, label_efficiency_env.json")
-print("NOTE: this is the SUPERVISED REFERENCE line. The label-efficient (self/semi-supervised)")
-print("      method is the second line and requires the network; it is not plotted yet.")
+print("NOTE: this is the SUPERVISED REFERENCE line, and the SVG here is a quick Recall@1 view of it.")
+print("      The paper figure (macro-F1, with the copilot's curve) is drawn by 09 from this CSV and 16's.")

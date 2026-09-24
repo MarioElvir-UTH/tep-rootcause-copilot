@@ -223,16 +223,16 @@ out = []
 for a, b, label in COMPARISONS:
     if a not in per_fold.columns or b not in per_fold.columns:
         continue
-    # [rule 1] fold by fold, then averaged by seed
+    # differences fold by fold, then averaged by seed
     per_fold["_d"] = per_fold[a] - per_fold[b]
     by_seed = per_fold.groupby("seed")["_d"].mean()
     diff = float(by_seed.mean())
     sd_seed = float(by_seed.std(ddof=1))
-    # [rule 2] Cohen's d on the pooled standard deviation across the 15 folds
+    # effect size: Cohen's d on the pooled standard deviation across the 15 folds
     sa, sb = per_fold[a].std(ddof=1), per_fold[b].std(ddof=1)
     pooled = float(np.sqrt((sa ** 2 + sb ** 2) / 2.0))
     d = diff / pooled if pooled > 0 else float("nan")
-    # [rule 3] paired t over the three seed means, df = 2, and over the 15 folds, df = 14
+    # paired t over the three seed means, df = 2, and over the 15 folds, df = 14
     t_seed = diff / (sd_seed / np.sqrt(len(by_seed))) if sd_seed > 0 else float("nan")
     sd_fold = float(per_fold["_d"].std(ddof=1))
     t_fold = diff / (sd_fold / np.sqrt(len(per_fold))) if sd_fold > 0 else float("nan")

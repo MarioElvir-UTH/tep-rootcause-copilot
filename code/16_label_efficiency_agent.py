@@ -1,12 +1,14 @@
 r"""
-Panel B of the main figure: how the root-cause rubric scales with the number of
-labeled runs, on the same budgets as the classical curve of 08_label_efficiency.py.
+The copilot's data for both panels of the main figure: its macro-F1 (panel A)
+and how the root-cause rubric (panel B) scale with the number of labeled runs, on
+the same budgets as the classical curve of 08_label_efficiency.py.
 
 Everything is retrained at every budget, because that is what the question asks:
 the network, the alarm limits fit on the normal runs of the labeled subset, and
-the class signatures of the symptom retrieval. The chronological baseline is
-label-free by construction and is drawn as the reference the knowledge-driven
-ordering has to beat.
+the class signatures of the symptom retrieval. The chronological baseline needs
+no class labels to order the alarms, but the alarms it orders come from those
+same limits, so it also moves with the budget; it is drawn as the reference the
+knowledge-driven ordering has to beat.
 
 The subsample is drawn with the same declared rule as 08, rng(1000*seed + fold),
 so a budget contains the runs of every smaller budget. Budgets, seeds, folds and
@@ -31,7 +33,10 @@ if not os.path.isfile(os.path.join(BASE, "requirements.txt")):
 RES = os.path.join(BASE, "results")
 OUT = os.path.join(RES, "label_efficiency_agent.csv")
 
-# every constant below is the one already declared, read from the run stamps
+# every constant below is the one already declared. The agent's constants, the
+# learning rate and the seeds are read from the run stamps; MAX_EPOCHS, PATIENCE,
+# BATCH, INNER_VAL and K are typed here with the values 11 used (dl_env.json
+# records them), and BUDGETS repeats the list of 08.
 env = json.load(open(os.path.join(RES, "agente_env.json"), encoding="utf-8"))
 dlv = json.load(open(os.path.join(RES, "dl_env.json"), encoding="utf-8"))
 ALARM_K, CORR_GROUP, TAU = env["alarm_k"], env["corr_group"], env["tau"]
