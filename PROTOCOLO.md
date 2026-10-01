@@ -211,8 +211,9 @@ of the real-DCS extension, not of this protocol.
   only to describe them: `01_explore_data.py` counts their rows, classes, runs,
   missing values and duplicates, and `checkpoint_datos.py` counts rows, classes
   and runs per file. Neither computes anything else from the test runs. The
-  submitted version says so. It has not been opened, and the procedure that
-  will produce its numbers has not been chosen yet; both follow the rule below.
+  submitted version says so. It has not been opened. The procedure that will
+  produce its numbers is declared below, before opening, and follows the rule
+  below.
 
   > **Corrected on 2026-09-23.** This item used to say "No script loads the
   > `*_Testing` runs", which was false for the two scripts named above.
@@ -230,6 +231,73 @@ of the real-DCS extension, not of this protocol.
 - *If something is found after opening.* A bug fixed after the test has been
   seen is reported with both numbers, before and after the fix, and the fix
   does not count as a second opening.
+
+**The procedure that opens the test set (declared before opening).**
+
+1. *What is frozen.* The eight rows of Table II with the configurations selected
+   on validation: trivial; logistic regression, C = 10; random forest,
+   max_depth = 20, 300 trees; gradient boosting, learning rate 0.05; MLP and
+   1D-CNN, learning rate 0.01; the agent with $\tau = 0.50$, fusion weight 0.25,
+   alarm band $3\sigma$, grouping at 0.8, a flood of 10 variables and one move of
+   10 samples. None of these changes once the test has been seen.
+   `27_test_once.py` checks them against `agente_env.json`, `dl_env.json` and
+   `classics_cv_comparison.csv` before it runs.
+2. *The window.* In the `*_Testing` files the fault starts at sample 161 instead
+   of 21, 8 h instead of 1 h. Every window keeps its place relative to the
+   onset, as the paper defines it ("20 samples after fault onset"): features over
+   [161, 181), the agent reads [161, 191) and scores [161, 181), or [171, 191)
+   after `observe`. Normal test runs use the same samples. The shift comes from
+   the release and is not fitted.
+3. *No model is retrained for the test.* The test scores the 15 models the
+   validation scored: for each seed (5, 17, 42) and fold (0 to 4), the model
+   fitted on that fold's training portion, with that fold's standardization,
+   alarm limits, retrieval signatures and alarm correlation. The networks are the
+   saved `results/models/*_seed<S>_fold<F>.pt`, scored as `14_effect_sizes.py`
+   scores them for Table II (the MLP input standardized in float64, then cast);
+   the classics are refit on the same fold with the same seed, which reproduces
+   them; the trivial row predicts
+   from the class frequencies of the fold's training portion. No test run is
+   used to train, to stop early, or to fit limits or signatures.
+4. *What is scored.* Macro-F1 and Recall@3 of every row on all 10,500 test runs,
+   mean $\pm$ std over the 15 models, next to the validation value. For the
+   ablation against the copilot, the paired difference and its sign in each of
+   the 15 folds. From the same test decisions: root-alarm identification of the
+   three arms on the faults with a documented cause, accuracy when classifier and
+   retrieval agree and when they disagree, the share of episodes deferred, and
+   the alarm reduction. The cost column is not measured again: it describes the
+   model and stays as measured under cross-validation. Figure 2 and the rubric
+   stay on validation.
+5. *Before any score: twin runs.* Before any model sees a test run, the script
+   compares raw data only: (a) inside the test pool, runs byte-identical to
+   another run over the scored window and over the moved window, as
+   `20_case_separation.py` does on the development pool; (b) across pools,
+   whether test run *k* of a class repeats development run *k* over samples 1 to
+   20, before either onset, and whether it repeats any development run. No
+   prediction and no score is involved. Whatever it finds is written to
+   `results/test/twins.csv` first and does not change steps 1 to 4. Twins inside
+   the test pool stay in, as they did in validation; a repetition across pools,
+   if found, is reported next to the test numbers as a limit of the benchmark.
+6. *One script, one run.* Before it opens anything, `27_test_once.py
+   --dev-check` scores the validation folds through the same code and must match
+   `results/per_fold_f1.csv` and `results/per_fold_recall3.csv` to $10^{-9}$, and
+   its `.RData` reader must rebuild the development caches exactly. The script is
+   committed with this section in a commit tagged `test-procedure`, before it
+   runs. It refuses to run if the working tree is not clean, if HEAD does not
+   carry that tag, or if `results/test/` already exists. The models and the
+   development caches are not versioned, so a clean tree cannot vouch for them:
+   the test run repeats the dev check first and stops before reading
+   `*_Testing` unless it passes. What it writes to
+   `results/test/` is committed as it comes out: `twins.csv`,
+   `test_per_fold.csv`, `test_summary.csv`, `test_paired.csv`,
+   `decisions_test.csv.gz` and `test_env.json` (commit, versions, processor,
+   date and the sha256 of the test files and of the 30 models). `run_all.py`
+   does not call it.
+7. *What is published.* Every row, whatever the result, including a row that
+   falls behind another, in `results/test/`, this protocol, the README and the
+   paper. No row is added, dropped or retuned.
+8. *After opening.* A bug found after opening is reported with both numbers, as
+   declared above. A clone that re-runs the tagged script reproduces the result;
+   it does not count as a second opening.
 
 ## Week 3 pre-registration: the neural network row (written BEFORE running anything)
 
@@ -955,7 +1023,7 @@ operator the episodes the data cannot resolve, which is what deferring is for.
 
 **For the test set.** Whether the `*_Testing` runs reuse the same seeds by run
 number is not known yet, and checking it needs only the run ids and the raw
-windows, not a score. It goes on the list for when the test opens.
+windows, not a score. It is step 5 of the procedure that opens the test.
 
 ## Human rubric: the sampling rule, the raters and the items (written BEFORE drawing the sample)
 
