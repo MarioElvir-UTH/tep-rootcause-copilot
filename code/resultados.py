@@ -63,16 +63,16 @@ def cost(c, kind):
 
 
 # The test column: the same 15 models scored once on the test set by 27. It prints
-# the mean only, so the table fits one column; the caption gives the largest std,
-# which is checked here.
+# the mean only, so the table fits one column; the text of Section V-A gives the
+# largest std, which is checked here.
 TEST_SUMMARY = os.path.join(BASE, "results", "test", "test_summary.csv")
 TKEY = {"Trivial": "trivial", "Logistic reg.": "logistic", "Random forest": "rf",
         "Gradient boost.": "hgb", "v1a MLP": "mlp", "v1b 1D-CNN": "cnn",
         "No agent (abl.)": "ablation", "Copilot v1": "proposed"}
 tst = pd.read_csv(TEST_SUMMARY).set_index("row")
-TEST_STD_MAX = 0.016                  # the caption says "standard deviation below 0.016"
+TEST_STD_MAX = 0.016                  # Section V-A says "its standard deviation, below 0.016"
 assert tst.loc[list(TKEY.values()), "test_F1macro_std"].max() < TEST_STD_MAX, \
-    "the caption bounds the test standard deviation below %.3f" % TEST_STD_MAX
+    "Section V-A bounds the test standard deviation below %.3f" % TEST_STD_MAX
 
 # the best row on each metric is bold, and it is found here rather than remembered
 best_p = max(models, key=lambda m: m["primary_mean"])["name"]
