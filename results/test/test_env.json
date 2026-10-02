@@ -1,0 +1,56 @@
+{
+  "started_utc": "2026-10-02T02:30:55+00:00",
+  "seconds": 998,
+  "git_head": "e998af6c21e9ea73ef608a90c6db2614ea678d21",
+  "tag": "test-procedure",
+  "python": "3.14.2",
+  "numpy": "2.5.3",
+  "sklearn": "1.9.1",
+  "torch": "2.14.0+cpu",
+  "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+  "cpu_count": 12,
+  "test_files_sha256_16": {
+    "TEP_FaultFree_Testing.RData": "4f45afafa469793e",
+    "TEP_Faulty_Testing.RData": "c2f1aabc77498efd"
+  },
+  "models_sha256_16": {
+    "cnn_seed17_fold0.pt": "0b50d73ee52f8a36",
+    "cnn_seed17_fold1.pt": "634a229e3c416108",
+    "cnn_seed17_fold2.pt": "22459c19f4d0c8c8",
+    "cnn_seed17_fold3.pt": "f022433fc2c85487",
+    "cnn_seed17_fold4.pt": "4e5cc20648587158",
+    "cnn_seed42_fold0.pt": "dd433bb397c3e1fc",
+    "cnn_seed42_fold1.pt": "1538daf99c964e14",
+    "cnn_seed42_fold2.pt": "3a59f1a3dedd8f9b",
+    "cnn_seed42_fold3.pt": "1a409dfe0966d820",
+    "cnn_seed42_fold4.pt": "d227cb4c3147a98e",
+    "cnn_seed5_fold0.pt": "6bced4c0c439afe0",
+    "cnn_seed5_fold1.pt": "1b99b6476a18edb0",
+    "cnn_seed5_fold2.pt": "a1dc7ba482b59010",
+    "cnn_seed5_fold3.pt": "7c4087dc1270f6e0",
+    "cnn_seed5_fold4.pt": "b831daef45494314",
+    "mlp_seed17_fold0.pt": "f5d64c68b9a0a5fe",
+    "mlp_seed17_fold1.pt": "33381f533ea0ad12",
+    "mlp_seed17_fold2.pt": "9d8e0226b26e5b42",
+    "mlp_seed17_fold3.pt": "b14a6095618897d6",
+    "mlp_seed17_fold4.pt": "099a3ed986e79c16",
+    "mlp_seed42_fold0.pt": "58631130afd2cbe5",
+    "mlp_seed42_fold1.pt": "93791e270c5e0d44",
+    "mlp_seed42_fold2.pt": "3bd226ccaa4ef4ef",
+    "mlp_seed42_fold3.pt": "035a18920b48bc97",
+    "mlp_seed42_fold4.pt": "184a5d020893cf5c",
+    "mlp_seed5_fold0.pt": "6646c62ecf997241",
+    "mlp_seed5_fold1.pt": "7d17556e9539cd84",
+    "mlp_seed5_fold2.pt": "8ee389fc17a22b5c",
+    "mlp_seed5_fold3.pt": "01c17c1b9342e3b9",
+    "mlp_seed5_fold4.pt": "75a16557988d4d14"
+  },
+  "window_test": [
+    161,
+    191
+  ],
+  "onset": {
+    "dev": 21,
+    "test": 161
+  }
+}

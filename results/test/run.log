@@ -1,0 +1,108 @@
+dev check: the .RData reader against the development caches
+  reader  features max |diff| 0.00e+00, windows max |diff| 0.00e+00
+dev check: validation folds through this script, compared with results/per_fold_*.csv
+  seed 5 fold 0: copilot macro-F1 0.7383, ablation 0.7476  (14 s)
+  seed 5 fold 1: copilot macro-F1 0.7483, ablation 0.7573  (20 s)
+  seed 5 fold 2: copilot macro-F1 0.7469, ablation 0.7533  (27 s)
+  seed 5 fold 3: copilot macro-F1 0.7454, ablation 0.7576  (28 s)
+  seed 5 fold 4: copilot macro-F1 0.7308, ablation 0.7383  (24 s)
+  seed 17 fold 0: copilot macro-F1 0.7295, ablation 0.7516  (29 s)
+  seed 17 fold 1: copilot macro-F1 0.7424, ablation 0.7506  (28 s)
+  seed 17 fold 2: copilot macro-F1 0.7393, ablation 0.7452  (29 s)
+  seed 17 fold 3: copilot macro-F1 0.7297, ablation 0.7406  (28 s)
+  seed 17 fold 4: copilot macro-F1 0.7317, ablation 0.7432  (27 s)
+  seed 42 fold 0: copilot macro-F1 0.7487, ablation 0.7668  (29 s)
+  seed 42 fold 1: copilot macro-F1 0.7359, ablation 0.7501  (29 s)
+  seed 42 fold 2: copilot macro-F1 0.7512, ablation 0.7635  (29 s)
+  seed 42 fold 3: copilot macro-F1 0.7379, ablation 0.7476  (27 s)
+  seed 42 fold 4: copilot macro-F1 0.7542, ablation 0.7679  (27 s)
+  trivial   F1macro          max |diff| 2.86e-17  OK
+  logistic  F1macro          max |diff| 0.00e+00  OK
+  rf        F1macro          max |diff| 0.00e+00  OK
+  hgb       F1macro          max |diff| 0.00e+00  OK
+  mlp       F1macro          max |diff| 0.00e+00  OK
+  cnn       F1macro          max |diff| 0.00e+00  OK
+  ablation  F1macro          max |diff| 0.00e+00  OK
+  lookup    F1macro          max |diff| 0.00e+00  OK
+  proposed  F1macro          max |diff| 0.00e+00  OK
+  trivial   Recall@3         max |diff| 5.55e-17  OK
+  logistic  Recall@3         max |diff| 0.00e+00  OK
+  rf        Recall@3         max |diff| 0.00e+00  OK
+  hgb       Recall@3         max |diff| 0.00e+00  OK
+  mlp       Recall@3         max |diff| 0.00e+00  OK
+  cnn       Recall@3         max |diff| 0.00e+00  OK
+  ablation  Recall@3         max |diff| 0.00e+00  OK
+  lookup    Recall@3         max |diff| 0.00e+00  OK
+  proposed  Recall@3         max |diff| 0.00e+00  OK
+  ablation  RootAlarmChrono  max |diff| 5.55e-17  OK
+  lookup    RootAlarmChrono  max |diff| 5.55e-17  OK
+  proposed  RootAlarmChrono  max |diff| 5.55e-17  OK
+  ablation  RootAlarmKB      max |diff| 5.55e-17  OK
+  lookup    RootAlarmKB      max |diff| 0.00e+00  OK
+  proposed  RootAlarmKB      max |diff| 5.55e-17  OK
+  lookup    Grounding        max |diff| 2.22e-16  OK
+  proposed  Grounding        max |diff| 1.11e-16  OK
+
+dev check PASSED (largest difference 2.22e-16)
+reading the test pool...
+test pool: 10500 runs, 21 classes
+twin check written before scoring:
+ class  runs  twin_scored_window  twin_moved_window  pre_onset_equal_dev_same_number  pre_onset_equal_any_dev_run
+     0   500                 471                397                                0                            0
+     1   500                   0                  0                                0                            0
+     2   500                   0                  0                                0                            0
+     3   500                   0                  0                                0                            0
+     4   500                   0                  0                                0                            0
+     5   500                   0                  0                                0                            0
+     6   500                   0                  0                                0                            0
+     7   500                   0                  0                                0                            0
+     8   500                   0                  0                                0                            0
+     9   500                   0                  0                                0                            0
+    10   500                  83                  8                                0                            0
+    11   500                   0                  0                                0                            0
+    12   500                   0                  0                                0                            0
+    13   500                 138                 55                                0                            0
+    14   500                   0                  0                                0                            0
+    15   500                   0                  0                                0                            0
+    16   500                   0                  0                                0                            0
+    17   500                 269                176                                0                            0
+    18   500                 325                240                                0                            0
+    19   500                   0                  0                                0                            0
+    20   500                 259                160                                0                            0
+
+scoring the 15 models on the test pool:
+  seed 5 fold 0: copilot macro-F1 0.7021, ablation 0.6872  (41 s)
+  seed 5 fold 1: copilot macro-F1 0.7338, ablation 0.7269  (31 s)
+  seed 5 fold 2: copilot macro-F1 0.7272, ablation 0.7113  (31 s)
+  seed 5 fold 3: copilot macro-F1 0.7342, ablation 0.7310  (30 s)
+  seed 5 fold 4: copilot macro-F1 0.7186, ablation 0.7105  (32 s)
+  seed 17 fold 0: copilot macro-F1 0.7106, ablation 0.7118  (30 s)
+  seed 17 fold 1: copilot macro-F1 0.7337, ablation 0.7226  (34 s)
+  seed 17 fold 2: copilot macro-F1 0.7104, ablation 0.7091  (34 s)
+  seed 17 fold 3: copilot macro-F1 0.7051, ablation 0.7029  (30 s)
+  seed 17 fold 4: copilot macro-F1 0.7172, ablation 0.7120  (42 s)
+  seed 42 fold 0: copilot macro-F1 0.7300, ablation 0.7302  (31 s)
+  seed 42 fold 1: copilot macro-F1 0.7167, ablation 0.7190  (30 s)
+  seed 42 fold 2: copilot macro-F1 0.7344, ablation 0.7340  (31 s)
+  seed 42 fold 3: copilot macro-F1 0.6876, ablation 0.6772  (31 s)
+  seed 42 fold 4: copilot macro-F1 0.7254, ablation 0.7251  (31 s)
+
+     row  val_F1macro_mean  val_F1macro_std  test_F1macro_mean  test_F1macro_std  val_Recall@3_mean  val_Recall@3_std  test_Recall@3_mean  test_Recall@3_std
+ trivial             0.004            0.000              0.004             0.000              0.143             0.000               0.143              0.000
+logistic             0.652            0.005              0.614             0.003              0.733             0.003               0.742              0.002
+      rf             0.638            0.005              0.584             0.002              0.703             0.006               0.708              0.002
+     hgb             0.640            0.005              0.614             0.004              0.654             0.007               0.736              0.002
+     mlp             0.652            0.013              0.596             0.010              0.754             0.017               0.719              0.009
+     cnn             0.696            0.006              0.671             0.011              0.786             0.007               0.782              0.008
+ablation             0.752            0.009              0.714             0.015              0.852             0.010               0.824              0.012
+  lookup             0.752            0.009              0.714             0.015              0.852             0.010               0.824              0.012
+proposed             0.741            0.008              0.719             0.014              0.845             0.009               0.832              0.009
+
+                                     comparison    mean    std  folds_positive  folds_negative  folds
+                  macro-F1: proposed - ablation  0.0051 0.0057              12               3     15
+root alarm, ablation: knowledge - chronological  0.0000 0.0000               0               0     15
+  root alarm, lookup: knowledge - chronological  0.3256 0.0021              15               0     15
+root alarm, proposed: knowledge - chronological  0.0412 0.0075              15               0     15
+                   grounding: proposed - lookup -0.6492 0.0251               0              15     15
+
+written to results/test/ in 998 s. Commit it as it is.

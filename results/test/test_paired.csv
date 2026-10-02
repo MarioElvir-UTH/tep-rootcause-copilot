@@ -1,0 +1,6 @@
+comparison,mean,std,folds_positive,folds_negative,folds
+macro-F1: proposed - ablation,0.005078947862617385,0.005672480611823309,12,3,15
+"root alarm, ablation: knowledge - chronological",0.0,0.0,0,0,15
+"root alarm, lookup: knowledge - chronological",0.3255831634973062,0.002105375688839651,15,0,15
+"root alarm, proposed: knowledge - chronological",0.041160845376270995,0.007463067603038972,15,0,15
+grounding: proposed - lookup,-0.649168253968254,0.02513103297403732,0,15,15
