@@ -139,7 +139,7 @@ misses it. The retrieval that produced that weighting cites IDV(5), IDV(13) and
 IDV(8), none of them the true fault, so the evidence it is reasoning from is
 wrong and the prioritization inherits the error. The fault itself is still in the
 operator's short list, third. Across the run the knowledge-driven ordering beats
-the chronological one, $0.383$ against $0.359$ in this arm, but the average is not
+the chronological one, $0.383$ against $0.358$ in this arm, but the average is not
 a guarantee per episode, and this is one of the episodes on the losing side.
 
 ---
@@ -196,7 +196,7 @@ retrieval cites IDV(5), IDV(13) and IDV(8), none of them the true fault, so the
 weighting inherits an error it had no way to detect. This is the one case of the
 three where a change inside the method would help: ranking the alarms by time
 and letting retrieval annotate rather than reorder. Across the run the
-knowledge-driven order still wins, $0.383$ against $0.359$ in this arm, so the
+knowledge-driven order still wins, $0.383$ against $0.358$ in this arm, so the
 change would trade a better average for a better worst case.
 
 The three do not share a fix, which is the point of reading them separately. One

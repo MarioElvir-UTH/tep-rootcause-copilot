@@ -14,7 +14,8 @@ The copilot perceives an alarm episode, scores it with a convolutional network,
 retrieves the documents its symptoms match, and decides on one action: answer,
 look longer, escalate, or hand the episode to the operator. It never writes to
 the plant. Everything below is measured on the public Tennessee Eastman Process
-under one pre-registered protocol, on validation folds, with the test set sealed.
+under one pre-registered protocol: on validation folds, and then once on the
+held-out test set, under a procedure declared and tagged before it was opened.
 
 <p align="center">
   <img src="results/architecture_loop.png" width="92%"
@@ -46,10 +47,21 @@ the paper, with a reason for each, rather than left for a reviewer to notice.
 
 ## What we found
 
+Numbers are from validation unless a bullet says otherwise; the test set has its
+own tables in section 4.
+
+- **On the test set, opened once, every learned row loses macro-F1 and one
+  comparison turns.** Every learned row scores lower than on validation; the test window starts
+  eight hours into the run instead of one, and nothing was refit for it. The
+  documents still beat chronology at naming the root alarm in every fold, and
+  agreement between classifier and retrieval still separates right answers from
+  wrong ones. What turns is the copilot against its ablation: the ablation is
+  ahead in every validation fold, and on test the copilot is ahead in most
+  folds, by less than the spread between them.
 - **Naming the alarm that started it is where the documents pay.** Ordering
   alarms by the retrieved documents that name their variables identifies the
   root alarm in 0.383 of the episodes with a documented cause, against
-  0.359 by time alone: a paired gain of +0.024 ± 0.001 with d > 2. Citing the
+  0.358 by time alone: a paired gain of +0.024 ± 0.001 with d > 2. Citing the
   documents of the predicted class instead (the label-anchored arm) raises that
   to 0.619 against 0.349, +0.270 ± 0.001 with d > 30, without changing its
   macro-F1. Both gains are positive in all 15 folds.
@@ -61,9 +73,10 @@ the paper, with a reason for each, rather than left for a reviewer to notice.
 - **The loop is worth more than the retrieval.** Letting the agent advance the
   window and look again gains more than 0.05 macro-F1 over scoring the
   same network once.
-- **And retrieval costs about 0.01 on the primary metric, which we report rather
-  than bury.** The proposed method reaches 0.741 ± 0.008 against 0.752 ± 0.009 for its
-  own ablation. What it buys is not accuracy but independence: classifier and
+- **And on validation retrieval costs about 0.01 on the primary metric, which we
+  report rather than bury.** The proposed method reaches 0.741 ± 0.008 against
+  0.752 ± 0.009 for its own ablation; on the test set that gap reverses, inside
+  the spread between folds. What it buys is not accuracy but independence: classifier and
   retrieval agree on 42.7% of episodes and are then right 94.0% of the time,
   against 60.4% when they disagree, so the copilot can tell the operator when
   to distrust it.
@@ -76,7 +89,7 @@ Three claims carry the paper, and each can be checked from a clone:
 
 - **The split is frozen.** Delete `splits/`, run `python code/02_make_partition.py`,
   and the manifest must hash to `4cf7e020b0f2faa6`. Continuous integration does exactly this on
-  every push, on Linux. The manifest fixes the sealed test set; the
+  every push, on Linux. The manifest fixes the test set; the
   cross-validation folds are not in it, they are regenerated from fixed seeds,
   the same in every script.
 - **No number in the paper was typed by hand.** `code/resultados.py` writes three
@@ -166,8 +179,8 @@ Place them exactly here (folder name `dataverse_files/`):
 |---|--:|---|
 | `TEP_FaultFree_Training.RData` | 24.7 MB | class 0, training pool |
 | `TEP_Faulty_Training.RData`    | 494 MB  | classes 1-20, training pool |
-| `TEP_FaultFree_Testing.RData`  | 47.3 MB | class 0, **test pool (sealed)** |
-| `TEP_Faulty_Testing.RData`     | 837 MB  | classes 1-20, **test pool (sealed)** |
+| `TEP_FaultFree_Testing.RData`  | 47.3 MB | class 0, **test pool (opened once, section 4)** |
+| `TEP_Faulty_Testing.RData`     | 837 MB  | classes 1-20, **test pool (opened once, section 4)** |
 
 ```
 dataverse_files/
@@ -222,8 +235,9 @@ match `results/tabla2.json`. The full pipeline needs the download in section 1.
 Runs the 23 steps in dependency order, stops at the first failure, and lists the
 result files produced. Re-running on the same machine yields identical metrics
 (fixed seeds + the frozen partition on disk); the training and inference timings
-of the cost column are wall-clock and change on every run. The **test set stays
-sealed throughout**: no `*_Testing` file is opened for scoring.
+of the cost column are wall-clock and change on every run. **`run_all.py` never
+opens the test set**: no `*_Testing` file is read for scoring. The test was
+opened once, outside the pipeline, by `code/27_test_once.py` (section 4).
 
 **How long to expect, roughly.** Wall-clock on the reference machine (Intel
 Core i5-13420H, 12 threads, CPU only, no GPU):
@@ -315,7 +329,7 @@ in both arms, so the ablation does not measure it; what the ablation isolates is
 retrieval, and retrieval costs about 0.01 macro-F1. **The proposed method does not beat
 its own ablation on the primary metric.** What retrieval does buy is measured
 separately and reported in the paper. Ordering alarms chronologically identifies
-the root alarm in 0.349 to 0.359 of the episodes with a documented cause;
+the root alarm in 0.349 to 0.358 of the episodes with a documented cause;
 weighting each alarm by retrieved evidence raises that to 0.619 for the
 label-anchored arm (`lookup`, the third arm produced by `12_agente_v1.py`) and to
 0.383 for the proposed symptom-based arm, while the same prioritization with no
@@ -329,6 +343,78 @@ Mean ± std over **15 folds** (StratifiedGroupKFold-by-run, k=5, seeds {5,17,42}
 selection seed 0). Determinism is further guaranteed by the committed partition
 manifest: `splits/partition_meta.json` stores `manifest_sha256_16 = 4cf7e020b0f2faa6`,
 which `02_make_partition.py` reproduces exactly.
+
+### The test set, opened once
+
+The held-out test set was opened once, on 2026-10-01, by `code/27_test_once.py`
+at the commit tagged `test-procedure`, under the procedure that `PROTOCOLO.md`
+declares in that same commit. The 15 validation models are scored as they are,
+with nothing refit, and every window keeps its place relative to the fault
+onset, which in the `*_Testing` files is sample 161 instead of 21. The outputs
+are committed in `results/test/` as they came out, with the console log of the
+run in `run.log`.
+
+<!-- BEGIN prueba (generated by resultados.py from results/test/; do not edit by hand) -->
+**Table II on the test set, next to validation.** Mean ± std over the 15 validation models; on test each of them scores all 10,500 test runs.
+
+| Model | F1-macro, validation | F1-macro, test | Recall@3, validation | Recall@3, test |
+|---|---|---|---|---|
+| Trivial (majority) | 0.004 ± 0.000 | 0.004 ± 0.000 | 0.143 ± 0.000 | 0.143 ± 0.000 |
+| Logistic regression | 0.652 ± 0.005 | 0.614 ± 0.003 | 0.733 ± 0.003 | 0.742 ± 0.002 |
+| Random forest | 0.638 ± 0.005 | 0.584 ± 0.002 | 0.703 ± 0.006 | 0.708 ± 0.002 |
+| Gradient boosting | 0.640 ± 0.005 | 0.614 ± 0.004 | 0.654 ± 0.007 | 0.736 ± 0.002 |
+| Neural net v1a (MLP) | 0.652 ± 0.013 | 0.596 ± 0.010 | 0.754 ± 0.017 | 0.719 ± 0.009 |
+| Neural net v1b (1D-CNN) | 0.696 ± 0.006 | 0.671 ± 0.011 | 0.786 ± 0.007 | 0.782 ± 0.008 |
+| No agent (ablation) | 0.752 ± 0.009 | 0.714 ± 0.015 | 0.852 ± 0.010 | 0.824 ± 0.012 |
+| Copilot v1 (proposed) | 0.741 ± 0.008 | 0.719 ± 0.014 | 0.845 ± 0.009 | 0.832 ± 0.009 |
+
+**What the agent does, on validation and on test.** Paired differences are taken fold by fold, mean ± std over the 15 folds.
+
+| Measure | Validation | Test |
+|---|---|---|
+| Copilot minus ablation, macro-F1 | -0.011 ± 0.004, copilot ahead in 0 of 15 folds | +0.005 ± 0.006, copilot ahead in 12 of 15 folds |
+| Root alarm, label-anchored arm: by time / by the predicted class's documents | 0.349 / 0.619, documents ahead in 15 of 15 folds | 0.273 / 0.599, documents ahead in 15 of 15 folds |
+| Root alarm, proposed arm: by time / by the retrieved documents | 0.358 / 0.383, documents ahead in 15 of 15 folds | 0.323 / 0.364, documents ahead in 15 of 15 folds |
+| Episodes where classifier and retrieval agree | 42.7% | 42.7% |
+| Right when they agree / when they disagree | 94.0% / 60.4% | 92.3% / 59.3% |
+| Episodes deferred to the operator, copilot / ablation | 59.0% / 26.1% | 58.8% / 18.4% |
+| Fewer alarms shown than raised, copilot | 26.6% | 29.9% |
+
+**Twin runs**, byte-identical to another run over the scored window, [21, 41) in the development pool and [161, 181) in the test pool.
+
+| Class | Development pool | Test pool |
+|---|---|---|
+| Normal operation | 488 | 471 |
+| IDV(10) | 79 | 83 |
+| IDV(13) | 176 | 138 |
+| IDV(17) | 329 | 269 |
+| IDV(18) | 382 | 325 |
+| IDV(20) | 302 | 259 |
+| All runs in twin groups | 1,756 | 1,545 |
+
+Test runs that repeat a development run over samples 1 to 20, before either onset: 0 of 10,500.
+<!-- END prueba -->
+
+Every learned row is lower on test than on validation. Recall@3 drops less than
+macro-F1 on every row and rises for the three classical models. The documents beat
+chronology at naming the root alarm in every fold of both grounded arms, and the
+copilot is still right far more often when classifier and retrieval agree than
+when they disagree. The comparison that turns is the copilot against its
+ablation: on validation the ablation is ahead in every fold; on test the copilot
+is ahead in most folds, by less than the spread between them. Retrieval does not
+buy macro-F1 on either set, and the small cost seen on validation does not
+reappear on test. The twin runs fall on the same faults in both pools, and no
+test run repeats a development run before the onset, so the two pools were not
+simulated from the same seeds.
+
+**Running it again.** On a clone the script does nothing: it refuses to run when
+`results/test/` exists or when HEAD does not carry the tag. To reproduce the run,
+check out `test-procedure`, where `results/test/` does not exist yet, rebuild the
+models and caches with `run_all.py`, and run `python code/27_test_once.py`. It
+repeats the dev check first and stops unless validation comes back exact, which
+holds on the machine that produced Table II and not on another processor (see
+above). Where it passes it writes the same numbers, and that is a reproduction,
+not a second opening.
 
 ## 5. Repository layout
 
@@ -377,6 +463,8 @@ code/                           every script; the project root is the folder abo
     24_acuerdo_rubrica.py           kappa, raw agreement and both marginals, per item
     25_paquete_evaluador.py         what each rater is handed, without the answer key
     26_precision_kappa.py           what n = 30 buys for kappa, and what it does not
+                                    ---- outside run_all.py, run once ----
+    27_test_once.py                 opens the test set once -> results/test/ (section 4)
 requirements.txt                pinned environment
 PROTOCOLO.md                    canonical experimental protocol
 references.bib                  bibliography
@@ -442,13 +530,19 @@ than positional, so this is the map:
 | Human rubric, agreement per item | `results/rubrica_humana/acuerdo.csv` | `24_acuerdo_rubrica.py` |
 | Human rubric, the same per stratum | `results/rubrica_humana/acuerdo_por_estrato.csv` | `24_acuerdo_rubrica.py` |
 | Human rubric, what each rater marked | `results/rubrica_humana/hoja_josue.csv`, `hoja_christian.csv` | two people, by hand |
+| Test set, every row next to validation | `results/test/test_summary.csv` | `27_test_once.py`, run once |
+| Test set, per model and fold, and the paired differences | `results/test/test_per_fold.csv`, `test_paired.csv` | `27_test_once.py`, run once |
+| Test set, every decision of the three arms | `results/test/decisions_test.csv.gz` | `27_test_once.py`, run once |
+| Test set, twin runs and repeats across pools | `results/test/twins.csv` | `27_test_once.py`, run once |
+| Test set, the run itself: commit, versions, hashes, console | `results/test/test_env.json`, `run.log` | `27_test_once.py`, run once |
 
-`python code/resultados.py --check` compares nine things against what the data
+`python code/resultados.py --check` compares eleven things against what the data
 generates, writes none of them, and exits non-zero if any of them differs: the
 three regions spliced into the manuscript, which are Table II, the Results
 paragraph and the human-rubric sentence, the five generated files beside them
 (`paper/tabla2.tex`, `tabla2.csv`, `resultados.md`, `resultados.tex` and
-`rubrica.tex`), and the expected-results table of this README. It exists because they did drift once:
+`rubrica.tex`), the expected-results table of this README, and the test-set
+block of this README and of `PROTOCOLO.md`. It exists because they did drift once:
 seven of the eight cost cells had stopped matching their sources, and the cause
 was that the table lived in the manuscript as text.
 
