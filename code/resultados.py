@@ -62,14 +62,29 @@ def cost(c, kind):
     return "%s / %s / %s" % (size, tr, inf)
 
 
+# The test column: the same 15 models scored once on the test set by 27. It prints
+# the mean only, so the table fits one column; the caption gives the largest std,
+# which is checked here.
+TEST_SUMMARY = os.path.join(BASE, "results", "test", "test_summary.csv")
+TKEY = {"Trivial": "trivial", "Logistic reg.": "logistic", "Random forest": "rf",
+        "Gradient boost.": "hgb", "v1a MLP": "mlp", "v1b 1D-CNN": "cnn",
+        "No agent (abl.)": "ablation", "Copilot v1": "proposed"}
+tst = pd.read_csv(TEST_SUMMARY).set_index("row")
+TEST_STD_MAX = 0.016                  # the caption says "standard deviation below 0.016"
+assert tst.loc[list(TKEY.values()), "test_F1macro_std"].max() < TEST_STD_MAX, \
+    "the caption bounds the test standard deviation below %.3f" % TEST_STD_MAX
+
 # the best row on each metric is bold, and it is found here rather than remembered
 best_p = max(models, key=lambda m: m["primary_mean"])["name"]
 best_s = max(models, key=lambda m: m["secondary_mean"])["name"]
+best_t = max(models, key=lambda m: tst.loc[TKEY[m["name"]], "test_F1macro_mean"])["name"]
 
 # la clave de las unidades vive en el encabezado, no en el pie: el pie tiene
 # que caber en una linea y esto no cabia
-lines = [r"\begin{tabular}{@{}lccr@{}}", r"\toprule",
-         r"Model & Macro $F_1$ & Recall@3 & \multicolumn{1}{c}{Cost (size / s / ms)} \\", r"\midrule"]
+lines = [r"\begin{tabular}{@{}lcccr@{}}", r"\toprule",
+         r"& \multicolumn{2}{c}{Macro $F_1$} & & \\", r"\cmidrule(lr){2-3}",
+         r"Model & Validation & Test & Recall@3 & \multicolumn{1}{c}{Cost (size / s / ms)} \\",
+         r"\midrule"]
 # the floor sits with the classics: the rules separate the three families the paper
 # discusses, which are the classical models, the networks and the agent arms
 BLOCK = {"floor": 0, "classic": 0, "network": 1, "agent": 2}
@@ -84,20 +99,26 @@ for m in models:
         p = r"$\mathbf{%.3f \pm %.3f}$" % (m["primary_mean"], m["primary_std_over_folds"])
     if m["name"] == best_s:
         s = r"$\mathbf{%.3f \pm %.3f}$" % (m["secondary_mean"], m["secondary_std_over_folds"])
-    lines.append("%-15s & %s & %s & %s \\\\" % (m["name"], p, s, cost(m["cost"], m["kind"])))
+    t = "$%.3f$" % tst.loc[TKEY[m["name"]], "test_F1macro_mean"]
+    if m["name"] == best_t:
+        t = r"$\mathbf{%.3f}$" % tst.loc[TKEY[m["name"]], "test_F1macro_mean"]
+    lines.append("%-15s & %s & %s & %s & %s \\\\" % (m["name"], p, t, s, cost(m["cost"], m["kind"])))
 lines += [r"\bottomrule", r"\end{tabular}"]
 table = "\n".join(lines)
 
 # The same eight rows as columns, so the table can be read and diffed without
 # LaTeX. Full precision: the article rounds to three decimals, this does not.
 COLS = ["model", "kind", "f1macro_mean", "f1macro_std_over_folds",
+        "test_f1macro_mean", "test_f1macro_std",
         "recall3_mean", "recall3_std_over_folds", "parameters",
         "training_seconds", "inference_ms_per_episode", "tokens"]
 csv_rows = [",".join(COLS)]
 for m in models:
     c = m["cost"]
+    k = TKEY[m["name"]]
     csv_rows.append(",".join(str(v) for v in [
         m["name"], m["kind"], m["primary_mean"], m["primary_std_over_folds"],
+        tst.loc[k, "test_F1macro_mean"], tst.loc[k, "test_F1macro_std"],
         m["secondary_mean"], m["secondary_std_over_folds"], c["parameters"],
         c["training_seconds"], c["inference_ms_per_episode"], c["tokens"]]))
 tabla_csv = "\n".join(csv_rows)
@@ -113,7 +134,8 @@ if not HAS_TEX:
     print("      se generan y comparan los archivos versionados, no el manuscrito")
 
 tex = io.open(TEX, encoding="utf-8").read() if HAS_TEX else ""
-current = re.search(r"\\begin\{tabular\}\{@\{\}lccr@\{\}\}.*?\\end\{tabular\}", tex, re.S)
+# lc+r matches the table before and after the test column; Table I ends in c, not r
+current = re.search(r"\\begin\{tabular\}\{@\{\}lc+r@\{\}\}.*?\\end\{tabular\}", tex, re.S)
 assert current or not HAS_TEX, "no se encontro la tabular de la Tabla II en el manuscrito"
 same = current.group(0).strip() == table.strip() if current else True
 
@@ -199,6 +221,36 @@ defer_pro, defer_abl = hl.loc["proposed", "defer_pct"], hl.loc["ablation", "defe
 acc_pro, acc_abl = (hl.loc["proposed", "acc_when_generate"],
                     hl.loc["ablation", "acc_when_generate"])
 
+# The same comparisons on the test set, from the 15 models 27 scored once, paired
+# fold by fold and averaged by seed as on validation. What the sentences say about
+# them in words is asserted here.
+TDIR = os.path.join(BASE, "results", "test")
+tpf = pd.read_csv(os.path.join(TDIR, "test_per_fold.csv"))
+tper = lambda r: tpf[tpf["row"] == r].set_index(["seed", "fold"])["F1macro"]
+t_cls = tper("proposed") - tper(KEY[best_classic["name"]])
+t_loop = tper("ablation") - tper("cnn")
+t_retr = tper("proposed") - tper("ablation")
+t_cls_s, t_retr_s = t_cls.groupby(level=0).mean(), t_retr.groupby(level=0).mean()
+assert (t_cls > 0).all(), "the paragraph says the gap over the best classic keeps its sign in every test fold"
+assert loop_folds == len(pf) and (t_loop > 0).all(), "the paragraph says the loop gains in every fold of both sets"
+assert 0 < t_retr_s.mean() < max(tst.loc["ablation", "test_F1macro_std"], tst.loc["proposed", "test_F1macro_std"]), \
+    "the paragraph says the copilot is ahead of its ablation on test, inside the dispersion"
+tdec = pd.read_csv(os.path.join(TDIR, "decisions_test.csv.gz"),
+                   usecols=["seed", "fold", "arm", "action", "y", "top1"])
+
+
+def t_load(arm):
+    """Share deferred and accuracy when answering, per fold and then averaged, as 15 does."""
+    x = tdec[tdec["arm"] == arm]
+    defer = x["action"].eq("defer").groupby([x["seed"], x["fold"]]).mean().mean()
+    g = x[x["action"] == "generate"]
+    acc = g["y"].eq(g["top1"]).groupby([g["seed"], g["fold"]]).mean().mean()
+    return 100 * defer, 100 * acc
+
+
+t_def_pro, t_acc_pro = t_load("proposed")
+t_def_abl, t_acc_abl = t_load("ablation")
+
 # The article writes numbers below ten as words, and this paragraph is spliced
 # into it, so the generator follows the same rule. Ten and above stay in digits,
 # which is why the fold count on the next line is still %d.
@@ -210,27 +262,33 @@ S = [
  ("what is compared, and on what partition",
   "Eight systems are compared on the Tennessee Eastman Process under one protocol: a "
   "trivial floor, three classical models, two networks, and the copilot with its "
-  "ablation, all scored on validation folds of a partition frozen by simulation run "
-  "with the test set sealed, over %d folds from %s seeds."
-  % (d["_meta"]["folds_per_seed"] * len(d["_meta"]["seeds"]), EN_PALABRAS(len(d["_meta"]["seeds"])))),
+  "ablation, all scored on validation folds of a partition frozen by simulation run, "
+  "over %d folds from %s seeds, and the same %d models once more on the held-out test set."
+  % (d["_meta"]["folds_per_seed"] * len(d["_meta"]["seeds"]), EN_PALABRAS(len(d["_meta"]["seeds"])),
+     len(tpf[tpf["row"] == "proposed"]))),
  ("the proposed method, with its dispersion",
   "The proposed copilot reaches $%.3f \\pm %.3f$ macro-averaged $F_1$ and "
-  "$%.3f \\pm %.3f$ Recall@3."
+  "$%.3f \\pm %.3f$ Recall@3 on validation, and $%.3f$ macro-$F_1$ on test."
   % (pro["primary_mean"], pro["primary_std_over_folds"],
-     pro["secondary_mean"], pro["secondary_std_over_folds"])),
+     pro["secondary_mean"], pro["secondary_std_over_folds"],
+     tst.loc["proposed", "test_F1macro_mean"])),
  ("the difference against the best classic, and whether it clears the dispersion",
   "Against the best classical model, %s at $%.3f \\pm %.3f$, the paired difference is "
   "$%+.3f \\pm %.3f$ over the seeds, which is %s than either dispersion and keeps its "
-  "sign in all %d folds."
+  "sign in all %d folds, and it is $%+.3f \\pm %.3f$ on test, again in all %d."
   % (PROSE[best_classic["name"]], best_classic["primary_mean"],
      best_classic["primary_std_over_folds"], diff, diff_sd,
-     "larger" if clears else "smaller", int((pf["_d"] > 0).sum() if diff > 0 else (pf["_d"] < 0).sum()))),
+     "larger" if clears else "smaller", int((pf["_d"] > 0).sum() if diff > 0 else (pf["_d"] < 0).sum()),
+     t_cls_s.mean(), t_cls_s.std(ddof=1), len(t_cls))),
  ("what the agent adds, read off the ablation",
   "The ablation separates the two things the agent does: the loop is worth more than "
-  "$%.2f$ macro-$F_1$ over the same network scored once, with the same sign in all %d "
-  "folds, while retrieval costs about $%.2f$ on the primary metric, so the proposed "
-  "method does not beat its own ablation there."
-  % (PISO(loop.paired_diff), loop_folds, CERCA(retr.paired_diff))),
+  "$%.2f$ macro-$F_1$ over the same network scored once on validation and more than "
+  "$%.2f$ on test, with the same sign in all %d folds of both, while retrieval costs "
+  "about $%.2f$ on validation, so the proposed method does not beat its own ablation "
+  "there, and is ahead of it on test by $%+.3f \\pm %.3f$ over the seeds, inside the "
+  "dispersion."
+  % (PISO(loop.paired_diff), PISO(t_loop.mean()), loop_folds, CERCA(retr.paired_diff),
+     t_retr_s.mean(), t_retr_s.std(ddof=1))),
  # The latency is wall-clock and moves with the processor: the same copilot
  # measured 0.197, 0.123 and 0.254 ms on three machines on 2026-09-19. Three
  # decimals in prose would be a number a reproducer cannot match, which is the
@@ -247,8 +305,9 @@ S = [
   "The main limitation is coverage rather than accuracy: requiring the classifier and "
   "the retrieval to agree makes the copilot hand %.0f\\%% of episodes to the operator "
   "against %.0f\\%% for the ablation, while accuracy on the episodes it does answer "
+  "goes from %.1f\\%% to %.1f\\%%; on test it hands over %.0f\\%% against %.0f\\%% and "
   "goes from %.1f\\%% to %.1f\\%%."
-  % (defer_pro, defer_abl, acc_abl, acc_pro)),
+  % (defer_pro, defer_abl, acc_abl, acc_pro, t_def_pro, t_def_abl, t_acc_abl, t_acc_pro)),
 ]
 
 md = ["# Results, in six sentences", "",
